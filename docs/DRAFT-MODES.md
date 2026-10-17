@@ -63,10 +63,15 @@ confirmation must not become sending authority. Sending is not implemented.
 
 ## Client compatibility and release gate
 
-- **ChatGPT: Basic Mode is NOT yet recommended or certified.** No interactive
-  end-to-end ChatGPT confirmation test has been performed for this implementation.
-  Documented default write confirmations do not prove full-message rendering or
-  per-save prompting under the user's actual settings.
+- **ChatGPT: Basic Mode is not recommended when independent human review is
+  required.** In the isolated synthetic live-UI test on October 17, 2026, the
+  default low-risk policy did not reliably require a prompt for every save.
+  Always ask produced prompts, but remembered grants and Allow all could permit
+  later calls without fresh confirmation. The normal prompt showed a summary;
+  complete nested tool arguments required opening and scrolling technical Details.
+  This is not a reliable, complete email-review screen. These observations apply
+  to the tested account/client/settings, not every ChatGPT version. Use Secure
+  Mode for independently enforced approval.
 - **Claude:** per-tool settings may permit automatic calls. Select approval for
   every save rather than Always allow, and validate the actual interface/version.
   Complete display and per-call approval remain unverified for this implementation.
@@ -81,8 +86,17 @@ successive saves and confirm BOTH require an explicit prompt. Inspect all From/T
 Cc/Bcc, long body, subject and destination fields in the actual confirmation UI;
 verify cancellation, changed-content re-review and absence of persistent grants.
 Test the client version/account settings that will be used. If full details or
-per-call prompts are unavailable, use Secure Mode. This gate remains outstanding;
-local protocol tests cannot certify a third-party client's UI.
+per-call prompts are unavailable, use Secure Mode. The ChatGPT test did not meet this recommendation gate; Claude and other
+clients remain unverified. Local protocol tests cannot certify a third-party
+client's UI.
+
+The actual ChatGPT tool-call test separately rejected altered body, recipient,
+and destination fields, rejected a request after its real expiry, and returned
+cached replay results without additional mock appends. Automated tests establish
+broader binding, expiry, concurrency and replay properties; UI prompt behavior is
+observational evidence, not a server authorization guarantee. No real mailbox
+was connected during the ChatGPT UI test. Raw screenshots/transcripts are private
+acceptance evidence and are intentionally not included in the public repository.
 
 Sources: [OpenAI write confirmations](https://developers.openai.com/api/docs/guides/custom-mcp-server),
 [Claude tool permissions](https://support.claude.com/en/articles/11176164-use-connectors-to-extend-claude-s-capabilities),

@@ -6,13 +6,13 @@
 
 <p align="center"><img src="assets/logo-readme.png" alt="InboxTether MCP: envelope, bridge, and circuit mark" width="360"></p>
 
-Reader-first email access for MCP clients, with bounded search, message reads, and explicitly selected attachment retrieval. This development branch adds an experimental, disabled-by-default Draft Assistant with independent browser approval and a protected terminal fallback. **Mailcow is the first verified email platform.** Compatibility with other IMAP servers is a future testing goal, not a current claim.
+Reader-first email access for MCP clients, with bounded search, message reads, and explicitly selected attachment retrieval. This development branch adds an experimental, disabled-by-default Draft Assistant with optional client-controlled Basic approval or independent Secure approval through the browser or trusted terminal. **Mailcow is the first verified email platform.** Compatibility with other IMAP servers is a future testing goal, not a current claim.
 
 Repository: [`jfaletra/inboxtether-mcp`](https://github.com/jfaletra/inboxtether-mcp). **v1.0.0 is the Reader release. This branch targets v1.1 development; it is not a v1.1 release or deployment approval.** This is an independent community project, not an official Mailcow or OpenAI integration.
 
 ## Current capabilities: Reader Mode
 
-Reader Mode remains the default and exposes only the five read tools below. The optional Draft Assistant is under development and has synthetic test coverage only; it has not been verified against a live Mailcow Drafts folder. There is no SMTP support.
+Reader Mode remains the default and exposes only the five read tools below. The optional Draft Assistant is a v1.1 release candidate with synthetic coverage and one controlled live Mailcow Secure Mode terminal-approved save, verified byte-for-byte. Broader provider and live browser/OIDC deployment compatibility remain unverified. There is no SMTP support.
 
 | Tool | What it returns |
 |---|---|
@@ -112,3 +112,7 @@ See the [release checklist](docs/RELEASE-CHECKLIST.md), [release notes](RELEASE-
 ## Naming review
 
 [Registry and USPTO checks](docs/NAMING-REVIEW.md) found no observed exact-name collision in the checked sources. Existing TETHER software marks remain a naming uncertainty; the owner accepted the identified risk, and searches are not legal clearance. The source repository is Public. The v1.0.0 source release does not establish trademark rights; no registry package is published.
+
+## v1.1 release review
+
+See [prepared release notes](RELEASE-NOTES-v1.1.0.md), [installation and upgrade](docs/UPGRADING-v1.1.md), and [candidate security assessment](security/V1.1-RELEASE-REVIEW.md). These documents do not authorize deployment, merging, tagging or publication.

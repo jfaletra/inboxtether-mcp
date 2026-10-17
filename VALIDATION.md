@@ -12,7 +12,7 @@ Mailcow is the first verified platform. Existing live evidence covers mailbox li
 
 The 49 tests for the deployed behavior cover the read-only command guard, TLS configuration, password-file protections, MIME/output limits, actual IMAP framing over socket pairs, MCP stdio initialization/discovery, additive search metadata and identity checks, selected attachment choice, stale IDs, wrong UIDVALIDITY, size boundaries, unsafe type/name/signature, invalid encoding, MIME depth/count limits, and credential-free errors. Two additional tests check the community configuration defaults and explicit operator environment.
 
-Tests use synthetic fixtures and do not authenticate to a mailbox. Local maximum-size tests do not establish maximum-size behavior through every MCP client/tunnel. Basic JPEG signature and checksum validation are not full image validation or malware scanning. No independent before/after live flag comparison or deliberate crash/reboot test was performed. Read-only wire behavior is tested; the credential itself may still permit writes through another client.
+Tests use synthetic fixtures and do not authenticate to a mailbox. Local maximum-size tests do not establish maximum-size behavior through every MCP client/tunnel. Basic JPEG signature and checksum validation are not full image validation or malware scanning. Historical v1.0 evidence did not include a live before/after flag comparison; the controlled v1.1 test below now provides that comparison. No deliberate crash/reboot test was performed. Read-only wire behavior is tested; the credential itself may still permit writes through another client.
 
 ## Package checks
 
@@ -38,7 +38,7 @@ Hosted release-candidate results and immutable SHA are recorded in the final rel
 
 New cases cover exact MIME/threading/Bcc preview, unapproved saves, wrong fingerprints, edited drafts, expiry and review races, altered expiry/bytes/configuration/source/target identity, strict recipients/header/body validation, Drafts special-use/UIDPLUS requirements, protected SQLite state, quotas, operator-terminal confirmation, concurrent single-use claims, saved replay, crash-after-claim, timeout, server rewrites and missing/mismatched APPENDUID. Reader and Draft adapters deny unrelated mutation commands; application modules contain no SMTP transport imports. No mail was sent, appended to a live server, or deleted; no credentials, production services or mailbox ACLs were accessed/changed.
 
-Fresh strict advisory audits passed with zero known vulnerabilities and zero skipped packages across 29 runtime dependencies and 27 audit-tool dependencies; no dependency was added. Dependency consistency passed. Advisory results are time-dependent, not a guarantee. See security/DRAFT-ASSISTANT-REVIEW.md for the threat model and remaining deployment gates. Existing release documents describe historical v1.0 evidence and do not certify Draft Assistant. Live provider acceptance, operator approval of the local terminal workflow and explicit write enablement remain outstanding.
+Fresh strict advisory audits passed with zero known vulnerabilities and zero skipped packages across 29 runtime dependencies and 27 audit-tool dependencies; no dependency was added. Dependency consistency passed. Advisory results are time-dependent, not a guarantee. See security/DRAFT-ASSISTANT-REVIEW.md for the threat model and remaining deployment gates. Existing release documents describe historical v1.0 evidence and do not certify Draft Assistant. This historical synthetic-only stage preceded the controlled Mailcow terminal workflow acceptance recorded below. General production enablement and live browser/provider acceptance remain separate gates.
 
 ## Browser approval development
 
@@ -54,10 +54,10 @@ source/destination checks, expiry/tamper/rejection, concurrent single APPEND and
 uncertain-save replay. The recorded Basic decision explicitly says human_verified
 is false. No tests access live mail or enable a deployed service.
 
-Interactive ChatGPT/Claude approval UI acceptance remains **not performed**. Basic
-Mode is not recommended for ChatGPT until a separate synthetic-only client test
-shows all proposed content and requires confirmation for successive saves. See
-[client release gate](docs/DRAFT-MODES.md). Protocol tests do not prove UI behavior.
+Subsequent actual ChatGPT synthetic UI testing did not satisfy the complete-review
+and per-save-prompt gate; Basic is not recommended for independently verified
+human approval. Claude remains unverified. See [observed client limits](docs/DRAFT-MODES.md).
+Protocol tests alone do not prove UI behavior.
 
 ## Authenticated IMAP capability refresh regression
 
@@ -76,3 +76,18 @@ UIDPLUS, invalid/failed responses, connection cleanup, and an actual IMAP wire
 save where UIDPLUS is absent before LOGIN and present afterward. These checks do
 not connect to a real mailbox. The authenticated-capability workaround used in
 isolated acceptance testing is unnecessary with this fix; production is unchanged.
+
+## v1.1 final candidate review (supersedes earlier outstanding-test notes)
+
+The 128-test candidate retains default-off Draft Assistant and Reader compatibility.
+Actual ChatGPT mock-backend UI tests have now been performed: native prompts and
+remembered settings do not guarantee complete email review or approval for each
+save. Negative altered-content/expiry/replay checks were observed separately.
+A controlled live Mailcow Secure terminal-approved synthetic save verified exact
+MIME, threading, Drafts destination, checksum and unchanged original bytes/flags.
+No SMTP or production deployment was used. See docs/DRAFT-MODES.md and
+security/V1.1-RELEASE-REVIEW.md for evidence scope and remaining deployment gates.
+Prepared release notes: RELEASE-NOTES-v1.1.0.md. Reader upgrade/optional opt-in and
+rollback: docs/UPGRADING-v1.1.md. These files do not authorize publication.
+
+Final review rerun: 128 tests passed; runtime, browser and audit-tool strict advisory audits found no known vulnerabilities; dependency consistency passed. Exact v1.0.0 comparison confirms five identical Reader schemas, 11 unchanged Reader functions and the unchanged protocol guard except the authenticated login refresh.
