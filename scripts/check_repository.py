@@ -33,7 +33,8 @@ def findings(data):
         if (domain not in (b'example.com', b'example.org', b'github.com', b'users.noreply.github.com')
                 and not domain.endswith((b'.example.com', b'.example.org'))):
             result.add('nonexample email address')
-        elif domain == b'github.com' and address.lower() != b'noreply@github.com':
+        # Dependabot signs commit messages with GitHub's public support address.
+        elif domain == b'github.com' and address.lower() not in (b'noreply@github.com', b'support@github.com'):
             result.add('nonexample email address')
     return sorted(result)
 
