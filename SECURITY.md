@@ -29,12 +29,12 @@ Use a dedicated mailbox app password and protected parent directories. Keep secr
 
 ## Reporting a vulnerability
 
-Use the [security policy](https://github.com/jfaletra/inboxtether-mcp/security/policy) and, when enabled, Security → Advisories → **Report a vulnerability**. Native researcher reporting is not available during this private stage and must be enabled/verified before public release. If the form is absent, do not open a public issue/Discussion or upload exploit material: wait for a maintainer-provided private channel. No personal contact address is published or invented here. See docs/COMMUNITY.md for the launch procedure and synthetic-report fields.
+Use the [security policy](https://github.com/jfaletra/inboxtether-mcp/security/policy) and, when enabled, Security → Advisories → **Report a vulnerability**. Private vulnerability reporting is enabled for this Public repository, and its entry link is visible to signed-out visitors; a GitHub account is required to submit a report. If the form is absent, do not open a public issue/Discussion or upload exploit material: wait for a maintainer-provided private channel. No personal contact address is published or invented here. See docs/COMMUNITY.md for the launch procedure and synthetic-report fields.
 
 Never include real mailbox content, secrets, private domains/IPs, or raw logs. Privately describe affected version, impact, and minimal synthetic reproduction. Responses are best effort, without a guaranteed SLA.
 
 ## Repository security limitations
 
-Private-stage native secret scanning/push protection is unavailable and the saved main ruleset is not enforced under the current plan. The release candidate adds full-history credential-pattern scanning to CI and retains exact-SHA human review, synthetic tests and strict dependency audits. These are detective checks, not a preventive branch policy or exhaustive DLP. Before Public release verify actual enforced required checks, native secret scanning/push protection where available, private vulnerability reporting, notifications and community guidance; see docs/RELEASE-CHECKLIST.md. No paid plan or account-wide setting is changed by this preparation.
+The earlier private-plan limitations have been replaced by verified Public-stage controls: active main rules with all three required GitHub Actions checks and no bypass actors, native secret scanning, push protection and private vulnerability reporting. Full-history CI patterns and manual exact-SHA review remain additional detective checks, not exhaustive DLP. Reverify controls before a tag/release; see docs/PUBLIC-STAGE-VALIDATION.md and docs/RELEASE-CHECKLIST.md. No paid plan or account-wide setting was changed.
 
 Code tests and this review are not an independent penetration test. Dependency advisory results are dated and may change. See VALIDATION.md and security/DEPENDENCY-AUDIT.md for evidence and limitations.

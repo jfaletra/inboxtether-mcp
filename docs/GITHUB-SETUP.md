@@ -1,10 +1,10 @@
 # Repository setup and public-stage gates
 
-Target only `jfaletra/inboxtether-mcp`. It already exists as Private. Historical evidence is in PRIVATE-GITHUB-VALIDATION.md; current release gates are in RELEASE-CHECKLIST.md. No other repository or account-wide configuration is in scope.
+Target only `jfaletra/inboxtether-mcp`. It now exists as Public following explicit owner authorization. Current evidence is in PUBLIC-STAGE-VALIDATION.md; private-stage statements below are historical. Historical evidence is in PRIVATE-GITHUB-VALIDATION.md; current release gates are in RELEASE-CHECKLIST.md. No other repository or account-wide configuration is in scope.
 
 Retain read-only workflow defaults, SHA-pinned approved actions, no workflow-created approvals, no production secrets/runners, no fork-workflow token expansion, and no cross-repository Actions access. Keep dependency graph, Dependabot alerts/security updates and weekly version monitoring enabled. Review updates rather than auto-merging; MCP 2.x is incompatible with the current FastMCP import.
 
-The private-plan saved main rules are not enforced; native secret scanning is unavailable. Candidate CI includes tests, strict dependency audits, and full-history credential-pattern scans. Keep exact-SHA manual review while these preventive controls are missing; never claim the scan prevents all leaks.
+Historically, the private-plan saved main rules were not enforced and native secret scanning was unavailable. After the Public transition, main rules are active/enforced and secret scanning/push protection are enabled. Candidate CI includes tests, strict dependency audits, and full-history credential-pattern scans. Keep exact-SHA manual review while these preventive controls are missing; never claim the scan prevents all leaks.
 
 Discussions are approved for preparation under this repository only; use docs/COMMUNITY.md for categories, moderation and pinned guidance. Enabling them while private does not publish the repository. Do not create public announcements now.
 
