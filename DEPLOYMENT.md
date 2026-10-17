@@ -28,3 +28,7 @@ This branch does not change any running service. Keep INBOXTETHER_DRAFT_ASSISTAN
 ## Browser approval service (uninstalled reference)
 
 The browser path adds a separate OIDC session gateway, distinct-UID web service and local peer-authenticated approval broker. See docs/BROWSER-APPROVAL.md and examples/browser-approval. Both feature switches stay off in templates. These services and examples have not been installed or connected to an identity provider. Their HTTPS route, service accounts, secrets and staging callback/cookie/refresh behavior require site-specific validation and rollout approval. Production and the existing Reader unit are not changed.
+
+## Unreleased v1.2 Secure Send deployment gate
+
+Existing Reader/v1.1 configuration needs no send changes. Do not enable sending as part of a Reader upgrade. The optional sender requires a separate non-root account, administrator-owned code/runtime, private Linux IPC, separate SMTP credentials and a trusted approval terminal; no new public endpoint is needed. Examples are disabled and are not an installation authorization. Review [deployment, backup/reconciliation and Sent-folder limitations](docs/SEND-ASSISTANT.md) before provisioning anything.

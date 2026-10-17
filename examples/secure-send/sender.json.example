@@ -1,0 +1,13 @@
+{
+  "enabled": false,
+  "mode": "secure",
+  "identity": "sender@example.com",
+  "smtp_host": "smtp.example.com",
+  "smtp_port": 465,
+  "tls": "implicit",
+  "smtp_username": "sender@example.com",
+  "password_file": "/etc/inboxtether-send/smtp.secret",
+  "state_dir": "/var/lib/inboxtether-send",
+  "socket_path": "/run/inboxtether-send/request.sock",
+  "client_uid": 2001
+}

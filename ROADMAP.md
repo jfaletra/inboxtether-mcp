@@ -8,19 +8,15 @@ Fixed-account, read-only folder listing, structured mailbox search, bounded mess
 
 Mailcow is the first verified platform. Other IMAP servers require their own authentication, folder encoding, search, MIME, read-only, and recovery testing before compatibility can be claimed.
 
-## Draft Assistant Mode — experimental v1.1 development, disabled by default
+## Draft Assistant — implemented v1.1, disabled by default
 
-This branch implements preparation of plain-text threaded replies and a separate authenticated browser approval (terminal fallback retained) before one exact APPEND to a configured special-use Drafts folder. Reader tools and their command guard remain unchanged. No client-asserted in-chat approval mechanism, attachments in drafts, arbitrary folder writes, SMTP, or automatic retries are supported.
+Basic Mode delegates confirmation to the MCP client with explicit acknowledgment; Secure Mode uses independent trusted terminal or browser/OIDC approval. Both retain immutable threading/content, expiry, replay and exact-byte APPEND verification. No existing-message changes or SMTP authority are granted by draft tools. Browser live deployment validation remains separate. See [draft modes](docs/DRAFT-MODES.md).
 
-See [the architecture and security review](docs/DRAFT-ASSISTANT.md). Synthetic IMAP/MCP tests are not live provider certification. Enabling writes, live acceptance testing, merging and releasing require separate operator approval. The browser UI/broker is implemented with single-owner OIDC authentication; native client approval prompts alone remain insufficient. Multiuser routing and transaction-bound stronger verification remain future work.
+## Secure Send Assistant — unreleased v1.2 implementation
 
-## Send Assistant Mode — planned, not implemented
+The v1.2 feature branch implements separately owned SMTP authority, independent trusted terminal approval, bounded message/attachment staging, preparation/status-only MCP tools, verified TLS, durable single-attempt records and uncertain-outcome handling. Disabled by default, with no Basic Send Mode. Tests are synthetic/mock-only; no real SMTP deployment or provider compatibility has been established. See [Send Assistant](docs/SEND-ASSISTANT.md).
 
-Optional SMTP sending only after explicit approval of the exact message, enforced server-side. No SMTP client, credentials, transport, sending endpoint, or sending-approval service exists in this implementation.
-
-A future design must bind a single-use, expiring approval to the exact envelope recipients (including Bcc), sender, subject, body, attachments and their hashes, and relevant delivery options. Edits must invalidate approval. Approval must come from a trusted user interaction, not a model assertion, email content, or a boolean tool argument. Reject unapproved/changed messages and replay attempts. Define retry/idempotency behavior to avoid accidental duplicate sends.
-
-Before implementation: complete a security design, authenticated approval mechanism, secrets isolation, validation and abuse controls, explicit opt-in, and tests proving the server refuses unapproved sending. Reader Mode remains available with no SMTP credentials and no write/send authority.
+Browser send approval and automatic IMAP Sent-folder synchronization remain planned and unimplemented. They require separate security review, explicit send-versus-save authority, live authentication validation and delivery/copy reconciliation. Failed Sent filing must never cause SMTP resubmission. A release, deployment, credential provisioning or live send requires explicit approval.
 
 ## Other proposals
 

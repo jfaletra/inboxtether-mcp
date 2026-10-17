@@ -5,10 +5,13 @@
   "repository": "jfaletra/inboxtether-mcp",
   "initial_visibility": "private",
   "implemented_modes": [
-    "reader"
+    "reader",
+    "basic-draft-assistant",
+    "secure-draft-assistant"
   ],
   "planned_modes": [
-    "send-assistant"
+    "browser-send-approval",
+    "sent-folder-synchronization"
   ],
   "verified_email_platforms": [
     "Mailcow"
@@ -17,10 +20,10 @@
   "source_license": "MIT",
   "branding_license": "reserved rights; owner-authorized project distribution",
   "distribution": "source repository; no PyPI package or hosted endpoint published",
-  "version": "1.0.0",
-  "release_status": "v1.0.0 Reader released; optional Draft Assistant development is unreleased and disabled by default",
+  "version": "1.1.0",
+  "release_status": "v1.1.0 published; v1.2 Secure Send development is unreleased and disabled by default",
   "experimental_modes": [
-    "draft-assistant"
+    "secure-send-assistant"
   ],
-  "development_target": "1.1"
+  "development_target": "1.2"
 }
