@@ -58,3 +58,21 @@ Interactive ChatGPT/Claude approval UI acceptance remains **not performed**. Bas
 Mode is not recommended for ChatGPT until a separate synthetic-only client test
 shows all proposed content and requires confirmation for successive saves. See
 [client release gate](docs/DRAFT-MODES.md). Protocol tests do not prove UI behavior.
+
+## Authenticated IMAP capability refresh regression
+
+The IMAP client previously retained its pre-authentication capability cache after
+LOGIN. Servers can advertise UIDPLUS only in the authenticated state, causing
+Draft Assistant to refuse a capable server during preparation or before APPEND.
+Reader and guarded draft-writer connections now explicitly query CAPABILITY after
+successful LOGIN and replace the cached set before exposing the connection to
+operations. Failed discovery stops the connection; stale capabilities are never
+merged or treated as authority. No approval, protocol allowlist, default mode,
+expiry, immutable-message, single-attempt or uncertain-save policy is changed.
+
+The synthetic suite contains 128 tests. Regression coverage includes both draft
+policies during preparation, Reader and writer login order, removal of stale
+UIDPLUS, invalid/failed responses, connection cleanup, and an actual IMAP wire
+save where UIDPLUS is absent before LOGIN and present afterward. These checks do
+not connect to a real mailbox. The authenticated-capability workaround used in
+isolated acceptance testing is unnecessary with this fix; production is unchanged.

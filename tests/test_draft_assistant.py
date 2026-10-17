@@ -402,13 +402,14 @@ class DraftWireTests(DraftFixture, unittest.TestCase):
                 with peer, peer.makefile('rwb', buffering=0) as wire:
                     wire.write(b'* OK synthetic\r\n')
                     saved = None
+                    authenticated = False
                     while line := wire.readline():
                         tag, command = line.rstrip(b'\r\n').split(b' ', 1)
                         transcript.append(command)
                         if command == b'CAPABILITY':
-                            wire.write(b'* CAPABILITY IMAP4rev1 UIDPLUS\r\n')
+                            wire.write(b'* CAPABILITY IMAP4rev1' + (b' UIDPLUS' if authenticated else b'') + b'\r\n')
                         elif command.startswith(b'LOGIN '):
-                            pass
+                            authenticated = True
                         elif command == b'LIST "" "Drafts"':
                             wire.write(b'* LIST (\\Drafts) "/" "Drafts"\r\n')
                         elif command == b'EXAMINE "Drafts"':
@@ -440,6 +441,9 @@ class DraftWireTests(DraftFixture, unittest.TestCase):
             thread.join(timeout=4)
         self.assertFalse(thread.is_alive())
         self.assertEqual(failures, [])
+        login_index = next(i for i, command in enumerate(transcript) if command.startswith(b'LOGIN '))
+        self.assertEqual(transcript[login_index + 1], b'CAPABILITY')
+        self.assertLess(login_index + 1, transcript.index(b'LIST "" "Drafts"'))
         self.assertEqual(len(literals), 1)
         self.assertEqual(d.digest(literals[0]), result['mime_sha256'])
         self.assertFalse(any(c.startswith((b'STORE', b'UID STORE', b'MOVE', b'COPY', b'DELETE', b'CLOSE', b'EXPUNGE', b'SELECT')) for c in transcript))

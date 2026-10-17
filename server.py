@@ -50,6 +50,23 @@ class ReadOnlyIMAP(imaplib.IMAP4_SSL):
     """Deny commands at the protocol dispatch boundary, including future mistakes."""
     ALLOWED = frozenset({'CAPABILITY', 'LOGIN', 'LIST', 'EXAMINE', 'UID', 'LOGOUT'})
 
+    def login(self, user, password):
+        # imaplib caches pre-authentication capabilities and LOGIN does not refresh
+        # them. Both Reader and the guarded draft writer must use the AUTH set.
+        self.capabilities = ()
+        result = super().login(user, password)
+        status, rows = self.capability()
+        if status != 'OK' or not rows or not all(isinstance(row, bytes) and row for row in rows):
+            raise MailError('Authenticated capability discovery failed.')
+        try:
+            capabilities = tuple(b' '.join(rows).decode('ascii').upper().split())
+        except UnicodeError:
+            raise MailError('Authenticated capability discovery failed.') from None
+        if not capabilities:
+            raise MailError('Authenticated capability discovery failed.')
+        self.capabilities = capabilities
+        return result
+
     def _command(self, name, *args):
         if name not in self.ALLOWED:
             raise MailError('IMAP command prohibited.')
