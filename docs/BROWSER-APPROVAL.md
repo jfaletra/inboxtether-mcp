@@ -85,3 +85,62 @@ Tests use synthetic RSA-signed identity tokens, in-memory HTTP requests, protect
 Before deployment, approve the IdP/client and immutable owner mapping, HTTPS/VPN route, service accounts/group and storage/retention; validate the pinned gateway configuration, callback/refresh/logout, denial cases and cookie flags in a staging browser; check Unix peer identity/permissions on the actual Linux host; review the complete source/config diff; separately authorize any restart and dedicated live Mailcow draft acceptance test. Do not merge, release or enable production writes implicitly.
 
 Primary configuration references: [OAuth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview/), [v7.15.5](https://github.com/oauth2-proxy/oauth2-proxy/releases/tag/v7.15.5), [PyJWT validation API](https://pyjwt.readthedocs.io/en/latest/api.html). No third-party application source or competitor implementation is copied into this project.
+
+## Review interface and action boundaries
+
+The branded portal presents the complete frozen reply, all recipients (including
+Bcc), destination account and folder, and a separate untrusted reply-context panel.
+Technical threading and digest details remain available in an expandable section.
+The responsive layout stacks the save panel below the email on small screens.
+System fonts, visible keyboard focus, semantic headings and native buttons require
+no JavaScript or remote fonts. Approved project artwork is embedded locally;
+email markup stays escaped plaintext, with no remote images or links rendered.
+
+**Save to Drafts records approval only.** The assistant must complete the existing
+one-use save before expiry; the success screen does not claim that mail was saved.
+Reject closes the proposal. Expired, invalid and replayed submissions fail closed;
+errors deliberately avoid distinguishing private draft existence or integrity.
+There is no send control. A future sending action needs its own server-side
+capability, approval binding and authorization; it cannot reuse draft approval.
+
+### Practical deployment mitigations
+
+A stolen authenticated session can approve routine saves. Use HTTPS exclusively,
+a dedicated approval hostname, short IdP idle and absolute session lifetimes,
+provider MFA, prompt session revocation, and a trusted, updated personal browser.
+OAuth2 Proxy cookie refresh is not an absolute session limit: configure that limit
+at the identity provider. Offline token validation can accept a token until expiry;
+do not promise immediate revocation. For shared or higher-risk environments, add
+transaction-specific stronger verification in a future version. Never give an AI
+assistant approval-browser credentials or authenticated browser control.
+
+Staged replies are plaintext in SQLite despite restrictive filesystem permissions.
+Use an encrypted host volume, restrict administrators and backups, exclude staging
+from cloud sync and routine exports, and define short backup retention. Draft expiry
+is logical access control, not secure erasure; SQLite journals, snapshots and backups
+may retain bytes. Disk encryption protects powered-off disks, not a compromised host.
+Do not deploy on a shared untrusted host. Application-level key management is not
+introduced by this UI change.
+
+Before live Mailcow testing: review the unmerged PR, configure an IdP and dedicated
+HTTPS origin, provision separate service users and private sockets, validate proxy
+header isolation, OIDC login/logout/expiry and cross-origin refusals, then explicitly
+authorize Draft Assistant on a test mailbox. Confirm the configured Drafts folder,
+UIDPLUS behavior and exact-byte readback using synthetic mail. Production remains
+disabled until separately approved; ambiguous saves must never be retried blindly.
+
+### Synthetic interface previews and validation
+
+[Desktop review](images/approval-desktop.png) · [Mobile review](images/approval-mobile.png).
+These previews contain fabricated example.com mail, not mailbox data. Screenshot
+forms are synthetic and do not grant approval.
+
+UI refinement validation: 111 Python tests pass, including all earlier authorization,
+CSRF, expiry, replay, immutable-message and Reader regressions. Added checks cover
+branded fields/actions, escaped remote-image markup and hidden-direction text,
+authentication, closed/rejected/error states and no unintended IMAP operation.
+Headless Chrome rendered 1440 × 1100 and 390 × 844 viewports with no horizontal
+overflow; both buttons were approximately 50 pixels high. Desktop/mobile screenshots
+were visually reviewed. This is not a formal accessibility certification or a live
+IdP/Mailcow acceptance test. Strict browser/runtime and audit-tool dependency audits
+reported no known vulnerabilities. No new runtime dependency was introduced.

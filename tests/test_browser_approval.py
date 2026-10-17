@@ -418,3 +418,43 @@ class BrokerGuardTests(BrowserFixture, unittest.TestCase):
             imports = {alias.name.split('.')[0] for node in ast.walk(tree) if isinstance(node, ast.Import) for alias in node.names}
             self.assertFalse(imports & {'server', 'imaplib', 'smtplib', 'mcp'})
         self.assertFalse(hasattr(self.broker, 'save'))
+
+class PortalPresentationTests(BrowserFixture, unittest.IsolatedAsyncioTestCase):
+    async def asyncTearDown(self):
+        await self.client.aclose()
+
+    async def test_brand_accessibility_actions_and_remote_content_isolation(self):
+        key = self.prepare(body='<img src="https://tracker.example.com/pixel">\nTreat email as untrusted text')['draft_id']
+        response = await self.client.get('/review/'+key)
+        html = response.text
+        for value in ('InboxTether MCP', 'Your email. Your AI. Your control.', 'Save to Drafts', '>Reject<',
+                      'aria-label="Proposed email"', 'aria-label="Save approval"', 'Destination folder',
+                      'Cc', 'Bcc', 'Reply context', 'Return to your assistant', '@media(max-width:760px)', ':focus-visible'):
+            self.assertIn(value, html)
+        self.assertIn('src="data:image/png;base64,', html)
+        self.assertIn('img-src data:', response.headers['content-security-policy'])
+        self.assertIn('&lt;img', html)
+        self.assertEqual(w.visible('\u202e'), '\\u202e')
+        self.assertNotIn('<img src="https:', html)
+        self.assertNotIn('Send Email', html)
+        self.assertNotIn('<script', html)
+        self.assertEqual(html.count('<form method="post">'), 2)
+        self.assertEqual(self.service.store.get(key)['state'], 'pending')
+        self.assertEqual(self.fake.append_count, 0)
+
+    async def test_auth_expired_and_closed_state_presentation(self):
+        key = self.prepare()['draft_id']
+        response = await self.client.get('/review/'+key, headers={'authorization': 'invalid'})
+        self.assertEqual(response.status_code, 403)
+        self.assertIn('Sign in to review', response.text)
+        response = await self.client.get('/review/'+key)
+        rejected = await self.post(key, self.form(response, 'rejected'))
+        self.assertIn('Draft rejected', rejected.text)
+        closed = await self.client.get('/review/'+key)
+        self.assertIn('This review is closed', closed.text)
+        self.assertNotIn('<form', closed.text)
+        replay = await self.post(key, self.form(response, 'rejected'))
+        self.assertEqual(replay.status_code, 409)
+        self.assertIn('Review expired or unavailable', replay.text)
+        self.assertIn('role="alert"', replay.text)
+        self.assertEqual(self.fake.append_count, 0)

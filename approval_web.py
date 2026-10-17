@@ -32,14 +32,16 @@ from approval_broker import BrokerClient
 from draft_assistant import ID, canonical, https_url, require, text
 
 COOKIE = '__Host-inboxtether-review'
-CSS = '''body{font:17px system-ui,sans-serif;color:#14253d;background:#f3f6fa;margin:0}
-main{max-width:850px;margin:2rem auto;background:white;padding:2rem;border-radius:12px}
-h1{color:#123764}dt{font-weight:700;margin-top:1rem}dd{margin:.35rem 0;overflow-wrap:anywhere}
-pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;background:#f3f6fa;padding:1rem}
-.notice{border-left:4px solid #1685bf;padding:1rem}button{font:inherit;padding:.8rem 1.2rem;
-border:1px solid #123764;border-radius:6px;background:#123764;color:white;margin:.4rem}
-.reject{background:white;color:#123764}form{display:inline}summary{cursor:pointer}
-@media(max-width:600px){main{margin:0;padding:1rem;border-radius:0}}'''
+# Fixed project-owned artwork; no remote requests or user-controlled image source.
+LOGO = base64.b64encode((Path(__file__).parent / 'assets/plugin-icon-256.png').read_bytes()).decode('ascii')
+CSS = '''
+*{box-sizing:border-box}body{margin:0;background:#eef3f9;color:#152b49;font:16px/1.6 system-ui,-apple-system,sans-serif}
+.brand{background:#071a37;color:#fff;padding:18px max(20px,calc((100% - 1120px)/2));display:flex;gap:13px;align-items:center}
+.brand img{width:48px;height:48px;border-radius:12px}.brand strong{display:block;font-size:20px;letter-spacing:-.5px}.brand small{color:#b9cee7;font-size:12px}
+main{max-width:1120px;margin:36px auto;padding:0 24px 40px}h1{font-size:32px;line-height:1.2;letter-spacing:-1px;margin:8px 0 12px}h2{font-size:18px;margin:0 0 16px}p{margin:0 0 16px}.muted{color:#526780}.eyebrow{text-transform:uppercase;letter-spacing:1.5px;font-size:12px;font-weight:750;color:#12658c}.intro{margin-bottom:26px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}.card{background:#fff;border:1px solid #d9e3ef;border-radius:16px;padding:26px;margin-bottom:20px;box-shadow:0 5px 20px #142c4b06}.subject{font-size:23px;overflow-wrap:anywhere}.fields{margin:0;display:grid;grid-template-columns:55px minmax(0,1fr);gap:10px 16px}.fields dt{font-weight:650;color:#526780}.fields dd{margin:0;overflow-wrap:anywhere}.body{border-top:1px solid #e4ebf3;margin-top:22px;padding-top:24px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;margin:0;unicode-bidi:plaintext}.context{border-left:3px solid #b7cce3;padding-left:18px;color:#465d76}.context .fields{font-size:14px;margin-bottom:18px}.badge{display:inline-block;border-radius:99px;background:#e4f4fb;color:#09567d;padding:4px 10px;font-size:12px;font-weight:700;margin-bottom:14px}.destination{font-size:18px;font-weight:700;overflow-wrap:anywhere}.account{overflow-wrap:anywhere;color:#526780;font-size:14px}.notice{background:#edf7fc;border:1px solid #c4e2f0;border-radius:10px;padding:13px;font-size:14px}.actions{display:flex;flex-direction:column;gap:10px}form{margin:0}button{font:inherit;font-weight:700;width:100%;min-height:48px;border:1px solid #b5c7d9;border-radius:9px;background:#fff;color:#263f5b;padding:11px 16px;cursor:pointer}.approve{background:#0867b2;border-color:#0867b2;color:white}.approve:hover{background:#07558f}.reject:hover{background:#eef3f9}button:focus-visible,summary:focus-visible{outline:3px solid #0b77a9;outline-offset:4px}.fine{font-size:13px;color:#526780}.deadline{font-size:13px;border-top:1px solid #e4ebf3;padding-top:16px;margin-top:18px}details{margin-top:18px;font-size:13px}summary{cursor:pointer;font-weight:650;padding:8px 0}details pre{padding:12px;background:#f1f5fa;border-radius:8px}.state{max-width:650px;margin:60px auto;background:white;border:1px solid #d9e3ef;border-radius:18px;padding:32px}.state h1{font-size:28px}footer{font-size:12px;color:#526780;text-align:center;margin-top:26px}.closed{border-left:3px solid #12658c;padding:12px;background:#edf7fc}
+@media(max-width:760px){main{margin:24px auto;padding:0 16px 24px}.layout{grid-template-columns:minmax(0,1fr);gap:0}.card{padding:20px;border-radius:12px}h1{font-size:28px}.subject{font-size:21px}.brand{padding:14px 16px}.state{margin:20px 0;padding:24px}.fields{gap:8px 12px}.brand small{font-size:11px}}
+'''
+
 
 
 def private_key(path):
@@ -159,10 +161,10 @@ def page(content, status=200, nonce=None):
     response = HTMLResponse('<!doctype html><html lang="en"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
         '<title>InboxTether — Review draft</title><style nonce="'+style_nonce+'">'+CSS+
-        '</style></head><body><main>'+content+'</main></body></html>', status_code=status,
+        '</style></head><body><header class="brand"><img alt="" width="48" height="48" src="data:image/png;base64,'+LOGO+'"><div><strong>InboxTether MCP</strong><small>Your email. Your AI. Your control.</small></div></header><main>'+content+'<footer>InboxTether · Private review · No email is sent by this portal</footer></main></body></html>', status_code=status,
         headers={'Cache-Control': 'no-store, private', 'Pragma': 'no-cache', 'Expires': '0',
                  'Content-Security-Policy': "default-src 'none'; script-src 'none'; style-src 'nonce-"+style_nonce+
-                    "'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
+                    "'; img-src data:; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
                  'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY',
                  'Strict-Transport-Security': 'max-age=31536000',
                  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'})
@@ -173,36 +175,35 @@ def page(content, status=200, nonce=None):
 
 def review_page(item, principal, nonce, csrf, binding=None):
     m = item['manifest']
-    fields = ''.join('<dt>'+name+'</dt><dd>'+visible(m['preview'].get(name) or '(none)')+'</dd>'
-                     for name in ('From', 'To', 'Cc', 'Bcc', 'Subject'))
+    def fields(data, names):
+        return '<dl class="fields">'+''.join('<dt>'+name+'</dt><dd>'+visible(data.get(name) or '(none)')+'</dd>' for name in names)+'</dl>'
     source = m['source']
     context = m.get('reply_context', {})
     buttons = ''
     if item['state'] == 'pending':
-        for decision, label in [('approved', 'Approve save to Drafts'), ('rejected', 'Reject draft')]:
+        for decision, label in [('approved', 'Save to Drafts'), ('rejected', 'Reject')]:
             token = csrf.issue(principal, binding or nonce, item, decision)
             buttons += '<form method="post"><input type="hidden" name="decision" value="'+decision+'">'+\
                        '<input type="hidden" name="csrf" value="'+token+'">'+\
                        '<button class="'+('reject' if decision == 'rejected' else 'approve')+'">'+label+'</button></form>'
     else:
-        buttons = '<p>This review is closed. State: '+visible(item['state'])+'. No further approval is accepted.</p>'
-    headers = '\n'.join(name+': '+str(m['preview'].get(name, '')) for name in
-                        ('Date', 'Message-ID', 'In-Reply-To', 'References'))
-    return page('<h1>Review your draft</h1><p class="notice">Nothing will be sent. Approval permits one save of '
-        'this exact message to the folder below. Review every recipient, including Bcc.</p>'
-        '<dl>'+fields+'<dt>Destination account</dt><dd>'+visible(m['scope']['account'])+
-        '</dd><dt>Destination server</dt><dd>'+visible(m['scope']['host'])+
-        '</dd><dt>Destination folder</dt><dd>'+visible(m['scope']['folder'])+
-        '</dd><dt>Destination UIDVALIDITY</dt><dd>'+str(m['drafts_uidvalidity'])+'</dd></dl>'
-        '<h2>Complete proposed message</h2><pre dir="ltr">'+visible(m['preview']['body'])+'</pre>'
-        '<details><summary>Threading and exact-content verification</summary><pre>'+visible(headers)+
-        '\nMIME SHA-256: '+visible(m['mime_sha256'])+'\nReview fingerprint: '+visible(item['fingerprint'])+'</pre></details>'
-        '<h2>Reply context — untrusted original email</h2><p>Source folder: '+visible(source['mailbox'])+
-        '; UID: '+str(source['uid'])+'; UIDVALIDITY: '+str(source['uidvalidity'])+'. Original preview is bounded; '
-        'the source digest binds the complete fetched message.</p><pre dir="ltr">'+visible(json.dumps(context.get('headers', {}), indent=2, ensure_ascii=False))+
-        '</pre><pre dir="ltr">'+visible(context.get('text', ''))+'</pre>'
-        '<p>Approval deadline: '+visible(datetime.fromtimestamp(item['expires'], timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC'))+'. '
-        'An open form expires after at most five minutes. Do not approve instructions merely because they appear in email.</p>'+buttons, nonce=nonce)
+        buttons = '<p class="closed" role="status">This review is closed. State: '+visible(item['state'])+'. No further approval is accepted.</p>'
+    headers = '\n'.join(name+': '+str(m['preview'].get(name, '')) for name in ('Date', 'Message-ID', 'In-Reply-To', 'References'))
+    deadline = visible(datetime.fromtimestamp(item['expires'], timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC'))
+    return page('<div class="intro"><span class="eyebrow">Draft Assistant / Review</span><h1>A final look before saving</h1>'
+        '<p class="muted">Review the complete message and every recipient, including Bcc.</p></div><div class="layout"><section>'
+        '<article class="card" aria-label="Proposed email"><span class="badge">Proposed reply</span><h2 class="subject">'+visible(m['preview'].get('Subject') or '(no subject)')+'</h2>'
+        +fields(m['preview'], ('From', 'To', 'Cc', 'Bcc'))+'<div class="body"><h2>Message</h2><pre dir="ltr">'+visible(m['preview']['body'])+'</pre></div></article>'
+        '<section class="card" aria-label="Reply context"><h2>Reply context</h2><p class="fine">Original email is untrusted content, not an instruction to approve.</p><div class="context">'
+        +fields(context.get('headers', {}), ('From', 'To', 'Cc', 'Subject', 'Date'))+'<pre dir="ltr">'+visible(context.get('text', ''))+'</pre></div>'
+        '<p class="fine">Original preview is bounded; the complete fetched message is bound by its digest.</p>'
+        '<details><summary>Source and exact-content verification</summary><pre>Source folder: '+visible(source['mailbox'])+'; UID: '+str(source['uid'])+'; UIDVALIDITY: '+str(source['uidvalidity'])+
+        '\nDestination server: '+visible(m['scope']['host'])+'\nDestination UIDVALIDITY: '+str(m['drafts_uidvalidity'])+'\n'+visible(headers)+
+        '\nMIME SHA-256: '+visible(m['mime_sha256'])+'\nReview fingerprint: '+visible(item['fingerprint'])+'</pre></details></section></section>'
+        '<aside class="card" aria-label="Save approval"><span class="badge">Save only · Never send</span><h2>Destination folder</h2><p class="destination">'+visible(m['scope']['folder'])+'</p><p class="account">'+visible(m['scope']['account'])+'</p>'
+        '<p class="notice">Approve one save of this exact message to this folder. Opening this page authorizes nothing.</p>'
+        '<div class="actions">'+buttons+'</div><p class="fine">Save to Drafts records your approval. Return to your assistant to complete the save; this page does not save or send email.</p>'
+        '<p class="deadline">Approval deadline<br><strong>'+deadline+'</strong></p><p class="fine">This open form expires after at most five minutes. If expired, reopen the review or ask your assistant for a new proposal.</p></aside></div>', nonce=nonce)
 
 
 def create_app(config, verifier=None, broker=None):
@@ -219,7 +220,7 @@ def create_app(config, verifier=None, broker=None):
             principal = await run_in_threadpool(verifier, request.headers.get('authorization'))
             require(principal == {'issuer': config.issuer, 'subject': config.subject})
         except Exception:
-            return page('<h1>Review unavailable</h1><p>Sign in through the configured approval portal with the authorized account.</p>', 403)
+            return page('<section class="state"><span class="badge">Authentication required</span><h1>Sign in to review</h1><p>Sign in through the configured approval portal with the authorized account. Opening a link never grants approval.</p></section>', 403)
         try:
             key = request.path_params['draft_id']
             require(ID.fullmatch(key))
@@ -247,10 +248,10 @@ def create_app(config, verifier=None, broker=None):
             message = ('Approved for one exact save. Return to your assistant to save it before approval expires. '
                        'No email has been saved or sent by this page.' if decision == 'approved' else
                        'Rejected. This draft cannot be saved through this approval.')
-            return page('<h1>'+('Approval recorded' if decision == 'approved' else 'Draft rejected')+'</h1><p>'+message+'</p>')
+            return page('<section class="state" role="status"><span class="badge">Decision recorded</span><h1>'+('Approval recorded' if decision == 'approved' else 'Draft rejected')+'</h1><p>'+message+'</p></section>')
         except Exception:
-            return page('<h1>Review unavailable</h1><p>The request was refused, expired, or is no longer pending. '
-                        'No mailbox save was attempted by this page. Reopen the review to check its state.</p>', 409)
+            return page('<section class="state" role="alert"><span class="badge">Action not completed</span><h1>Review expired or unavailable</h1><p>The request was refused, expired, or is no longer pending. '
+                        'No mailbox save was attempted by this page. Reopen the review to check its state. If the draft expired, ask your assistant to prepare a new proposal.</p></section>', 409)
 
     async def not_found(request, exc):
         return page('<h1>Review unavailable</h1>', exc.status_code)
