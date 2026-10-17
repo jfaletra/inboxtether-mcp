@@ -1,8 +1,8 @@
 # Contributing
 
-Use Python 3.12 and a virtual environment, install requirements.txt, and run `python -m unittest discover -s tests -v`. Tests must use synthetic mail and never depend on live credentials. Retain tests for denied IMAP mutation commands, UID/UIDVALIDITY identity, attachment selection and limits, and MCP stdio behavior.
+Use Python 3.12 and a virtual environment, install requirements-browser.txt for the complete suite (Reader deployments only need requirements.txt), and run `python -m unittest discover -s tests -v`. Tests must use synthetic mail and never depend on live credentials. Retain tests for denied IMAP mutation commands, UID/UIDVALIDITY identity, attachment selection and limits, and MCP stdio behavior.
 
-Reader Mode remains the default. Optional Draft Assistant development uses a separate append-only adapter and trusted local approval; see docs/DRAFT-ASSISTANT.md. Preserve the Reader guard and default five-tool discovery. Test approval binding, expiry, replay, ambiguity, protocol framing and state protection with synthetic fixtures. SMTP remains unimplemented and needs a separate security design; do not loosen the command allowlist as a convenience. Do not claim a provider is compatible without verifying it.
+Reader Mode remains the default. Optional Draft Assistant development uses a separate append-only adapter and independent browser/terminal approval; see docs/DRAFT-ASSISTANT.md. Preserve the Reader guard and default five-tool discovery. Test approval binding, expiry, replay, ambiguity, protocol framing and state protection with synthetic fixtures. SMTP remains unimplemented and needs a separate security design; do not loosen the command allowlist as a convenience. Do not claim a provider is compatible without verifying it.
 
 Keep source, docs, and limits consistent. Use example.com addresses in fixtures. Never attach private mail, account screenshots, raw logs, API keys, passwords, tunnel IDs, or production configuration to an issue or pull request. Security reports follow SECURITY.md rather than public issue discussion.
 

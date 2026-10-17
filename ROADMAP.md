@@ -10,13 +10,13 @@ Mailcow is the first verified platform. Other IMAP servers require their own aut
 
 ## Draft Assistant Mode — experimental v1.1 development, disabled by default
 
-This branch implements preparation of plain-text threaded replies and a separate trusted local operator approval before one exact APPEND to a configured special-use Drafts folder. Reader tools and their command guard remain unchanged. No in-chat approval mechanism, attachments in drafts, arbitrary folder writes, SMTP, or automatic retries are supported.
+This branch implements preparation of plain-text threaded replies and a separate authenticated browser approval (terminal fallback retained) before one exact APPEND to a configured special-use Drafts folder. Reader tools and their command guard remain unchanged. No client-asserted in-chat approval mechanism, attachments in drafts, arbitrary folder writes, SMTP, or automatic retries are supported.
 
-See [the architecture and security review](docs/DRAFT-ASSISTANT.md). Synthetic IMAP/MCP tests are not live provider certification. Enabling writes, live acceptance testing, merging and releasing require separate operator approval. A future authenticated approval UI/broker would need independent design and review; native client approval prompts alone are insufficient.
+See [the architecture and security review](docs/DRAFT-ASSISTANT.md). Synthetic IMAP/MCP tests are not live provider certification. Enabling writes, live acceptance testing, merging and releasing require separate operator approval. The browser UI/broker is implemented with single-owner OIDC authentication; native client approval prompts alone remain insufficient. Multiuser routing and transaction-bound stronger verification remain future work.
 
 ## Send Assistant Mode — planned, not implemented
 
-Optional SMTP sending only after explicit approval of the exact message, enforced server-side. No SMTP client, credentials, transport, sending endpoint, or approval service exists in this implementation.
+Optional SMTP sending only after explicit approval of the exact message, enforced server-side. No SMTP client, credentials, transport, sending endpoint, or sending-approval service exists in this implementation.
 
 A future design must bind a single-use, expiring approval to the exact envelope recipients (including Bcc), sender, subject, body, attachments and their hashes, and relevant delivery options. Edits must invalidate approval. Approval must come from a trusted user interaction, not a model assertion, email content, or a boolean tool argument. Reject unapproved/changed messages and replay attempts. Define retry/idempotency behavior to avoid accidental duplicate sends.
 

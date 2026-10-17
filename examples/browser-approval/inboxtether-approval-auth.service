@@ -1,0 +1,21 @@
+# Independently installed, verified OAuth2 Proxy v7.15.5 binary; no package auto-download.
+[Unit]
+Description=InboxTether OIDC browser session gateway
+After=network-online.target inboxtether-approval-web.service
+Requires=inboxtether-approval-web.service
+[Service]
+Type=simple
+User=inboxtether-auth
+Group=inboxtether-approval
+ExecStart=/usr/local/bin/oauth2-proxy --config=/etc/inboxtether-approval/oauth2-proxy.cfg
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+InaccessiblePaths=/var/lib/inboxtether-mcp /etc/inboxtether-mcp /etc/inboxtether-approval/web
+Restart=on-failure
+RestartSec=5
+[Install]
+WantedBy=multi-user.target

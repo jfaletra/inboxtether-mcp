@@ -4,7 +4,7 @@
 
 <p align="center"><img src="assets/logo-readme.png" alt="InboxTether MCP: envelope, bridge, and circuit mark" width="360"></p>
 
-Reader-first email access for MCP clients, with bounded search, message reads, and explicitly selected attachment retrieval. This development branch adds an experimental, disabled-by-default Draft Assistant with separate local operator approval. **Mailcow is the first verified email platform.** Compatibility with other IMAP servers is a future testing goal, not a current claim.
+Reader-first email access for MCP clients, with bounded search, message reads, and explicitly selected attachment retrieval. This development branch adds an experimental, disabled-by-default Draft Assistant with independent browser approval and a protected terminal fallback. **Mailcow is the first verified email platform.** Compatibility with other IMAP servers is a future testing goal, not a current claim.
 
 Repository: [`jfaletra/inboxtether-mcp`](https://github.com/jfaletra/inboxtether-mcp). **v1.0.0 is the Reader release. This branch targets v1.1 development; it is not a v1.1 release or deployment approval.** This is an independent community project, not an official Mailcow or OpenAI integration.
 
@@ -71,9 +71,9 @@ Listing internally reads and parses the bounded complete email but returns metad
 
 ## Optional Draft Assistant (v1.1 development)
 
-`INBOXTETHER_DRAFT_ASSISTANT` defaults to `0`; existing Reader configuration needs no change. Opt-in exposes `prepare_reply_draft` and `save_approved_draft`. Preparation freezes a plain-text reply for review, including explicit To/Cc/Bcc, subject/body and threading headers. A separate trusted local operator must inspect the canonical preview and type its exact approval fingerprint. The MCP caller cannot approve a draft. The save tool accepts only the draft ID and appends those approved MIME bytes once to the fixed Drafts folder. It never sends or edits existing mail.
+`INBOXTETHER_DRAFT_ASSISTANT` defaults to `0`; existing Reader configuration needs no change. Opt-in exposes `prepare_reply_draft` and `save_approved_draft`. Preparation freezes a plain-text reply for review, including explicit To/Cc/Bcc, subject/body and threading headers. A separately authenticated browser session can review and approve each exact frozen reply when the browser service is explicitly configured; protected terminal review remains an administrative fallback. The MCP caller cannot approve a draft. The save tool accepts only the draft ID and appends those approved MIME bytes once to the fixed Drafts folder. It never sends or edits existing mail.
 
-See [Draft Assistant architecture, setup and limitations](docs/DRAFT-ASSISTANT.md). Native client prompts are supplementary: tool hints and model statements do not establish approval. Do not enable this feature or grant mailbox writes as part of a Reader update. No production write capability has been enabled.
+See [browser review and independent authentication](docs/BROWSER-APPROVAL.md) and [Draft Assistant architecture, setup and limitations](docs/DRAFT-ASSISTANT.md). Native client prompts are supplementary: tool hints and model statements do not establish approval. Do not enable this feature or grant mailbox writes as part of a Reader update. No production write capability has been enabled.
 
 ## Read-only protections and resource limits
 

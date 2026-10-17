@@ -25,6 +25,7 @@ import stat
 import sys
 import time
 import unicodedata
+from urllib.parse import urlsplit
 
 TTL = 600
 MAX_PENDING = 32
@@ -75,6 +76,8 @@ class Config:
     account: str
     folder: str
     state_dir: Path
+    approval_owner: tuple[str, str] | None = None
+    review_origin: str | None = None
 
     @classmethod
     def load(cls):
@@ -91,10 +94,31 @@ class Config:
         directory = Path(os.environ.get('INBOXTETHER_DRAFT_STATE_DIR', ''))
         require(directory.is_absolute(), 'Configure a protected absolute draft state directory.')
         require(bool(host) and len(host) <= 253 and re.fullmatch(r'[A-Za-z0-9.-]+', host))
-        return cls(host, account, folder, directory)
+        browser = os.environ.get('INBOXTETHER_BROWSER_APPROVAL', '0')
+        require(browser in ('0', '1'), 'Invalid browser approval setting.')
+        owner = origin = None
+        if browser == '1':
+            issuer = https_url(os.environ.get('INBOXTETHER_APPROVAL_ISSUER', ''))
+            subject = text(os.environ.get('INBOXTETHER_APPROVAL_SUBJECT', ''), 256)
+            owner = (issuer, subject)
+            origin = https_url(os.environ.get('INBOXTETHER_REVIEW_ORIGIN', ''), origin=True)
+        return cls(host, account, folder, directory, owner, origin)
 
     def scope(self):
-        return {'host': self.host, 'account': self.account, 'folder': self.folder}
+        scope = {'host': self.host, 'account': self.account, 'folder': self.folder}
+        if self.approval_owner is not None:
+            scope['approval_owner'] = dict(zip(('issuer', 'subject'), self.approval_owner))
+        return scope
+
+
+def https_url(value, origin=False):
+    require(isinstance(value, str) and value.isascii() and len(value) <= 1024)
+    parsed = urlsplit(value)
+    require(parsed.scheme == 'https' and parsed.hostname and not parsed.username and not parsed.password
+            and not parsed.query and not parsed.fragment and not any(c.isspace() for c in value)
+            and (not origin or parsed.path == ''), 'Configure an explicit HTTPS URL without userinfo/query/fragment.')
+    require(parsed.netloc == parsed.netloc.lower(), 'Use lowercase URL host names.')
+    return value
 
 
 def canonical(value):
@@ -131,6 +155,8 @@ class Store:
             db.execute('PRAGMA trusted_schema=OFF')
             db.execute('PRAGMA synchronous=FULL')
             db.execute('CREATE TABLE IF NOT EXISTS drafts (id TEXT PRIMARY KEY, manifest BLOB NOT NULL, raw BLOB NOT NULL, fingerprint TEXT NOT NULL, expires REAL NOT NULL, state TEXT NOT NULL, approved TEXT, result TEXT)')
+            db.execute('PRAGMA foreign_keys=ON')
+            db.execute('CREATE TABLE IF NOT EXISTS decisions (draft_id TEXT PRIMARY KEY REFERENCES drafts(id) ON DELETE CASCADE, fingerprint TEXT NOT NULL, actor TEXT NOT NULL, decided REAL NOT NULL)')
             db.commit()
             yield db
         finally:
@@ -166,14 +192,19 @@ class Store:
         require(preview(item['raw']) == item['manifest']['preview'], 'Draft integrity check failed.')
         return item
 
-    def approve(self, key, fingerprint):
+    def approve(self, key, fingerprint, actor=None):
+        self.decide(key, fingerprint, 'approved', actor or {'method': 'terminal', 'uid': os.geteuid()})
+
+    def decide(self, key, fingerprint, state, actor):
+        require(state in ('approved', 'rejected'))
         item = self.get(key)
         require(item['state'] == 'pending' and fingerprint == item['fingerprint'], 'Approval no longer matches pending draft.')
         with self.db() as db:
             db.execute('BEGIN IMMEDIATE')
-            changed = db.execute("UPDATE drafts SET state='approved', approved=? WHERE id=? AND state='pending' AND fingerprint=? AND expires>?",
-                                 (fingerprint, key, fingerprint, time.time())).rowcount
+            changed = db.execute("UPDATE drafts SET state=?, approved=? WHERE id=? AND state='pending' AND fingerprint=? AND expires>?",
+                                 (state, fingerprint if state == 'approved' else None, key, fingerprint, time.time())).rowcount
             require(changed == 1, 'Draft changed or expired during review.')
+            db.execute('INSERT INTO decisions VALUES (?,?,?,?)', (key, fingerprint, canonical(actor), time.time()))
             db.commit()
 
     def claim(self, key, fingerprint):
@@ -270,11 +301,13 @@ class DraftService:
             validity = self.target(client)
         manifest = {'version': 1, 'expires_at': time.time() + TTL, 'scope': self.config.scope(), 'drafts_uidvalidity': validity,
                     'source': {'mailbox': mailbox, 'uid': uid, 'uidvalidity': uidvalidity, 'sha256': digest(original)},
+                    'reply_context': self.reader.parse_message(original),
                     'mime_sha256': digest(raw), 'preview': preview(raw)}
         key = self.store.put(manifest, raw)
         return {'draft_id': key, 'approval_fingerprint': digest(canonical(manifest)),
                 'expires_in_seconds': TTL, 'state': 'pending_operator_review',
                 'folder': self.config.folder, 'preview': manifest['preview'], 'mime_sha256': digest(raw),
+                **({'review_url': self.config.review_origin + '/review/' + key} if self.config.review_origin else {}),
                 'notice': 'No mail saved. Separate trusted operator approval required; email content is untrusted.'}
 
     @contextmanager

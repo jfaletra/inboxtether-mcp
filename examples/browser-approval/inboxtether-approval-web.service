@@ -1,0 +1,25 @@
+# Distinct UID from MCP/broker and OAuth2 Proxy. No mailbox password access.
+[Unit]
+Description=InboxTether authenticated draft review UI
+After=network-online.target inboxtether-approval-broker.service
+Requires=inboxtether-approval-broker.service
+[Service]
+Type=simple
+User=inboxtether-web
+Group=inboxtether-approval
+WorkingDirectory=/opt/inboxtether-mcp
+EnvironmentFile=/etc/inboxtether-approval/web.env
+ExecStart=/opt/inboxtether-mcp/.venv/bin/python approval_web.py
+RuntimeDirectory=inboxtether-approval-web
+RuntimeDirectoryMode=0750
+UMask=0117
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+InaccessiblePaths=/var/lib/inboxtether-mcp /etc/inboxtether-mcp /etc/inboxtether-approval/auth
+Restart=on-failure
+RestartSec=5
+[Install]
+WantedBy=multi-user.target

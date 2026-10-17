@@ -1,0 +1,24 @@
+# Reference unit only. Provision users/group, private state and reviewed configuration first.
+[Unit]
+Description=InboxTether private approval broker
+After=local-fs.target
+[Service]
+Type=simple
+User=inboxtether-mcp
+Group=inboxtether-approval
+WorkingDirectory=/opt/inboxtether-mcp
+EnvironmentFile=/etc/inboxtether-approval/broker.env
+ExecStart=/opt/inboxtether-mcp/.venv/bin/python approval_broker.py
+RuntimeDirectory=inboxtether-approval-broker
+RuntimeDirectoryMode=0750
+UMask=0117
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+RestrictAddressFamilies=AF_UNIX
+ReadWritePaths=/var/lib/inboxtether-mcp/draft-state
+Restart=on-failure
+RestartSec=5
+[Install]
+WantedBy=multi-user.target
