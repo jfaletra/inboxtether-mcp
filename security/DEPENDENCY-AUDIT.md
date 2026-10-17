@@ -28,3 +28,7 @@ The prepared dependency-audit workflow runs on pushes, pull requests, manual dis
 Dependabot version-update configuration covers pip and GitHub Actions weekly. Dependabot alerts/security updates are separate repository settings, documented in docs/GITHUB-SETUP.md. SHA-pinned Actions are updated through Dependabot; pip-audit scans Python packages, not Actions source. No auto-merge, deployment credentials, or mailbox/network tests are configured.
 
 Sources: [pip-audit documentation](https://pypi.org/project/pip-audit/), [GitHub Dependabot Actions updates](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/secure-your-dependencies/auto-update-actions).
+
+## v1.0.0 candidate refresh
+
+Fresh strict runtime (29 packages) and auditor (27 packages) resolutions passed on October 17, 2026 with zero known vulnerabilities and zero skipped packages. See v1-candidate-dependency-audit.json. This does not audit the OS, external tunnel binary or runner image. The unmerged MCP 2.x proposal is incompatible with the current import; the reviewed 1.30.0 runtime pin remains unchanged.

@@ -19,4 +19,4 @@ All active artwork uses InboxTether MCP; the untouched historical reference is t
 
 The previous owner authorization covers public distribution of the approved design and project derivatives, kept outside MIT. This new name/derivative set is still subject to final publication approval. Branding rights remain reserved under assets/BRANDING-RIGHTS.txt; no general reuse license, registered-trademark status, or legal clearance is claimed. See docs/NAMING-REVIEW.md for the unresolved TETHER software-mark risk.
 
-Original bytes are preserved; exports were resized/palette-compressed separately, visually reviewed, and checked for requested dimensions/byte limits. No asset was uploaded to GitHub or a live plugin. Production branding and configuration were not changed.
+Original bytes are preserved; exports were resized/palette-compressed separately, visually reviewed, and checked for requested dimensions/byte limits. Branding assets are now stored in the Private GitHub source repository; the live plugin icon was not changed. Production branding and configuration were not changed.

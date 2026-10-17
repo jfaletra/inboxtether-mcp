@@ -2,6 +2,8 @@
 
 Review date: October 17, 2026. Scope: this repository's source, synthetic tests, docs, examples, branding files, Git index, and reachable local Git objects. This is a preparation review, not an independent security audit.
 
+This original preparation snapshot predates private hosting. For the v1.0 candidate, use security/V1-RELEASE-REVIEW.md and the exact-candidate CI evidence.
+
 ## Findings and changes
 
 - Removed private deployment host/account/password-file settings from public source; operator environment variables now use example-domain defaults. Application behavior otherwise matches the verified Reader implementation.
@@ -20,4 +22,4 @@ An authorized client can invoke retrieval without human confirmation; identifier
 
 ## Before publication
 
-The intended repository is jfaletra/inboxtether-mcp. The owner has confirmed branding distribution permission while excluding artwork from MIT. Creation is still unauthorized; the first hosted repository must be Private, with Public visibility a separate later approval. Configure GitHub private vulnerability reporting (or a suitable private contact) before accepting public security reports. Retain the dependency-audit workflow and Dependabot configuration; review their findings and proposed updates before merging. A dated pip-audit report is included. Future scans can discover new advisories; no finding has been suppressed. Run the prepared CI once hosted. Branding uploads and live plugin-icon changes are separate actions, not implied by publishing source.
+The intended repository is jfaletra/inboxtether-mcp. The owner has confirmed branding distribution permission while excluding artwork from MIT. The repository now exists privately; Public visibility remains a separate approval. Configure GitHub private vulnerability reporting (or a suitable private contact) before accepting public security reports. Retain the dependency-audit workflow and Dependabot configuration; review their findings and proposed updates before merging. A dated pip-audit report is included. Future scans can discover new advisories; no finding has been suppressed. Run the prepared CI once hosted. Branding uploads and live plugin-icon changes are separate actions, not implied by publishing source.

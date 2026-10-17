@@ -17,5 +17,7 @@
   "runtime": "Python 3.12",
   "source_license": "MIT",
   "branding_license": "reserved rights; owner-authorized project distribution",
-  "distribution": "source repository; no PyPI package or hosted endpoint published"
+  "distribution": "source repository; no PyPI package or hosted endpoint published",
+  "version": "1.0.0",
+  "release_status": "candidate; not tagged or published"
 }
