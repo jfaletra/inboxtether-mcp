@@ -13,3 +13,5 @@ Validated October 17, 2026 for `jfaletra/inboxtether-mcp`.
 - Native private vulnerability reporting is documented for public repositories. Enable it during separately approved public-release preparation; do not use public issues for secrets. Discussions also remain a public-release preparation item.
 
 Public release remains blocked on separate owner authorization, review of the naming concerns in NAMING-REVIEW.md, and resolution or explicit acceptance of the unavailable hosted protections. This validation does not provide legal clearance or certify the software as vulnerability-free.
+
+Pull-request validation also passed under the restricted Actions policy: [51-test run](https://github.com/jfaletra/inboxtether-mcp/actions/runs/39049871900) and [strict dependency audits](https://github.com/jfaletra/inboxtether-mcp/actions/runs/39049871850). Both required status sources are bound to GitHub Actions. Dependabot independently opened a major-version MCP update proposal; it was not merged, and the reviewed mcp==1.30.0 pin remains in main.
