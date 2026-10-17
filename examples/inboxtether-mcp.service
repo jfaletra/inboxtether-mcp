@@ -1,0 +1,25 @@
+# SKELETON: requires an operator-configured and tested client launcher.
+# The launcher must own MCP stdio or launch a tunnel that owns it.
+# Do not install this unit until run-configured-client exists and is tested.
+[Unit]
+Description=InboxTether MCP client and Reader backend
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=inboxtether-mcp
+Group=inboxtether-mcp
+WorkingDirectory=/opt/inboxtether-mcp
+EnvironmentFile=/etc/inboxtether-mcp/config.env
+ExecStart=/opt/inboxtether-mcp/run-configured-client
+Restart=always
+RestartSec=10
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

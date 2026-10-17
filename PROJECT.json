@@ -1,0 +1,21 @@
+{
+  "name": "inboxtether-mcp",
+  "display_name": "InboxTether MCP",
+  "tagline": "Your email. Your AI. Your control.",
+  "repository": "jfaletra/inboxtether-mcp",
+  "initial_visibility": "private",
+  "implemented_modes": [
+    "reader"
+  ],
+  "planned_modes": [
+    "draft-assistant",
+    "send-assistant"
+  ],
+  "verified_email_platforms": [
+    "Mailcow"
+  ],
+  "runtime": "Python 3.12",
+  "source_license": "MIT",
+  "branding_license": "reserved rights; owner-authorized project distribution",
+  "distribution": "source repository; no PyPI package or hosted endpoint published"
+}

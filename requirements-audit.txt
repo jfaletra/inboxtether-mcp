@@ -1,0 +1,2 @@
+# Development/CI tool only; not required by the Reader service.
+pip-audit==2.10.1

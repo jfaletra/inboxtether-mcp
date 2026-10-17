@@ -1,0 +1,11 @@
+InboxTether MCP branding
+
+Artwork under assets/ is excluded from the MIT source-code license.
+On October 17, 2026, the project owner confirmed permission to publicly distribute
+the approved logo and the prepared derivatives as InboxTether MCP project branding.
+This permission is recorded from the owner's explicit statement, not inferred
+from the image or asserted as independent legal/trademark clearance.
+
+No general license to reuse, modify, sublicense, or use the branding for another
+project is granted. Other artwork rights remain reserved by their respective
+owner(s). No registered trademark status or exclusivity is claimed.

@@ -1,0 +1,453 @@
+{
+  "audit_date": "2026-10-17",
+  "tool": "pip-audit",
+  "tool_version": "2.10.1",
+  "advisory_service": "PyPI / Python Packaging Advisory Database",
+  "automatic_fixes": false,
+  "scope": {
+    "fresh_runtime_resolution": {
+      "package_count": 29,
+      "findings": 0,
+      "dependencies": [
+        {
+          "name": "mcp",
+          "version": "1.30.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "httpx",
+          "version": "0.28.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "httpcore",
+          "version": "1.0.9",
+          "vulnerabilities": []
+        },
+        {
+          "name": "pydantic",
+          "version": "2.14.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "pydantic-core",
+          "version": "2.50.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "annotated-types",
+          "version": "0.8.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "anyio",
+          "version": "4.15.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "h11",
+          "version": "0.16.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "httpx-sse",
+          "version": "0.4.3",
+          "vulnerabilities": []
+        },
+        {
+          "name": "idna",
+          "version": "3.20",
+          "vulnerabilities": []
+        },
+        {
+          "name": "jsonschema",
+          "version": "4.26.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "attrs",
+          "version": "26.1.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "jsonschema-specifications",
+          "version": "2025.9.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "pydantic-settings",
+          "version": "2.16.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "pyjwt",
+          "version": "2.15.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "cryptography",
+          "version": "50.0.2",
+          "vulnerabilities": []
+        },
+        {
+          "name": "cffi",
+          "version": "2.1.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "python-dotenv",
+          "version": "1.2.4",
+          "vulnerabilities": []
+        },
+        {
+          "name": "python-multipart",
+          "version": "0.0.32",
+          "vulnerabilities": []
+        },
+        {
+          "name": "referencing",
+          "version": "0.37.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "rpds-py",
+          "version": "2026.9.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "sse-starlette",
+          "version": "3.5.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "starlette",
+          "version": "1.8.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "typing-extensions",
+          "version": "4.16.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "typing-inspection",
+          "version": "0.4.4",
+          "vulnerabilities": []
+        },
+        {
+          "name": "uvicorn",
+          "version": "0.54.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "click",
+          "version": "8.5.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22",
+          "vulnerabilities": []
+        },
+        {
+          "name": "pycparser",
+          "version": "3.11",
+          "vulnerabilities": []
+        }
+      ]
+    },
+    "verified_linux_runtime_snapshot": {
+      "package_count": 29,
+      "findings": 0,
+      "dependencies": [
+        {
+          "name": "pyjwt",
+          "version": "2.15.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "annotated-types",
+          "version": "0.8.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "anyio",
+          "version": "4.15.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "attrs",
+          "version": "26.1.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22",
+          "vulnerabilities": []
+        },
+        {
+          "name": "cffi",
+          "version": "2.1.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "click",
+          "version": "8.5.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "cryptography",
+          "version": "50.0.2",
+          "vulnerabilities": []
+        },
+        {
+          "name": "h11",
+          "version": "0.16.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "httpcore",
+          "version": "1.0.9",
+          "vulnerabilities": []
+        },
+        {
+          "name": "httpx",
+          "version": "0.28.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "httpx-sse",
+          "version": "0.4.3",
+          "vulnerabilities": []
+        },
+        {
+          "name": "idna",
+          "version": "3.20",
+          "vulnerabilities": []
+        },
+        {
+          "name": "jsonschema",
+          "version": "4.26.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "jsonschema-specifications",
+          "version": "2025.9.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "mcp",
+          "version": "1.30.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "pycparser",
+          "version": "3.11",
+          "vulnerabilities": []
+        },
+        {
+          "name": "pydantic",
+          "version": "2.14.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "pydantic-settings",
+          "version": "2.16.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "pydantic-core",
+          "version": "2.50.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "python-dotenv",
+          "version": "1.2.4",
+          "vulnerabilities": []
+        },
+        {
+          "name": "python-multipart",
+          "version": "0.0.32",
+          "vulnerabilities": []
+        },
+        {
+          "name": "referencing",
+          "version": "0.37.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "rpds-py",
+          "version": "2026.9.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "sse-starlette",
+          "version": "3.5.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "starlette",
+          "version": "1.8.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "typing-inspection",
+          "version": "0.4.4",
+          "vulnerabilities": []
+        },
+        {
+          "name": "typing-extensions",
+          "version": "4.16.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "uvicorn",
+          "version": "0.54.0",
+          "vulnerabilities": []
+        }
+      ]
+    },
+    "ci_auditor_resolution": {
+      "package_count": 27,
+      "findings": 0,
+      "dependencies": [
+        {
+          "name": "pip-audit",
+          "version": "2.10.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "cyclonedx-python-lib",
+          "version": "11.12.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "license-expression",
+          "version": "30.4.4",
+          "vulnerabilities": []
+        },
+        {
+          "name": "packageurl-python",
+          "version": "0.17.6",
+          "vulnerabilities": []
+        },
+        {
+          "name": "py-serializable",
+          "version": "2.1.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "defusedxml",
+          "version": "0.7.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "sortedcontainers",
+          "version": "2.4.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "typing-extensions",
+          "version": "4.16.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "boolean-py",
+          "version": "5.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "cachecontrol",
+          "version": "0.14.4",
+          "vulnerabilities": []
+        },
+        {
+          "name": "msgpack",
+          "version": "1.2.3",
+          "vulnerabilities": []
+        },
+        {
+          "name": "filelock",
+          "version": "4.2.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "pip-api",
+          "version": "0.0.35",
+          "vulnerabilities": []
+        },
+        {
+          "name": "pip-requirements-parser",
+          "version": "32.0.1",
+          "vulnerabilities": []
+        },
+        {
+          "name": "platformdirs",
+          "version": "4.13.3",
+          "vulnerabilities": []
+        },
+        {
+          "name": "requests",
+          "version": "2.34.2",
+          "vulnerabilities": []
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.5.2",
+          "vulnerabilities": []
+        },
+        {
+          "name": "idna",
+          "version": "3.20",
+          "vulnerabilities": []
+        },
+        {
+          "name": "urllib3",
+          "version": "2.8.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "certifi",
+          "version": "2026.7.22",
+          "vulnerabilities": []
+        },
+        {
+          "name": "rich",
+          "version": "15.0.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "pygments",
+          "version": "2.21.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "markdown-it-py",
+          "version": "4.2.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "mdurl",
+          "version": "0.1.2",
+          "vulnerabilities": []
+        },
+        {
+          "name": "tomli",
+          "version": "2.5.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "tomli-w",
+          "version": "1.2.0",
+          "vulnerabilities": []
+        },
+        {
+          "name": "pyparsing",
+          "version": "3.3.3",
+          "vulnerabilities": []
+        }
+      ]
+    }
+  },
+  "rename_validation": "Rerun after InboxTether MCP rename on 2026-10-17; the installed Linux snapshot is prior read-only evidence, not a newly modified deployment."
+}

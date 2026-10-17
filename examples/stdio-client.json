@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "inboxtether": {
+      "command": "/opt/inboxtether-mcp/.venv/bin/python",
+      "args": ["/opt/inboxtether-mcp/server.py"],
+      "env": {
+        "INBOXTETHER_IMAP_HOST": "mail.example.com",
+        "INBOXTETHER_ACCOUNT": "user@example.com",
+        "INBOXTETHER_PASSWORD_FILE": "/etc/inboxtether-mcp/imap-password"
+      }
+    }
+  }
+}
