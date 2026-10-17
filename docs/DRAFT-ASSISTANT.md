@@ -1,6 +1,10 @@
 # Draft Assistant: v1.1 development architecture and security review
 
+> Draft Assistant policy: Reader remains the default. Optional Basic Mode delegates confirmation to the MCP client; it does not independently verify human approval. Secure Mode retains independent approval. Neither is enabled by default. See [Draft modes and client limitations](DRAFT-MODES.md).
+
 Status: implemented on the development branch, **disabled by default**, tested with synthetic mail only. No running deployment, mailbox ACL, credential, tunnel or production service is changed. Mailcow remains the first verified **Reader** platform; Draft Assistant has no live provider certification. Send Assistant is not implemented.
+
+The architecture below describes **Secure Mode** unless otherwise stated. Basic Mode uses the same frozen-message and single-attempt save engine but explicitly delegates approval authority to the client. Its save_draft tool requires the complete frozen confirmation object; see [Draft modes](DRAFT-MODES.md).
 
 ## Architecture and invariants
 

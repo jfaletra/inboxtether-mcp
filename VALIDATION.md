@@ -43,3 +43,18 @@ Fresh strict advisory audits passed with zero known vulnerabilities and zero ski
 ## Browser approval development
 
 109 synthetic tests pass locally, retaining all 84 earlier tests and all 55 Reader regressions. New evidence covers independent OIDC signature/issuer/audience/subject/expiry validation; secure CSRF/session binding, explicit decisions, rejection/replay/concurrency; HTML escaping and complete proposed previews; Unix peer authentication and 660 socket/600 key permissions; actual Uvicorn private-socket HTTP operation; and the browser-to-broker-to-approved-save path. No identity-provider login or real mail/production connection is performed. The optional Python dependency audit covers 29 packages with zero known vulnerabilities or skips. Current implementation and deployment limits are in docs/BROWSER-APPROVAL.md and security/DRAFT-ASSISTANT-REVIEW.md.
+
+## Basic/Secure draft policy validation
+
+122 synthetic automated tests pass after introducing Basic Mode: the prior 111
+regressions plus 11 Basic Mode tests. Added coverage includes explicit enablement
+and acknowledgment, exclusive tool registration, actual stdio MCP schema/error
+handling, complete confirmation binding, unchanged MIME/threading, mode isolation,
+source/destination checks, expiry/tamper/rejection, concurrent single APPEND and
+uncertain-save replay. The recorded Basic decision explicitly says human_verified
+is false. No tests access live mail or enable a deployed service.
+
+Interactive ChatGPT/Claude approval UI acceptance remains **not performed**. Basic
+Mode is not recommended for ChatGPT until a separate synthetic-only client test
+shows all proposed content and requires confirmation for successive saves. See
+[client release gate](docs/DRAFT-MODES.md). Protocol tests do not prove UI behavior.

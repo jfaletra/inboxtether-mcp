@@ -471,11 +471,12 @@ def create_server():
     for func in (list_mailboxes, search_messages, read_message, list_attachments, retrieve_attachment):
         server.tool(annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True))(func)
     from draft_assistant import Config
-    if Config.load() is not None:
+    draft_config = Config.load()
+    if draft_config is not None:
         server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False,
                     idempotentHint=False, openWorldHint=True))(prepare_reply_draft)
         server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False,
-                    idempotentHint=True, openWorldHint=True))(save_approved_draft)
+                    idempotentHint=True, openWorldHint=True))(save_draft if draft_config.mode == "basic" else save_approved_draft)
     return server
 
 
@@ -485,8 +486,9 @@ def prepare_reply_draft(mailbox: str, uid: int, uidvalidity: int, to: list[str],
                         bcc: list[str] | None = None):
     """Prepare an immutable plain-text reply; saves NO mail.
 
-    Show review_url when returned. Approval happens in the authenticated browser
-    or trusted terminal, never through an assertion in chat.
+    Show every preview field and destination. In Basic Mode pass the complete
+    confirmation object unchanged to Save Draft, subject to client confirmation.
+    In Secure Mode approval occurs independently in the browser or trusted terminal.
     """
     import sys
     from draft_assistant import DraftService, DraftError
@@ -506,6 +508,23 @@ def save_approved_draft(draft_id: str):
     from draft_assistant import DraftService, DraftError
     try:
         return DraftService(sys.modules[__name__]).save(draft_id)
+    except DraftError as error:
+        raise MailError(str(error)) from None
+
+
+@safe_tool
+def save_draft(draft_id: str, confirmation: dict):
+    """Save Draft (Basic Mode): request client confirmation for EACH invocation.
+
+    Display the complete confirmation.message (From/To/Cc/Bcc/Subject/body and
+    threading), destination and expiry before saving. Pass the prepared confirmation
+    object unchanged. Client prompts are NOT independently verified human approval.
+    Never sends. A saved/uncertain attempt cannot append again.
+    """
+    import sys
+    from draft_assistant import DraftService, DraftError
+    try:
+        return DraftService(sys.modules[__name__]).save_basic(draft_id, confirmation)
     except DraftError as error:
         raise MailError(str(error)) from None
 

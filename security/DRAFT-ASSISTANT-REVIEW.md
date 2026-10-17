@@ -37,3 +37,20 @@ Review caught and addressed a framework socket-default issue: Uvicorn's direct u
 OAuth2 Proxy v7.15.5 was selected after inspecting its official release/advisories. That release addresses the published skip-auth path, spoofed client-IP and callback-logging issues (GHSA-63jm-59jj-478j, GHSA-wr5q-7wxw-x568, GHSA-hhqp-vx7f-5c6m). Examples define no auth-exempt routes or trusted-IP bypasses and disable request/auth/verbose error logging. This is not a full Go/transitive binary audit; the official binary/checksum and provider callback/refresh/logout behavior must be verified in the chosen staging deployment. No external auth binary is vendored or installed automatically.
 
 State is still unencrypted and subject to documented journal/backup retention. Session theft or compromised trusted browser/web/host authority remains a risk; v1.1 does not enforce per-approval passkeys. Future multiuser policy must derive mailbox grants from verified principals, not accept user-selected tenant identities. This implementation intentionally remains single-owner per instance. See docs/BROWSER-APPROVAL.md for configuration, supported OIDC shape and remaining acceptance gates.
+
+## Basic Mode policy boundary
+
+Basic Mode is a separate, explicit operator delegation to the MCP client, not a
+replacement proof of human approval. It requires both the master opt-in and a
+literal client-controlled-approval acknowledgment. Secure remains the default
+policy, Reader remains the default capability set, and no automatic downgrade is
+implemented. Basic/browser configuration conflicts fail closed. Frozen records are
+bound to the mode, so switching policy cannot consume a record from the other mode.
+
+The Basic save tool carries the full frozen message and destination for client
+inspection and rejects missing/changed/extra details. A model can reproduce these
+values; they provide integrity, not independent authorization. The private decision
+receipt identifies client-controlled authority and human_verified=false. Shared
+save safeguards remain unchanged. An authorized client with disabled prompts can
+save unreviewed drafts; prompt injection remains a material Basic Mode risk.
+Secure browser/terminal approval remains available without changing its authority.

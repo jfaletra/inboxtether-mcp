@@ -78,6 +78,7 @@ class Config:
     state_dir: Path
     approval_owner: tuple[str, str] | None = None
     review_origin: str | None = None
+    mode: str = "secure"
 
     @classmethod
     def load(cls):
@@ -85,6 +86,12 @@ class Config:
         require(switch in ('0', '1'), 'Invalid Draft Assistant setting.')
         if switch == '0':
             return None
+        mode = os.environ.get('INBOXTETHER_DRAFT_MODE', 'secure')
+        require(mode in ('basic', 'secure'), 'Invalid draft mode; no fallback is permitted.')
+        if mode == 'basic':
+            require(os.environ.get('INBOXTETHER_BASIC_ACK') == 'I_ACCEPT_CLIENT_CONTROLLED_APPROVAL',
+                    'Basic Mode requires acknowledgment of client-controlled approval.')
+            require(os.environ.get('INBOXTETHER_BROWSER_APPROVAL', '0') == '0', 'Basic and browser approval cannot be combined.')
         host = os.environ.get('INBOXTETHER_IMAP_HOST', 'mail.example.com')
         account = address(os.environ.get('INBOXTETHER_ACCOUNT', 'user@example.com'))
         folder = os.environ.get('INBOXTETHER_DRAFTS_FOLDER', '')
@@ -102,10 +109,12 @@ class Config:
             subject = text(os.environ.get('INBOXTETHER_APPROVAL_SUBJECT', ''), 256)
             owner = (issuer, subject)
             origin = https_url(os.environ.get('INBOXTETHER_REVIEW_ORIGIN', ''), origin=True)
-        return cls(host, account, folder, directory, owner, origin)
+        return cls(host, account, folder, directory, owner, origin, mode)
 
     def scope(self):
         scope = {'host': self.host, 'account': self.account, 'folder': self.folder}
+        if self.mode == 'basic':
+            scope['approval_mode'] = 'basic'
         if self.approval_owner is not None:
             scope['approval_owner'] = dict(zip(('issuer', 'subject'), self.approval_owner))
         return scope
@@ -305,10 +314,13 @@ class DraftService:
                     'mime_sha256': digest(raw), 'preview': preview(raw)}
         key = self.store.put(manifest, raw)
         return {'draft_id': key, 'approval_fingerprint': digest(canonical(manifest)),
-                'expires_in_seconds': TTL, 'state': 'pending_operator_review',
+                'expires_in_seconds': TTL, 'state': 'pending_client_confirmation' if self.config.mode == 'basic' else 'pending_operator_review',
+                'mode': self.config.mode, 'confirmation': self.confirmation(self.store.get(key)),
                 'folder': self.config.folder, 'preview': manifest['preview'], 'mime_sha256': digest(raw),
                 **({'review_url': self.config.review_origin + '/review/' + key} if self.config.review_origin else {}),
-                'notice': 'No mail saved. Separate trusted operator approval required; email content is untrusted.'}
+                'notice': ('No mail saved. Client confirmation is not independently verified human approval; email content is untrusted.'
+                           if self.config.mode == 'basic' else
+                           'No mail saved. Separate trusted operator approval required; email content is untrusted.')}
 
     @contextmanager
     def writer(self):
@@ -327,7 +339,28 @@ class DraftService:
                     pass
             r.LOCK.release()
 
+    def confirmation(self, item):
+        # Full frozen fields travel as tool arguments so clients can display them.
+        m = item['manifest']
+        return {'message': m['preview'], 'destination': m['scope'],
+                'drafts_uidvalidity': m['drafts_uidvalidity'], 'expires_at': m['expires_at'],
+                'mime_sha256': m['mime_sha256'], 'fingerprint': item['fingerprint']}
+
+    def save_basic(self, key, confirmation):
+        require(self.config.mode == 'basic', 'Basic Mode is not enabled.')
+        item = self.store.get(key)
+        require(isinstance(confirmation, dict) and canonical(confirmation) == canonical(self.confirmation(item)),
+                'Confirmation details differ from the frozen draft.')
+        if item['state'] == 'pending':
+            # This records delegated client authority, NEVER independently verified human approval.
+            self.store.approve(key, item['fingerprint'], {'method': 'client-controlled-basic', 'human_verified': False})
+        return self._save(key)
+
     def save(self, key):
+        require(self.config.mode == 'secure', 'Use the Basic Mode Save Draft tool with complete confirmation details.')
+        return self._save(key)
+
+    def _save(self, key):
         item = self.store.get(key)
         if item['state'] in ('saved', 'attempting', 'uncertain'):
             return json.loads(item['result']) if item['result'] else {'status': 'uncertain', 'retry_allowed': False}

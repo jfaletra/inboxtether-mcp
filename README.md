@@ -1,5 +1,7 @@
 # InboxTether MCP
 
+> Draft Assistant policy: Reader remains the default. Optional Basic Mode delegates confirmation to the MCP client; it does not independently verify human approval. Secure Mode retains independent approval. Neither is enabled by default. See [Draft modes and client limitations](docs/DRAFT-MODES.md).
+
 **Your email. Your AI. Your control.**
 
 <p align="center"><img src="assets/logo-readme.png" alt="InboxTether MCP: envelope, bridge, and circuit mark" width="360"></p>
@@ -71,9 +73,9 @@ Listing internally reads and parses the bounded complete email but returns metad
 
 ## Optional Draft Assistant (v1.1 development)
 
-`INBOXTETHER_DRAFT_ASSISTANT` defaults to `0`; existing Reader configuration needs no change. Opt-in exposes `prepare_reply_draft` and `save_approved_draft`. Preparation freezes a plain-text reply for review, including explicit To/Cc/Bcc, subject/body and threading headers. A separately authenticated browser session can review and approve each exact frozen reply when the browser service is explicitly configured; protected terminal review remains an administrative fallback. The MCP caller cannot approve a draft. The save tool accepts only the draft ID and appends those approved MIME bytes once to the fixed Drafts folder. It never sends or edits existing mail.
+`INBOXTETHER_DRAFT_ASSISTANT` defaults to `0`; existing Reader configuration needs no change. Opt-in exposes draft preparation and one mode-specific save tool. **Basic Mode** uses client-controlled confirmation without an approval website or identity provider; it does not prove human approval. **Secure Mode** retains separately authenticated browser or terminal approval. Both freeze the message, bind destination and expiry, and perform one exact-byte verified save. They never send or edit existing mail. See [mode configuration and client limitations](docs/DRAFT-MODES.md).
 
-See [browser review and independent authentication](docs/BROWSER-APPROVAL.md) and [Draft Assistant architecture, setup and limitations](docs/DRAFT-ASSISTANT.md). Native client prompts are supplementary: tool hints and model statements do not establish approval. Do not enable this feature or grant mailbox writes as part of a Reader update. No production write capability has been enabled.
+See [browser review and independent authentication](docs/BROWSER-APPROVAL.md) and [Draft Assistant architecture, setup and limitations](docs/DRAFT-ASSISTANT.md). In Secure Mode native client prompts are supplementary. In Basic Mode the operator explicitly delegates authority to the client; tool hints and model statements do not prove human approval. Do not enable this feature or grant mailbox writes as part of a Reader update. No production write capability has been enabled.
 
 ## Read-only protections and resource limits
 
@@ -95,7 +97,7 @@ Tests use synthetic mail, mocks, socket pairs, and local MCP stdio sessions. The
 
 ## Planned modes
 
-See [ROADMAP.md](ROADMAP.md). Draft Assistant has an experimental implementation on this branch and requires separate opt-in and operator approval; no live compatibility claim is made. Send Assistant remains planned and unimplemented. Reader Mode remains the default.
+See [ROADMAP.md](ROADMAP.md). Draft Assistant has an experimental implementation on this branch and requires explicit opt-in and a selected approval policy; no live client compatibility claim is made. Send Assistant remains planned and unimplemented. Reader Mode remains the default.
 
 ## License and branding
 
