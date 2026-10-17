@@ -1,6 +1,6 @@
 # Community and security-reporting preparation
 
-The repository is Private during release preparation. Discussions have been enabled privately; no announcement or welcome post has been sent. Discussions content below is prepared for the separately approved launch; no public announcement is sent by this file.
+The source repository is Public following owner authorization. Discussions is enabled; no announcement or welcome post has been sent. Discussions content below is prepared for the separately approved launch; no public announcement is sent by this file.
 
 ## Discussions
 
@@ -12,7 +12,7 @@ Welcome to InboxTether MCP. Reader Mode is available first: read-only search, bo
 
 ## Private vulnerability reporting launch gate
 
-Native researcher reporting is documented for Public repositories. After separately authorized visibility change, enable it in repository Settings → Advanced Security and verify Security → Advisories → Report a vulnerability from an appropriate reporter view. Confirm maintainer access and repository security notifications, using synthetic data only. Do not invite reports until this works; if unavailable, pause release until a private channel exists. No personal contact address is invented here.
+Private vulnerability reporting is now enabled. The Security → Advisories → Report a vulnerability entry point was verified in a signed-out public view. GitHub authentication is required to submit; no test report was submitted. Maintain and reverify this setting in repository Settings → Advanced Security. Confirm maintainer access and repository security notifications, using synthetic data only. Do not invite reports until this works; if unavailable, pause release until a private channel exists. No personal contact address is invented here.
 
 Suggested report: affected version/commit, impact, reproduction using synthetic mail, relevant environment versions, and a proposed fix if known. Exclude real secrets and mailbox contents. Acknowledgment/remediation timelines are best effort; this volunteer project has no guaranteed SLA.
 

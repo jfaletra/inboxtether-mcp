@@ -19,5 +19,5 @@
   "branding_license": "reserved rights; owner-authorized project distribution",
   "distribution": "source repository; no PyPI package or hosted endpoint published",
   "version": "1.0.0",
-  "release_status": "candidate; not tagged or published"
+  "release_status": "approved candidate; public source; no tag or GitHub release published"
 }
