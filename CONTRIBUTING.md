@@ -7,3 +7,7 @@ Reader Mode remains the default and only implemented mode. Draft-writing and SMT
 Keep source, docs, and limits consistent. Use example.com addresses in fixtures. Never attach private mail, account screenshots, raw logs, API keys, passwords, tunnel IDs, or production configuration to an issue or pull request. Security reports follow SECURITY.md rather than public issue discussion.
 
 Review dependency changes and upstream advisories before release. CI is test-only, has read-only repository permissions, and needs no secrets. Passing CI does not replace review of file handling and security boundaries.
+
+## Pull requests and community
+
+Use a topic branch and the PR template. Describe behavior, risks and meaningful validation; all test/audit/hygiene checks must pass on the reviewed head. While private-plan branch enforcement is unavailable, the maintainer must manually verify the exact SHA before merging; a green check alone does not restrict pushes. Do not merge MCP 2.x until the SDK migration is separately implemented/tested. See docs/COMMUNITY.md for discussion categories and private security reporting. Security issues must never use public issue templates.

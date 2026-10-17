@@ -29,6 +29,12 @@ Use a dedicated mailbox app password and protected parent directories. Keep secr
 
 ## Reporting a vulnerability
 
-Private reporting setup is documented in docs/GITHUB-SETUP.md. The intended repository is jfaletra/inboxtether-mcp, initially Private only after approval. Native researcher private vulnerability reporting is documented by GitHub for public repositories, so its external form cannot be fully validated during the private stage. No personal email address is included in this prepared package. Do not open a public issue with credentials, private domains/IPs, mail, logs, or exploit material containing personal data. If the eventual repository enables GitHub private vulnerability reporting, use that channel; its availability has not yet been configured.
+Use the [security policy](https://github.com/jfaletra/inboxtether-mcp/security/policy) and, when enabled, Security → Advisories → **Report a vulnerability**. Native researcher reporting is not available during this private stage and must be enabled/verified before public release. If the form is absent, do not open a public issue/Discussion or upload exploit material: wait for a maintainer-provided private channel. No personal contact address is published or invented here. See docs/COMMUNITY.md for the launch procedure and synthetic-report fields.
 
-Code tests and the preparation review are not an independent penetration test. The dated dependency advisory report is in security/DEPENDENCY-AUDIT.md. See VALIDATION.md for evidence and outstanding checks.
+Never include real mailbox content, secrets, private domains/IPs, or raw logs. Privately describe affected version, impact, and minimal synthetic reproduction. Responses are best effort, without a guaranteed SLA.
+
+## Repository security limitations
+
+Private-stage native secret scanning/push protection is unavailable and the saved main ruleset is not enforced under the current plan. The release candidate adds full-history credential-pattern scanning to CI and retains exact-SHA human review, synthetic tests and strict dependency audits. These are detective checks, not a preventive branch policy or exhaustive DLP. Before Public release verify actual enforced required checks, native secret scanning/push protection where available, private vulnerability reporting, notifications and community guidance; see docs/RELEASE-CHECKLIST.md. No paid plan or account-wide setting is changed by this preparation.
+
+Code tests and this review are not an independent penetration test. Dependency advisory results are dated and may change. See VALIDATION.md and security/DEPENDENCY-AUDIT.md for evidence and limitations.

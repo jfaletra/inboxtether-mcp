@@ -19,4 +19,4 @@ examples/inboxtether-mcp.service is a systemd skeleton for supervising an operat
 
 ## Publishing this source
 
-Publication does not deploy a service, publish a ChatGPT plugin, or enable any write/send capability. The owner has authorized artwork distribution and selected jfaletra/inboxtether-mcp. Repository creation still requires explicit approval and must initially be Private. Hosted validation must precede any separate Public-visibility approval; enable Discussions during public-release preparation. See docs/GITHUB-SETUP.md. No remote, push, release, public endpoint, or production cutover is authorized by these instructions.
+Publication does not deploy a service, publish a ChatGPT plugin, or enable any write/send capability. The owner has authorized artwork distribution and selected jfaletra/inboxtether-mcp. The repository has been created privately with approval. Hosted validation must precede any separate Public-visibility approval; enable Discussions during public-release preparation. See docs/GITHUB-SETUP.md. Only private source preparation is authorized at this stage; Public visibility, tags, releases and production cutover remain separate approvals.
