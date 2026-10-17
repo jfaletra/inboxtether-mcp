@@ -91,3 +91,28 @@ Prepared release notes: RELEASE-NOTES-v1.1.0.md. Reader upgrade/optional opt-in 
 rollback: docs/UPGRADING-v1.1.md. These files do not authorize publication.
 
 Final review rerun: 128 tests passed; runtime, browser and audit-tool strict advisory audits found no known vulnerabilities; dependency consistency passed. Exact v1.0.0 comparison confirms five identical Reader schemas, 11 unchanged Reader functions and the unchanged protocol guard except the authenticated login refresh.
+
+## v1.2 final review — supersedes earlier Send/Sent test limitations
+
+Runtime candidate `b92ab52` adds Secure-only Send and optional Sent filing, both
+disabled by default. 217 local tests run:215 pass, two privileged Linux cases skip
+on macOS and pass in hosted isolation CI. All five Reader tool schemas exactly
+match v1.1;24 existing Reader definitions are identical, with only optional tool
+registration changed. Draft/browser implementation and dependency requirements
+are unchanged from v1.1. Tests cover exact approval, expiry/replay/concurrency,
+TLS/refusals, IPC/startup isolation, failed/uncertain sends/appends and recovery.
+
+Separately authorized isolated Mailcow acceptance verified dedicated protocol-only
+credentials, TLS1.3/hostname validation, SMTP acceptance, authenticated UIDPLUS and
+special-use Sent, one independently approved send-and-file, one exact matching
+Sent copy using BODY.PEEK, preserved prior receipt and final disabled state. The
+operator confirmed recipient receipt and Sent visibility. An initial read-only
+discovery harness reporting error occurred after EXAMINE, with socket closure/no
+retry; subsequent verification logged out cleanly. Live failure injection, other
+providers and actual v1.2 ChatGPT/Claude UI remain unverified.
+
+Encrypted off-host backup/quarantine restore covered both receipt tables, private
+configuration/pin and synthetic secret canaries; historical uncertainty/claims
+remained non-retryable. A final actual test-state snapshot decrypted and verified
+off-host. This does not prove an arbitrary operator's backup or disk encryption.
+See security/V1.2-RELEASE-REVIEW.md and docs/UPGRADING-v1.2.md.

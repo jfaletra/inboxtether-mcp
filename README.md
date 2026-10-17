@@ -99,11 +99,11 @@ Tests use synthetic mail, mocks, socket pairs, and local MCP stdio sessions. The
 
 Sending remains disabled by default. This branch adds `prepare_send_message` and `send_request_status` only when explicitly configured. Neither tool sends or approves. A separately owned Linux process holds SMTP credentials/staging; the trusted operator must review the exact identity, recipients (including Bcc), body, threading and attachment bytes/hashes, then approve one submission through its terminal. Client confirmation cannot authorize sending. There is **no Basic Send Mode**, no browser Send action and no Sent-folder write unless optional, independently approved Sent synchronization is explicitly configured.
 
-Preparation and status work independently of Draft Assistant enablement. Durable single-attempt records prevent replay/concurrent resubmission; ambiguous outcomes are never automatically retried. SMTP acceptance does not guarantee final delivery or global exactly-once semantics. See [architecture, disabled deployment examples, approval workflow, Sent-folder configuration and security limitations](docs/SEND-ASSISTANT.md). An isolated controlled Mailcow SMTP submission was accepted and recipient delivery confirmed; Sent synchronization has only synthetic/mock validation. No live v1.2 MCP client behavior is claimed verified.
+Preparation and status work independently of Draft Assistant enablement. Durable single-attempt records prevent replay/concurrent resubmission; ambiguous outcomes are never automatically retried. SMTP acceptance does not guarantee final delivery or global exactly-once semantics. See [architecture, disabled deployment examples, approval workflow, Sent-folder configuration and security limitations](docs/SEND-ASSISTANT.md). An isolated controlled Mailcow SMTP submission was accepted and recipient delivery confirmed; A controlled isolated Mailcow send-and-file also verified exact Sent MIME, and the operator confirmed recipient receipt and Sent visibility. No live v1.2 MCP client behavior is claimed verified.
 
 ## Planned modes
 
-See [ROADMAP.md](ROADMAP.md). Draft Assistant requires explicit opt-in and a selected approval policy. Secure Send Assistant has an unreleased, mock-tested v1.2 implementation with independent trusted terminal approval and no Basic Send Mode; live SMTP and browser-send compatibility are unverified. Reader Mode remains the default.
+See [ROADMAP.md](ROADMAP.md). Draft Assistant requires explicit opt-in and a selected approval policy. Secure Send Assistant has an unreleased v1.2 implementation with controlled isolated Mailcow SMTP/Sent acceptance, independent trusted terminal approval and no Basic Send Mode. Browser-send and other-provider compatibility remain unverified. Reader Mode remains the default.
 
 ## License and branding
 
@@ -122,3 +122,7 @@ See the [release checklist](docs/RELEASE-CHECKLIST.md), [release notes](RELEASE-
 ## v1.1 release review
 
 See [prepared release notes](RELEASE-NOTES-v1.1.0.md), [installation and upgrade](docs/UPGRADING-v1.1.md), and [candidate security assessment](security/V1.1-RELEASE-REVIEW.md). These documents do not authorize deployment, merging, tagging or publication.
+
+## v1.2 release candidate
+
+See [prepared v1.2.0 release notes](RELEASE-NOTES-v1.2.0.md), [upgrade and rollback](docs/UPGRADING-v1.2.md), and [final security review](security/V1.2-RELEASE-REVIEW.md). These are preparation materials; PR #6 remains unmerged and all new send/filing capabilities remain disabled by default.

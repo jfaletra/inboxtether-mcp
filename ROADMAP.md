@@ -14,9 +14,9 @@ Basic Mode delegates confirmation to the MCP client with explicit acknowledgment
 
 ## Secure Send Assistant — unreleased v1.2 implementation
 
-The v1.2 feature branch implements separately owned SMTP authority, independent trusted terminal approval, bounded message/attachment staging, preparation/status-only MCP tools, verified TLS, durable single-attempt records and uncertain-outcome handling. Disabled by default, with no Basic Send Mode. Tests are synthetic/mock-only; no real SMTP deployment or provider compatibility has been established. See [Send Assistant](docs/SEND-ASSISTANT.md).
+The v1.2 feature branch implements separately owned SMTP authority, independent trusted terminal approval, bounded message/attachment staging, preparation/status-only MCP tools, verified TLS, durable single-attempt records and uncertain-outcome handling. Disabled by default, with no Basic Send Mode. Automated tests use synthetic data/mocks; a separately approved isolated Mailcow send-and-file test verified SMTP acceptance and exact Sent bytes, with operator-confirmed recipient/Sent visibility. This does not certify other providers or client UIs. See [Send Assistant](docs/SEND-ASSISTANT.md).
 
-Browser send approval and automatic IMAP Sent-folder synchronization remain planned and unimplemented. They require separate security review, explicit send-versus-save authority, live authentication validation and delivery/copy reconciliation. Failed Sent filing must never cause SMTP resubmission. A release, deployment, credential provisioning or live send requires explicit approval.
+Optional IMAP Sent synchronization is implemented and disabled by default, with approved destination binding, separate credentials, one-use filing claims and conservative reconciliation. Browser send approval remains planned and unimplemented; it requires separate review, explicit send-versus-save authority and live authentication validation. Failed Sent filing must never cause SMTP resubmission. A release, deployment, credential provisioning or live send requires explicit approval.
 
 ## Other proposals
 
