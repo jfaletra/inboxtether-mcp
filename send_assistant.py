@@ -30,7 +30,7 @@ import time
 from types import SimpleNamespace
 
 from draft_assistant import address, canonical, digest, recipients, reply_bytes, text
-from send_client import SendError, peer_uid, receive, require, transmit
+from send_client import IPC_SECONDS, SendError, peer_uid, receive, remaining, require, transmit
 
 TTL = 600
 MAX_MIME = 1_048_576
@@ -87,21 +87,24 @@ class SenderConfig:
     state_dir: Path
     socket_path: Path
     client_uid: int
+    enabled: bool = False
 
     @classmethod
-    def load(cls, path):
+    def load(cls, path, read_only=False):
         obj = json.loads(private_file(path))
-        require(obj.pop('enabled', False) is True, 'Sending is disabled.')
+        enabled = obj.pop('enabled', False)
+        require(type(enabled) is bool and (enabled or read_only), 'Sending is disabled.')
         require(obj.pop('mode', None) == 'secure', 'Only Secure Send Mode exists.')
-        require(set(obj) == set(cls.__dataclass_fields__), 'Unknown or missing sender configuration.')
+        require(set(obj) == set(cls.__dataclass_fields__) - {'enabled'}, 'Unknown or missing sender configuration.')
         obj = dict(obj)
         for field in ('password_file', 'state_dir', 'socket_path'):
             obj[field] = Path(obj[field])
-        cfg = cls(**obj)
+        cfg = cls(**obj, enabled=enabled)
         cfg.validate()
         return cfg
 
     def validate(self):
+        require(type(self.enabled) is bool, 'Invalid sending setting.')
         address(self.identity)
         text(self.smtp_username, 254)
         require(isinstance(self.smtp_host, str) and re.fullmatch(r'[A-Za-z0-9.-]{1,253}', self.smtp_host))
@@ -254,13 +257,18 @@ class SendStore:
         manifest = json.loads(item['manifest'])
         require(canonical(manifest) == item['manifest'] and digest(item['manifest']) == item['fingerprint'], 'Send integrity failure.')
         require(digest(item['raw']) == manifest['mime_sha256'] and message_view(item['raw']) == manifest['preview'], 'Send integrity failure.')
-        require(manifest['expires_at'] == item['expires'] and manifest['scope'] == self.config.scope(), 'Send configuration changed.')
+        require(manifest['expires_at'] == item['expires'], 'Send integrity failure.')
         item['manifest'] = manifest
         return item
+
+    def eligible(self, item):
+        require(self.config.enabled, 'Sending is disabled.')
+        require(item['manifest']['scope'] == self.config.scope(), 'Send configuration changed; prepare a new review.')
 
     def claim(self, key, fingerprint):
         # Approval and durable single-use claim are one transaction; no MCP operation can call this.
         item = self.get(key)
+        self.eligible(item)
         require(fingerprint == item['fingerprint'], 'Reviewed content changed.')
         with self.db() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -290,20 +298,34 @@ class SendService:
         self.config, self.store = config, SendStore(config)
 
     def prepare(self, arguments):
+        require(self.config.enabled, 'Sending is disabled.')
         manifest, raw = prepare_message(self.config, arguments)
         key = self.store.put(manifest, raw)
         return {'send_id': key, 'fingerprint': digest(canonical(manifest)), 'manifest': manifest,
                 'status': 'pending_independent_approval', 'notice': 'No email sent. Approval is only through the trusted operator interface.'}
 
-    def status(self, key):
+    def status(self, key, trusted=False):
         item = self.store.get(key)
+        scope = item['manifest']['scope']
+        # Historical operator reads survive all config changes. IPC never accepts
+        # trusted=True: a new mailbox identity/client UID must not inherit receipts.
+        if not trusted:
+            require(scope.get('identity') == self.config.identity and scope.get('client_uid') == self.config.client_uid,
+                    'Receipt belongs to a different owner; use the trusted operator interface.')
         status = item['state']
         if status == 'attempting':
-            status = 'uncertain'  # Includes worker still running; never claim delivery or retry.
+            status = 'uncertain'
         if status == 'pending' and item['expires'] <= time.time():
             status = 'expired'
-        return {'status': status, 'retry_allowed': False, 'sent_copy': 'not-written',
-                'mime_sha256': item['manifest']['mime_sha256']}
+        result = {'status': status, 'retry_allowed': False, 'sent_copy': 'not-written',
+                  'mime_sha256': item['manifest']['mime_sha256'],
+                  'configuration_matches': scope == self.config.scope(), 'sending_enabled': self.config.enabled}
+        if trusted:
+            receipt = json.loads(item['result']) if item['result'] else None
+            require(receipt is None or (isinstance(receipt, dict) and receipt.get('status') == item['state']),
+                    'Invalid historical receipt.')
+            result.update(approved_scope=scope, receipt=receipt)
+        return result
 
     def approve_and_send(self, key, fingerprint):
         item = self.store.claim(key, fingerprint)
@@ -323,6 +345,7 @@ def submit(config, item):
     result = {'status': 'failed', 'retry_allowed': False, 'sent_copy': 'not-written',
               'mime_sha256': item['manifest']['mime_sha256']}
     try:
+        require(config.enabled, 'Sending is disabled.')
         secret = private_file(config.password_file).decode('utf-8').rstrip('\r\n')
         require(secret and len(secret) <= 4096 and not any(c in secret for c in '\r\n\x00'))
         context = ssl.create_default_context()
@@ -376,8 +399,27 @@ def dispatch(service, operation, arguments):
     raise SendError('Operation is not exposed to MCP.')
 
 
+def handle_connection(service, config, connection, seconds=IPC_SECONDS):
+    # One absolute monotonic deadline covers header, body, response and error path.
+    # Never reset the budget for an incomplete frame or a rejected request.
+    deadline = time.monotonic() + seconds
+    try:
+        require(peer_uid(connection) == config.client_uid, 'Unauthorized IPC identity.')
+        packet = receive(connection, deadline)
+        require(set(packet) == {'operation', 'arguments'})
+        remaining(deadline)
+        result = dispatch(service, packet['operation'], packet['arguments'])
+        transmit(connection, {'ok': True, 'result': result}, deadline)
+    except Exception:
+        try:
+            transmit(connection, {'ok': False, 'error': 'Send request rejected.'}, deadline)
+        except Exception:
+            pass
+
+
 def serve(config):
     config.validate()
+    require(config.enabled, 'Sending is disabled.')
     trusted_ancestors(config.state_dir)
     trusted_ancestors(config.socket_path.parent)
     parent = config.socket_path.parent
@@ -394,19 +436,7 @@ def serve(config):
             while True:
                 connection, _ = listener.accept()
                 with connection:
-                    connection.settimeout(5)
-                    try:
-                        require(peer_uid(connection) == config.client_uid, 'Unauthorized IPC identity.')
-                        packet = receive(connection)
-                        require(set(packet) == {'operation', 'arguments'})
-                        result = dispatch(service, packet['operation'], packet['arguments'])
-                        transmit(connection, {'ok': True, 'result': result})
-                    except Exception:
-                        # No server replies, message content, credentials, or identifiers logged.
-                        try:
-                            transmit(connection, {'ok': False, 'error': 'Send request rejected.'})
-                        except Exception:
-                            pass
+                    handle_connection(service, config, connection)
         finally:
             config.socket_path.unlink(missing_ok=True)
 
@@ -429,6 +459,7 @@ def approve_interactively(service, key, review_dir=None, incoming=None, outgoing
     incoming, outgoing = incoming or sys.stdin, outgoing or sys.stdout
     require(incoming.isatty() and outgoing.isatty(), 'Independent approval requires a trusted interactive terminal.')
     item = service.store.get(key)
+    service.store.eligible(item)
     require(item['state'] == 'pending' and item['expires'] > time.time(), 'Send is no longer pending or has expired.')
     if item['manifest']['preview']['attachments']:
         require(review_dir is not None, 'Export and inspect attachments before approval.')
@@ -442,7 +473,9 @@ def approve_interactively(service, key, review_dir=None, incoming=None, outgoing
     return service.approve_and_send(key, item['fingerprint'])
 
 
-def main():
+def main(bootstrap_verified=False):
+    require(bootstrap_verified and sys.flags.isolated and sys.flags.no_site,
+            'Use the administrator-installed isolated sender entrypoint.')
     parser = argparse.ArgumentParser(description='Trusted local send authority; never expose to an AI shell.')
     parser.add_argument('--config', type=Path, required=True)
     parser.add_argument('command', choices=('serve', 'review', 'approve-send', 'reject', 'status'))
@@ -451,7 +484,7 @@ def main():
     args = parser.parse_args()
     os.umask(0o077)
     try:
-        config = SenderConfig.load(args.config)
+        config = SenderConfig.load(args.config, read_only=args.command in ('review', 'status', 'reject'))
         trusted_installation(config, args.config)
         service = SendService(config)
         if args.command == 'serve':
@@ -470,11 +503,11 @@ def main():
             service.store.reject(args.send_id)
             print('{"status":"rejected"}')
         else:
-            print(json.dumps(service.status(args.send_id)))
+            print(json.dumps(service.status(args.send_id, trusted=True)))
     except Exception:
         print('Trusted send operation failed or was cancelled; inspect status before any further action.', file=sys.stderr)
         raise SystemExit(1) from None
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit('Use the administrator-installed isolated sender entrypoint.')

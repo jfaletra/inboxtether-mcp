@@ -6,7 +6,7 @@ Reader remains the default. Existing v1.1 Basic/Secure Draft Assistant tools and
 
 The MCP account can request preparation and status through a bounded local Unix socket. Linux `SO_PEERCRED` authenticates its numeric UID; group membership alone does not authorize it. The client also verifies the sender's kernel peer UID and socket ownership/mode. Non-Linux sending fails closed; Reader and Draft Assistant remain available as before.
 
-A different non-root OS account owns the sender configuration, SMTP password file, private staging database and terminal approval command. Never give the model shell/filesystem/database access to this account, its code, its Python runtime, its sudo rights, or a root tool. Code and its ancestors must be root/sender owned and not group/other writable. Directory checks accept root-owned sticky temporary-directory boundaries for synthetic testing; production belongs under administrator-controlled `/opt`, `/etc`, `/var/lib` and `/run` paths. The supplied broker service permits only AF_UNIX sockets, so it cannot submit SMTP even if its request dispatch is accidentally expanded. The trusted CLI, run separately by the operator, performs approval and one SMTP submission.
+A different non-root OS account owns the sender configuration, SMTP password file, private staging database and terminal approval command. Never give the model shell/filesystem/database access to this account, its code, its Python runtime, its sudo rights, or a root tool. The installed launcher, bootstrap, application code and Python runtime must be administrator-owned and not writable by either service account; mutable state/configuration remain sender-owned. Directory checks accept root-owned sticky temporary-directory boundaries for synthetic testing; production belongs under administrator-controlled `/opt`, `/etc`, `/var/lib` and `/run` paths. The supplied broker service permits only AF_UNIX sockets, so it cannot submit SMTP even if its request dispatch is accidentally expanded. The trusted CLI, run separately by the operator, performs approval and one SMTP submission.
 
 Host, administrator, trusted sender account, Python runtime, and operator compromise remain outside the guarantee. A TTY is an accidental-use guard, not proof of human identity. Do not connect the trusted CLI to an AI-controlled terminal, log collector or session recorder. Native ChatGPT/Claude/MCP prompts are supplementary and never authorize sending. No model statement, tool argument, callback URL, or secret link can grant approval.
 
@@ -17,8 +17,17 @@ No new Python dependencies are needed. Deployment needs Linux, a separate non-ro
 - `examples/secure-send/sender.json.example`: `enabled=false`, `mode=secure`.
 - `examples/secure-send/mcp.env.example`: `INBOXTETHER_SEND_ASSISTANT=0`; no SMTP secret/configuration.
 - `examples/secure-send/inboxtether-send.service`: optional preparation/status broker, no TCP socket authority and no automatic restart.
+- `examples/secure-send/inboxtether-send`: administrator-installed sanitized launcher; `send_bootstrap.py` validates administrator-owned runtime/code before importing application modules.
 
 Before any installation, review the account/group assignments and numeric UIDs. Examples use placeholders, not actual assigned users. The sender must not share the MCP UID. Only the designated MCP account joins the IPC group. Socket directory is sender-owned `0750` with IPC group; socket is `0660`. State is sender-owned `0700`; configuration, SQLite DB, SMTP secret and exports are `0600`. Keep protected paths outside the checkout. Set umask `0077` for trusted commands. Use root-owned immutable source and Python runtime accessible to the sender, not a checkout or environment writable by the MCP account. Do not expose this IPC endpoint publicly.
+
+### Mandatory sanitized launch, before credentials
+
+Install the fixed-path shell entrypoint root-owned `0755` as `/usr/local/libexec/inboxtether-send`, the four source files (`send_bootstrap.py`, `send_assistant.py`, `send_client.py`, `draft_assistant.py`) root-owned/non-writable under `/opt/inboxtether-send`, and an administrator-owned Python runtime at the template's fixed interpreter path. Root-owned directories must not be group/other writable. Verify interpreter, shell, bootstrap and ancestors independently before executing them: an application cannot defend against its own already-compromised interpreter or launcher. Normal administrator-controlled authentication/service launch must also exclude loader injection or tracing; the wrapper cannot undo code executed before it starts.
+
+The launcher uses `env -i` with only fixed PATH, locale and timezone, then Python `-I -S -B`. This ignores Python environment/user-site paths and disables site initialization, `.pth` files and sitecustomize/usercustomize. No SMTP credentials are accepted through environment variables. Python bootstrap verifies isolation flags, exact sanitized environment, runtime/search-path ownership and all four source files **before application imports or configuration/credential reads**. Only then is the verified source directory added to the isolated import path. Send authority is stdlib-only; normal venv site-packages are deliberately unavailable. Direct invocation of `send_assistant.py` is unsupported and cannot invoke its main command.
+
+As the intended sender account, validate `/usr/local/libexec/inboxtether-send --help` under the reviewed installation **before provisioning any SMTP credential**. The command performs bootstrap checks but reads no credential/configuration and makes no SMTP connection. Do not bypass a failure using a raw interpreter, `-c`, PYTHONPATH, relaxed permissions or shared MCP-owned code. Deployment tests include a hostile-environment control showing the old launch executes a harmless hook, while the new launcher ignores environment hooks and venv `.pth` files and rejects unsafe source ownership before import. These are CI fixtures, not evidence an uninspected live installation is safe.
 
 The sender JSON pins the From/envelope identity, SMTP host/port, TLS mode (`implicit` or mandatory `starttls`), authentication username, password-file reference, authorized MCP UID, state and socket paths. There are no caller-controlled SMTP identities, hosts, credential paths or TLS bypasses. Credential value is read only by the trusted CLI after the durable claim. Provision **separate SMTP credentials** later through a secure local process, and verify the provider's actual submission-only/sender restrictions. Providers differ; a separate password does not itself prove reduced permissions. No credentials were created for development.
 
@@ -35,8 +44,8 @@ Bcc stays in the protected approval manifest/envelope, **not** in transmitted MI
 The trusted operator uses a separately authenticated host session, then runs the trusted account's command (paths below are deployment placeholders, not instructions to enable this branch):
 
 ```sh
-/opt/inboxtether-send/venv/bin/python -B /opt/inboxtether-send/send_assistant.py --config /etc/inboxtether-send/sender.json review SEND_ID
-/opt/inboxtether-send/venv/bin/python -B /opt/inboxtether-send/send_assistant.py --config /etc/inboxtether-send/sender.json approve-send SEND_ID
+/usr/local/libexec/inboxtether-send --config /etc/inboxtether-send/sender.json review SEND_ID
+/usr/local/libexec/inboxtether-send --config /etc/inboxtether-send/sender.json approve-send SEND_ID
 ```
 
 The terminal shows all recipients, identity, destination, subject, full body, threading/reply context, attachment metadata/hashes and expiry. Only typing `SEND <complete fingerprint>` on that trusted interactive terminal approves and submits. Rejection/status are separate terminal commands; the MCP endpoint cannot approve, reject or submit. `send_request_status` is the only status MCP tool. IDs/fingerprints are references, not approval tokens.
@@ -46,6 +55,14 @@ For attachments, `approve-send` requires `--review-dir` naming an existing empty
 ## Attachment limits and limitations
 
 At most five attachments; each nonempty decoded payload at most 256 KiB, combined 512 KiB; final MIME at most 1 MiB. Allowed types/extensions: UTF-8 plain text/.txt, PDF/.pdf, PNG/.png and JPEG/.jpg or .jpeg. Type, extension, signature and text/control validation are conservative safeguards, **not malware scanning**. Archives, Office files, HTML, nested messages, paths, URLs, duplicate names and unsupported types are rejected. Bytes are never fetched by URL or path. Allowed files can still be malicious; hashes bind bytes, not safety or reviewer comprehension.
+
+## IPC deadlines and historical receipts
+
+Header, body, response and error writes share a single five-second monotonic deadline from broker acceptance. Each read gets only the remaining budget; slow or incomplete clients cannot renew it by dripping bytes. An expired error path closes immediately rather than allocating another timeout. Client connect/send/receive likewise share a ten-second budget. Size limits, bounded local validation and SQLite timeouts remain separate safeguards; this is not a hard realtime scheduler or an unbounded worker pool. CI verifies a slow authorized peer is disconnected and a queued healthy request resumes on the real Linux broker.
+
+Historical integrity checks are separate from current send eligibility. The trusted operator's `status` command returns retained accepted/failed/uncertain receipts and their original approved scope even after SMTP host, port, TLS, authentication identity, sender or client-UID changes. Read-only `status`, `review` and `reject` also work when the JSON has `enabled=false`; preparation, serving and claims remain disabled. State must remain available at its configured location; moving it needs an explicit migration/reconciliation plan.
+
+MCP status is deliberately narrower: old receipts remain readable only when the original sending identity **and** authorized MCP UID still match. Transport/credential-reference changes do not hide those minimal receipts; identity/UID changes require the trusted operator instead. IPC never accepts a `trusted` override or exposes historical message bodies/scopes. Every new claim and interactive approval still requires the exact current scope plus explicit enablement, pending state and expiry. Historical read access does not authorize resubmission, and no receipt is reset or deleted by configuration changes.
 
 ## Single attempt, SMTP outcomes and recovery
 

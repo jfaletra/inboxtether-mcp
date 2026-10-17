@@ -8,8 +8,10 @@ from pathlib import Path
 import socket
 import stat
 import struct
+import time
 
 MAX_FRAME = 2_097_152
+IPC_SECONDS = 5.0
 
 
 class SendError(Exception):
@@ -27,11 +29,22 @@ def peer_uid(connection):
     return struct.unpack('3i', connection.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, 12))[1]
 
 
-def receive(connection):
+def remaining(deadline):
+    value = deadline - time.monotonic()
+    require(value > 0, 'Send IPC deadline exceeded.')
+    return value
+
+
+def receive(connection, deadline=None):
+    deadline = time.monotonic() + IPC_SECONDS if deadline is None else deadline
     def exact(length):
         result = bytearray()
         while len(result) < length:
-            block = connection.recv(min(65536, length - len(result)))
+            connection.settimeout(remaining(deadline))
+            try:
+                block = connection.recv(min(65536, length - len(result)))
+            except TimeoutError:
+                raise SendError('Send IPC deadline exceeded.') from None
             require(bool(block), 'Incomplete send IPC frame.')
             result.extend(block)
         return bytes(result)
@@ -41,14 +54,23 @@ def receive(connection):
         value = json.loads(exact(length))
     except (ValueError, UnicodeError):
         raise SendError('Invalid send IPC frame.') from None
+    remaining(deadline)
     require(isinstance(value, dict), 'Invalid send IPC frame.')
     return value
 
 
-def transmit(connection, value):
+def transmit(connection, value, deadline=None):
+    deadline = time.monotonic() + IPC_SECONDS if deadline is None else deadline
+    remaining(deadline)
     raw = json.dumps(value, ensure_ascii=True, allow_nan=False, separators=(',', ':')).encode('ascii')
     require(0 < len(raw) <= MAX_FRAME, 'Send IPC size limit exceeded.')
-    connection.sendall(struct.pack('!I', len(raw)) + raw)
+    connection.settimeout(remaining(deadline))
+    try:
+        # sendall's timeout covers the entire send, not each buffer write.
+        connection.sendall(struct.pack('!I', len(raw)) + raw)
+    except TimeoutError:
+        raise SendError('Send IPC deadline exceeded.') from None
+    remaining(deadline)
 
 
 @dataclass(frozen=True)
@@ -79,11 +101,12 @@ def request(operation, arguments, config=None):
         require(stat.S_ISSOCK(info.st_mode) and info.st_uid == config.sender_uid
                 and stat.S_IMODE(info.st_mode) == 0o660, 'Unsafe sender socket.')
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
-            connection.settimeout(10)
+            deadline = time.monotonic() + 10.0
+            connection.settimeout(remaining(deadline))
             connection.connect(str(config.path))
             require(peer_uid(connection) == config.sender_uid, 'Unexpected sender identity.')
-            transmit(connection, {'operation': operation, 'arguments': arguments})
-            response = receive(connection)
+            transmit(connection, {'operation': operation, 'arguments': arguments}, deadline)
+            response = receive(connection, deadline)
         require(response.get('ok') is True, 'Trusted sender rejected the request.')
         require(isinstance(response.get('result'), dict), 'Invalid sender response.')
         return response['result']

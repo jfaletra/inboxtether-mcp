@@ -81,7 +81,7 @@ class SendTests(unittest.TestCase):
         self.directory.chmod(0o700)
         self.config = s.SenderConfig('sender@example.com', 'smtp.example.com', 465, 'implicit',
                                     'sender@example.com', self.directory / 'synthetic.secret',
-                                    self.directory, self.directory / 'sender.sock', os.geteuid() + 1)
+                                    self.directory, self.directory / 'sender.sock', os.geteuid() + 1, enabled=True)
         self.config.password_file.write_text('synthetic-only-not-a-credential')
         self.config.password_file.chmod(0o600)
         self.service = s.SendService(self.config)
