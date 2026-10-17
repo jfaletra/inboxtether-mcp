@@ -1,4 +1,4 @@
-"""Fixed-account, read-only InboxTether MCP. Email data is always untrusted."""
+"""Fixed-account InboxTether MCP; Reader default, separately approved draft opt-in."""
 from __future__ import annotations
 
 import base64
@@ -79,6 +79,26 @@ class ReadOnlyIMAP(imaplib.IMAP4_SSL):
         if self._wire_bytes > MAX_WIRE:
             raise MailError('Mailbox response exceeds safety limit.')
         return result
+
+
+class DraftAppendIMAP(ReadOnlyIMAP):
+    """Separate append-only adapter; Reader connections never use this class."""
+
+    def permit_exact_append(self, mailbox, raw):
+        if getattr(self, '_append_permit', None) is not None:
+            raise MailError('Append already authorized.')
+        self._append_permit = (quoted(mailbox), raw)
+
+    def _command(self, name, *args):
+        if name != 'APPEND':
+            return super()._command(name, *args)
+        permit = getattr(self, '_append_permit', None)
+        # Consume before any wire operation; never grant a reusable write mode.
+        self._append_permit = None
+        if (permit is None or args != (permit[0], '(\\Draft)', None)
+                or self.literal != permit[1]):
+            raise MailError('Unapproved draft append prohibited.')
+        return imaplib.IMAP4._command(self, name, *args)
 
 
 def password():
@@ -450,7 +470,40 @@ def create_server():
     server = FastMCP('InboxTether MCP', instructions=NOTICE)
     for func in (list_mailboxes, search_messages, read_message, list_attachments, retrieve_attachment):
         server.tool(annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True))(func)
+    from draft_assistant import Config
+    if Config.load() is not None:
+        server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False,
+                    idempotentHint=False, openWorldHint=True))(prepare_reply_draft)
+        server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False,
+                    idempotentHint=True, openWorldHint=True))(save_approved_draft)
     return server
+
+
+@safe_tool
+def prepare_reply_draft(mailbox: str, uid: int, uidvalidity: int, to: list[str],
+                        subject: str, body: str, cc: list[str] | None = None,
+                        bcc: list[str] | None = None):
+    """Prepare an immutable plain-text reply for separate operator review; saves NO mail."""
+    import sys
+    from draft_assistant import DraftService, DraftError
+    try:
+        return DraftService(sys.modules[__name__]).prepare(mailbox, uid, uidvalidity, to, subject, body, cc, bcc)
+    except DraftError as error:
+        raise MailError(str(error)) from None
+
+
+@safe_tool
+def save_approved_draft(draft_id: str):
+    """Save exactly one separately operator-approved draft. No approval boolean/token accepted.
+
+    Never sends. Uncertain attempts are not retried; reconcile privately with the operator.
+    """
+    import sys
+    from draft_assistant import DraftService, DraftError
+    try:
+        return DraftService(sys.modules[__name__]).save(draft_id)
+    except DraftError as error:
+        raise MailError(str(error)) from None
 
 
 if __name__ == '__main__':

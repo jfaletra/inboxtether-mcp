@@ -8,7 +8,6 @@
     "reader"
   ],
   "planned_modes": [
-    "draft-assistant",
     "send-assistant"
   ],
   "verified_email_platforms": [
@@ -19,5 +18,9 @@
   "branding_license": "reserved rights; owner-authorized project distribution",
   "distribution": "source repository; no PyPI package or hosted endpoint published",
   "version": "1.0.0",
-  "release_status": "approved candidate; public source; no tag or GitHub release published"
+  "release_status": "v1.0.0 Reader released; optional Draft Assistant development is unreleased and disabled by default",
+  "experimental_modes": [
+    "draft-assistant"
+  ],
+  "development_target": "1.1"
 }

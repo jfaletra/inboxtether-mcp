@@ -11,3 +11,8 @@ secrets/
 *.key
 *.log
 .DS_Store
+
+# Draft approval state is private and must stay outside the checkout.
+*.sqlite3
+*.sqlite3-*
+draft-state/

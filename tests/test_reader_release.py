@@ -23,7 +23,8 @@ class ReaderReleaseTests(unittest.TestCase):
                 client._command('UID', operation, '1', 'INBOX')
 
     def test_no_smtp_transport_import_in_application(self):
-        tree = ast.parse(Path(s.__file__).read_text())
+        tree = ast.parse(Path(s.__file__).read_text() + '\n' +
+                         Path(s.__file__).with_name('draft_assistant.py').read_text())
         imports = {alias.name.split('.')[0] for node in ast.walk(tree)
                    if isinstance(node, ast.Import) for alias in node.names}
         imports |= {node.module.split('.')[0] for node in ast.walk(tree)

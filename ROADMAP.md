@@ -8,11 +8,11 @@ Fixed-account, read-only folder listing, structured mailbox search, bounded mess
 
 Mailcow is the first verified platform. Other IMAP servers require their own authentication, folder encoding, search, MIME, read-only, and recovery testing before compatibility can be claimed.
 
-## Draft Assistant Mode — planned, not implemented
+## Draft Assistant Mode — experimental v1.1 development, disabled by default
 
-Optional ability to save AI-generated replies to the user's IMAP Drafts folder. This would require deliberate opt-in, a narrowly defined write path, verified Drafts-folder selection, and controls that prevent unrelated mailbox modifications. Saving a draft must not send mail. Reader Mode's current command guard blocks this capability; no APPEND or equivalent write operation is enabled today.
+This branch implements preparation of plain-text threaded replies and a separate trusted local operator approval before one exact APPEND to a configured special-use Drafts folder. Reader tools and their command guard remain unchanged. No in-chat approval mechanism, attachments in drafts, arbitrary folder writes, SMTP, or automatic retries are supported.
 
-Before implementation: design the permissions and user-confirmation flow, define message/attachment limits, test provider-specific Drafts behavior, and add negative tests proving that a Reader deployment cannot write drafts. Existing credentials and production deployments must not be silently upgraded.
+See [the architecture and security review](docs/DRAFT-ASSISTANT.md). Synthetic IMAP/MCP tests are not live provider certification. Enabling writes, live acceptance testing, merging and releasing require separate operator approval. A future authenticated approval UI/broker would need independent design and review; native client approval prompts alone are insufficient.
 
 ## Send Assistant Mode — planned, not implemented
 
