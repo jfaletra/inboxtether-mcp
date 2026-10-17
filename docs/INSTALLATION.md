@@ -22,7 +22,7 @@ Run the synthetic test suite first. Initialize the client and confirm exactly fi
 | INBOXTETHER_ACCOUNT | Fixed mailbox login | user@example.com |
 | INBOXTETHER_PASSWORD_FILE | Protected password-file path | /etc/inboxtether-mcp/imap-password |
 
-There is no mode flag enabling drafts or sending. Reader Mode is the only behavior. There is no configurable plaintext/TLS-bypass option or caller-supplied host. Port and conservative limits are fixed in this version.
+Reader Mode stays the default. This development branch includes disabled-by-default Draft Assistant; follow [the upgrade and opt-in guide](UPGRADING-v1.1.md) and [Draft Assistant](DRAFT-ASSISTANT.md) only after separate operator approval. Keep INBOXTETHER_DRAFT_ASSISTANT unset or 0 for exactly five read tools. No flag enables SMTP/sending. There is no configurable plaintext/TLS-bypass option or caller-supplied host. Port and conservative limits are fixed in this version.
 
 ## Troubleshooting
 

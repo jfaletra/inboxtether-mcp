@@ -12,7 +12,7 @@ Mailcow is the first verified platform. Existing live evidence covers mailbox li
 
 The 49 tests for the deployed behavior cover the read-only command guard, TLS configuration, password-file protections, MIME/output limits, actual IMAP framing over socket pairs, MCP stdio initialization/discovery, additive search metadata and identity checks, selected attachment choice, stale IDs, wrong UIDVALIDITY, size boundaries, unsafe type/name/signature, invalid encoding, MIME depth/count limits, and credential-free errors. Two additional tests check the community configuration defaults and explicit operator environment.
 
-Tests use synthetic fixtures and do not authenticate to a mailbox. Local maximum-size tests do not establish maximum-size behavior through every MCP client/tunnel. Basic JPEG signature and checksum validation are not full image validation or malware scanning. No independent before/after live flag comparison or deliberate crash/reboot test was performed. Read-only wire behavior is tested; the credential itself may still permit writes through another client.
+Tests use synthetic fixtures and do not authenticate to a mailbox. Local maximum-size tests do not establish maximum-size behavior through every MCP client/tunnel. Basic JPEG signature and checksum validation are not full image validation or malware scanning. Historical v1.0 evidence did not include a live before/after flag comparison; the controlled v1.1 test below now provides that comparison. No deliberate crash/reboot test was performed. Read-only wire behavior is tested; the credential itself may still permit writes through another client.
 
 ## Package checks
 
@@ -31,3 +31,63 @@ All 51 tests and runtime/auditor dependency audits were rerun after the rename a
 Fresh strict pip-audit runs found zero known vulnerabilities and zero skipped packages across 29 runtime and 27 auditor dependencies. Dependency consistency passed. Generic file/history patterns and a separate known-private-identifier/index/object scan passed. PNG image provenance contains public certificate-authority contact metadata and compressed bytes that can resemble email addresses; these are reviewed metadata, not mailbox contents or private contributor contact details. The generic email-pattern check skips PNG binary content; it is not a metadata/DLP certification. Original bytes remain preserved.
 
 Hosted release-candidate results and immutable SHA are recorded in the final release-readiness report/PR, outside this document to avoid a self-referential commit. Before tagging, verify all three checks on the exact final release commit: unittest, pip-audit and repository-hygiene. No local/remote version tag or GitHub release was created during preparation.
+
+## v1.1 Draft Assistant development (synthetic only)
+
+84 tests passed locally on Python 3.12/MCP 1.30.0, including all 55 existing Reader tests. AST comparison confirms every pre-existing Reader function/class is unchanged; create_server adds conditional registration only. Default discovery remains five Reader tools; deliberate opt-in exposes seven. Tests exercise actual MCP stdio discovery/refusal paths and real imaplib APPEND framing on a local socket pair, without an external host.
+
+New cases cover exact MIME/threading/Bcc preview, unapproved saves, wrong fingerprints, edited drafts, expiry and review races, altered expiry/bytes/configuration/source/target identity, strict recipients/header/body validation, Drafts special-use/UIDPLUS requirements, protected SQLite state, quotas, operator-terminal confirmation, concurrent single-use claims, saved replay, crash-after-claim, timeout, server rewrites and missing/mismatched APPENDUID. Reader and Draft adapters deny unrelated mutation commands; application modules contain no SMTP transport imports. No mail was sent, appended to a live server, or deleted; no credentials, production services or mailbox ACLs were accessed/changed.
+
+Fresh strict advisory audits passed with zero known vulnerabilities and zero skipped packages across 29 runtime dependencies and 27 audit-tool dependencies; no dependency was added. Dependency consistency passed. Advisory results are time-dependent, not a guarantee. See security/DRAFT-ASSISTANT-REVIEW.md for the threat model and remaining deployment gates. Existing release documents describe historical v1.0 evidence and do not certify Draft Assistant. This historical synthetic-only stage preceded the controlled Mailcow terminal workflow acceptance recorded below. General production enablement and live browser/provider acceptance remain separate gates.
+
+## Browser approval development
+
+109 synthetic tests pass locally, retaining all 84 earlier tests and all 55 Reader regressions. New evidence covers independent OIDC signature/issuer/audience/subject/expiry validation; secure CSRF/session binding, explicit decisions, rejection/replay/concurrency; HTML escaping and complete proposed previews; Unix peer authentication and 660 socket/600 key permissions; actual Uvicorn private-socket HTTP operation; and the browser-to-broker-to-approved-save path. No identity-provider login or real mail/production connection is performed. The optional Python dependency audit covers 29 packages with zero known vulnerabilities or skips. Current implementation and deployment limits are in docs/BROWSER-APPROVAL.md and security/DRAFT-ASSISTANT-REVIEW.md.
+
+## Basic/Secure draft policy validation
+
+122 synthetic automated tests pass after introducing Basic Mode: the prior 111
+regressions plus 11 Basic Mode tests. Added coverage includes explicit enablement
+and acknowledgment, exclusive tool registration, actual stdio MCP schema/error
+handling, complete confirmation binding, unchanged MIME/threading, mode isolation,
+source/destination checks, expiry/tamper/rejection, concurrent single APPEND and
+uncertain-save replay. The recorded Basic decision explicitly says human_verified
+is false. No tests access live mail or enable a deployed service.
+
+Subsequent actual ChatGPT synthetic UI testing did not satisfy the complete-review
+and per-save-prompt gate; Basic is not recommended for independently verified
+human approval. Claude remains unverified. See [observed client limits](docs/DRAFT-MODES.md).
+Protocol tests alone do not prove UI behavior.
+
+## Authenticated IMAP capability refresh regression
+
+The IMAP client previously retained its pre-authentication capability cache after
+LOGIN. Servers can advertise UIDPLUS only in the authenticated state, causing
+Draft Assistant to refuse a capable server during preparation or before APPEND.
+Reader and guarded draft-writer connections now explicitly query CAPABILITY after
+successful LOGIN and replace the cached set before exposing the connection to
+operations. Failed discovery stops the connection; stale capabilities are never
+merged or treated as authority. No approval, protocol allowlist, default mode,
+expiry, immutable-message, single-attempt or uncertain-save policy is changed.
+
+The synthetic suite contains 128 tests. Regression coverage includes both draft
+policies during preparation, Reader and writer login order, removal of stale
+UIDPLUS, invalid/failed responses, connection cleanup, and an actual IMAP wire
+save where UIDPLUS is absent before LOGIN and present afterward. These checks do
+not connect to a real mailbox. The authenticated-capability workaround used in
+isolated acceptance testing is unnecessary with this fix; production is unchanged.
+
+## v1.1 final candidate review (supersedes earlier outstanding-test notes)
+
+The 128-test candidate retains default-off Draft Assistant and Reader compatibility.
+Actual ChatGPT mock-backend UI tests have now been performed: native prompts and
+remembered settings do not guarantee complete email review or approval for each
+save. Negative altered-content/expiry/replay checks were observed separately.
+A controlled live Mailcow Secure terminal-approved synthetic save verified exact
+MIME, threading, Drafts destination, checksum and unchanged original bytes/flags.
+No SMTP or production deployment was used. See docs/DRAFT-MODES.md and
+security/V1.1-RELEASE-REVIEW.md for evidence scope and remaining deployment gates.
+Prepared release notes: RELEASE-NOTES-v1.1.0.md. Reader upgrade/optional opt-in and
+rollback: docs/UPGRADING-v1.1.md. These files do not authorize publication.
+
+Final review rerun: 128 tests passed; runtime, browser and audit-tool strict advisory audits found no known vulnerabilities; dependency consistency passed. Exact v1.0.0 comparison confirms five identical Reader schemas, 11 unchanged Reader functions and the unchanged protocol guard except the authenticated login refresh.

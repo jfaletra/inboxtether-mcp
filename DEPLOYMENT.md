@@ -1,6 +1,6 @@
 # Deployment and rollback
 
-This directory is a community package prepared from a verified Mailcow implementation. It has not been published. Existing production deployments must not be modified just because this package or branding changed.
+This directory is a community package prepared from a verified Mailcow implementation. The v1.0.0 Reader source release is published; this branch is unreleased v1.1 development. Existing production deployments must not be modified just because this package or branding changed.
 
 ## Fresh deployment
 
@@ -20,3 +20,11 @@ examples/inboxtether-mcp.service is a systemd skeleton for supervising an operat
 ## Publishing this source
 
 Publication does not deploy a service, publish a ChatGPT plugin, or enable any write/send capability. The owner has authorized artwork distribution and selected jfaletra/inboxtether-mcp. The repository was created privately and has since been made Public with separate approval. Hosted validation must precede any separate Public-visibility approval; enable Discussions during public-release preparation. See docs/GITHUB-SETUP.md. Public source visibility is authorized; version tags, GitHub releases and production cutover remain separate approvals.
+
+## Optional Draft Assistant deployment gate
+
+This branch does not change any running service. Keep INBOXTETHER_DRAFT_ASSISTANT unset or 0 for Reader-only discovery and behavior. Draft opt-in, provisioning a protected state directory, any ACL change, a service restart, and live APPEND acceptance testing require separate operator authorization. Follow docs/DRAFT-ASSISTANT.md; the existing systemd skeleton does not provision writable approval storage. Review its filesystem hardening before any approved opt-in. Turning the feature off removes both Draft tools; it does not delete previously saved drafts or local staging records. Preserve/reconcile uncertain attempts privately before replacing state. Never use credential rotation or mailbox deletion as a rollback shortcut.
+
+## Browser approval service (uninstalled reference)
+
+The browser path adds a separate OIDC session gateway, distinct-UID web service and local peer-authenticated approval broker. See docs/BROWSER-APPROVAL.md and examples/browser-approval. Both feature switches stay off in templates. These services and examples have not been installed or connected to an identity provider. Their HTTPS route, service accounts, secrets and staging callback/cookie/refresh behavior require site-specific validation and rollout approval. Production and the existing Reader unit are not changed.

@@ -1,16 +1,18 @@
 # InboxTether MCP
 
+> Draft Assistant policy: Reader remains the default. Optional Basic Mode delegates confirmation to the MCP client; it does not independently verify human approval. Secure Mode retains independent approval. Neither is enabled by default. See [Draft modes and client limitations](docs/DRAFT-MODES.md).
+
 **Your email. Your AI. Your control.**
 
 <p align="center"><img src="assets/logo-readme.png" alt="InboxTether MCP: envelope, bridge, and circuit mark" width="360"></p>
 
-Read-only email access for MCP clients, with bounded search, message reads, and explicitly selected attachment retrieval. **Mailcow is the first verified email platform.** Compatibility with other IMAP servers is a future testing goal, not a current claim.
+Reader-first email access for MCP clients, with bounded search, message reads, and explicitly selected attachment retrieval. This development branch adds an experimental, disabled-by-default Draft Assistant with optional client-controlled Basic approval or independent Secure approval through the browser or trusted terminal. **Mailcow is the first verified email platform.** Compatibility with other IMAP servers is a future testing goal, not a current claim.
 
-Repository: [`jfaletra/inboxtether-mcp`](https://github.com/jfaletra/inboxtether-mcp). **v1.0.0 Reader Mode release candidate:** the source repository is Public; the version tag and GitHub release are not published yet. This is an independent community project, not an official Mailcow or OpenAI integration.
+Repository: [`jfaletra/inboxtether-mcp`](https://github.com/jfaletra/inboxtether-mcp). **v1.0.0 is the Reader release. This branch targets v1.1 development; it is not a v1.1 release or deployment approval.** This is an independent community project, not an official Mailcow or OpenAI integration.
 
 ## Current capabilities: Reader Mode
 
-Reader Mode is the only implemented operating mode and remains the default. The server has no SMTP support or mailbox-write tools.
+Reader Mode remains the default and exposes only the five read tools below. The optional Draft Assistant is a v1.1 release candidate with synthetic coverage and one controlled live Mailcow Secure Mode terminal-approved save, verified byte-for-byte. Broader provider and live browser/OIDC deployment compatibility remain unverified. There is no SMTP support.
 
 | Tool | What it returns |
 |---|---|
@@ -69,9 +71,15 @@ The complete email must be at most **1 MiB**, including other attachments and MI
 
 Listing internally reads and parses the bounded complete email but returns metadata only. Retrieval reads it again and returns only the selected file. Base64 is a JSON payload, **not a native download button**; it adds roughly one third to file size, and client limits can be smaller. Nothing is automatically opened, rendered, extracted, executed, or written to disk by the server. Treat returned files as unsafe; CSV can contain formulas.
 
+## Optional Draft Assistant (v1.1 development)
+
+`INBOXTETHER_DRAFT_ASSISTANT` defaults to `0`; existing Reader configuration needs no change. Opt-in exposes draft preparation and one mode-specific save tool. **Basic Mode** uses client-controlled confirmation without an approval website or identity provider; it does not prove human approval. **Secure Mode** retains separately authenticated browser or terminal approval. Both freeze the message, bind destination and expiry, and perform one exact-byte verified save. They never send or edit existing mail. See [mode configuration and client limitations](docs/DRAFT-MODES.md).
+
+See [browser review and independent authentication](docs/BROWSER-APPROVAL.md) and [Draft Assistant architecture, setup and limitations](docs/DRAFT-ASSISTANT.md). In Secure Mode native client prompts are supplementary. In Basic Mode the operator explicitly delegates authority to the client; tool hints and model statements do not prove human approval. Do not enable this feature or grant mailbox writes as part of a Reader update. No production write capability has been enabled.
+
 ## Read-only protections and resource limits
 
-The IMAP dispatch guard restricts operations, using EXAMINE and BODY.PEEK for reads. Mutation commands such as STORE, SELECT, APPEND, CLOSE, and EXPUNGE are denied. Connections close without mailbox expunge. These application guards do not turn a full-access app password into a server-enforced read-only credential.
+Reader connections retain their unchanged dispatch guard, using EXAMINE and BODY.PEEK for reads. Reader connections deny mutation commands such as STORE, SELECT, APPEND, CLOSE, and EXPUNGE. Only the explicitly enabled Draft adapter permits a one-use APPEND bound to the approved bytes, fixed folder, and Draft flag; all other mutation commands remain denied. Connections close without mailbox expunge. These application guards do not turn a full-access app password into a server-enforced read-only credential.
 
 Limits include 200 folders, 20,000 returned text characters, 200 MIME nodes, depth 20, 50 attachment choices, 2 MiB total wire data per connection, and a 20-second socket timeout. This is a per-operation socket timeout, not a complete request deadline. One mailbox connection is allowed at a time per process; overlapping requests fail busy rather than queue. Narrow overly broad searches or reduce result limits when limits are reached.
 
@@ -89,7 +97,7 @@ Tests use synthetic mail, mocks, socket pairs, and local MCP stdio sessions. The
 
 ## Planned modes
 
-See [ROADMAP.md](ROADMAP.md). Draft Assistant and Send Assistant are proposals, not available features. Reader Mode must remain the default. No write/send enablement is included in this package.
+See [ROADMAP.md](ROADMAP.md). Draft Assistant has an experimental implementation on this branch and requires explicit opt-in and a selected approval policy; no live client compatibility claim is made. Send Assistant remains planned and unimplemented. Reader Mode remains the default.
 
 ## License and branding
 
@@ -99,8 +107,12 @@ Application source and documentation use the [MIT license](LICENSE). The histori
 
 The source repository is now Public. Branch rules enforce pull requests and the `unittest`, `pip-audit`, and `repository-hygiene` checks from GitHub Actions, with no configured bypass actors. Native secret scanning, push protection, private vulnerability reporting, and Discussions are enabled. Full-history pattern scans, synthetic regression tests and strict dependency audits remain in CI. A passing scan cannot prove absence of every secret. See [public-stage validation](docs/PUBLIC-STAGE-VALIDATION.md).
 
-See the [release checklist](docs/RELEASE-CHECKLIST.md), [release notes](RELEASE-NOTES-v1.0.0.md), [contribution guide](CONTRIBUTING.md), [community plan](docs/COMMUNITY.md), and [security reporting policy](SECURITY.md). Public visibility was authorized separately. The version tag and GitHub release still require final approval. Reverify the current release commit and security controls immediately before publication. See [GitHub setup](docs/GITHUB-SETUP.md), [licensing](docs/LICENSING.md), and the [dependency audit](security/DEPENDENCY-AUDIT.md).
+See the [release checklist](docs/RELEASE-CHECKLIST.md), [release notes](RELEASE-NOTES-v1.0.0.md), [contribution guide](CONTRIBUTING.md), [community plan](docs/COMMUNITY.md), and [security reporting policy](SECURITY.md). Public visibility was authorized separately. v1.0.0 was published separately. This development branch does not authorize a new tag, release, merge, or production change. Reverify security controls before any future publication. See [GitHub setup](docs/GITHUB-SETUP.md), [licensing](docs/LICENSING.md), and the [dependency audit](security/DEPENDENCY-AUDIT.md).
 
 ## Naming review
 
-[Registry and USPTO checks](docs/NAMING-REVIEW.md) found no observed exact-name collision in the checked sources. Existing TETHER software marks remain a naming uncertainty; the owner accepted the identified risk, and searches are not legal clearance. The source repository is Public. No public release or registry package has been published; the private repository does not establish trademark rights.
+[Registry and USPTO checks](docs/NAMING-REVIEW.md) found no observed exact-name collision in the checked sources. Existing TETHER software marks remain a naming uncertainty; the owner accepted the identified risk, and searches are not legal clearance. The source repository is Public. The v1.0.0 source release does not establish trademark rights; no registry package is published.
+
+## v1.1 release review
+
+See [prepared release notes](RELEASE-NOTES-v1.1.0.md), [installation and upgrade](docs/UPGRADING-v1.1.md), and [candidate security assessment](security/V1.1-RELEASE-REVIEW.md). These documents do not authorize deployment, merging, tagging or publication.

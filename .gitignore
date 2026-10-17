@@ -11,3 +11,13 @@ secrets/
 *.key
 *.log
 .DS_Store
+
+# Draft approval state is private and must stay outside the checkout.
+*.sqlite3
+*.sqlite3-*
+draft-state/
+
+# Approval service runtime state and secrets are never source artifacts.
+*.sock
+*.secret
+csrf.bin
