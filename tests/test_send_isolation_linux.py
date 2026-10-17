@@ -28,6 +28,9 @@ class LinuxSendIsolationTests(unittest.TestCase):
             state, ipc = root / 'state', root / 'ipc'
             for path, mode in ((state, 0o700), (ipc, 0o750)):
                 path.mkdir(mode=mode); os.chown(path, sender_uid, group)
+            imap_secret = state / 'imap.secret'
+            imap_secret.write_text('synthetic-imap-only-secret'); imap_secret.chmod(0o600)
+            os.chown(imap_secret, sender_uid, group)
             config = root / 'sender.json'
             config.write_text(json.dumps({'enabled': True, 'mode': 'secure', 'identity': 'sender@example.com',
                 'smtp_host': 'smtp.example.com', 'smtp_port': 465, 'tls': 'implicit', 'smtp_username': 'sender@example.com',
@@ -57,7 +60,7 @@ from pathlib import Path
 import send_client as c
 p, state, config, sender, authorized = sys.argv[1:]
 cfg = c.ClientConfig(Path(p), int(sender))
-for path in (state, config):
+for path in (state, config, str(Path(state) / 'imap.secret')):
     try:
         Path(path).read_bytes() if Path(path).is_file() else list(Path(path).iterdir())
     except PermissionError:

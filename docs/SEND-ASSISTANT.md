@@ -1,6 +1,6 @@
 # Secure Send Assistant — v1.2 development, not released
 
-Reader remains the default. Existing v1.1 Basic/Secure Draft Assistant tools and approval policies are unchanged. Sending is a distinct optional capability with **no Basic Send Mode** and no MCP approval/send tool. No real SMTP provider has been tested for this implementation. This guide is not deployment approval.
+Reader remains the default. Existing v1.1 Basic/Secure Draft Assistant tools and approval policies are unchanged. Sending is a distinct optional capability with **no Basic Send Mode** and no MCP approval/send tool. An isolated controlled Mailcow SMTP submission was accepted and recipient delivery confirmed. Sent synchronization has not been live-tested. This guide is not deployment approval.
 
 ## Authority boundary
 
@@ -78,11 +78,46 @@ Terminal CLI records an acceptance before reporting it; a failure during QUIT/cl
 
 Standard SMTP has **no general exactly-once guarantee**. Message-ID is not an idempotency key. Replaying one ID cannot resend, but a new ID for identical content can be independently approved and sent. An operator must not create a replacement for an uncertain send until reconciliation. Never restore a pre-attempt database and re-enable sending blindly: disable sending, retain current receipts, and reconcile every potentially submitted record first. This is critical for backup/rollback, not just application retries. See [RFC 5321](https://www.rfc-editor.org/rfc/rfc5321.html) and [Python SMTP documentation](https://docs.python.org/3/library/smtplib.html).
 
-## Sent-folder synchronization: deliberately deferred
+## Optional Sent-folder synchronization (disabled by default)
 
-No automatic IMAP Sent-folder APPEND, folder creation, existing draft deletion, flag update, MOVE, COPY or other mailbox mutation is implemented by Send Assistant. The SMTP server/provider might independently file a sent copy; check that behavior in future isolated tests. `sent_copy=not-written` means InboxTether did not write a copy, not that no provider-created copy exists.
+Omit `sent_copy` for legacy behavior, or leave its `enabled=false` in the example. No new Python dependency or service is required. Reader and Draft tools, credentials and approvals remain unchanged. Only the separately run trusted sender terminal performs IMAP I/O; the preparation broker retains its AF_UNIX-only network restriction. No filing/discovery/reconciliation operation is exposed through MCP.
 
-Future synchronization needs a separate security review and explicit write scope/approval: bind destination special-use folder and UIDVALIDITY, define Bcc visibility in the private copy, stable Message-ID plus submitted-MIME hash and SMTP receipt linkage, record copy state independently from delivery state, and reconcile provider-created copies and ambiguous APPEND results without resending SMTP. Failure to file a Sent copy must never cause a second send. Exact-byte SMTP submission records and stable Message-ID provide a foundation, not a complete synchronization implementation.
+### Configuration and discovery
+
+Use a **separate IMAP-only application password** in `sent_copy.password_file`, never the SMTP or existing Reader/Draft password. The secret must be sender-owned0600 under a private0700 directory inaccessible to MCP. The mailbox username must match the sending identity. IMAP uses implicit TLS with certificate/hostname validation and TLS1.2 minimum. The trusted startup checks the credential parent alongside other protected directories.
+
+After administrator-controlled installation/configuration, a trusted operator runs:
+
+```sh
+/usr/local/libexec/inboxtether-send --config /etc/inboxtether-send/sender.json discover-sent
+```
+
+This authenticates, explicitly refreshes capabilities, requires UIDPLUS, reads standard LIST special-use flags and selects the unique selectable `\Sent` mailbox read-only to obtain UIDVALIDITY. It pins the policy, exact folder and UIDVALIDITY in private `state_dir/sent-destination.json`. The pin is configuration, not an approval token. No message is appended and no folder is created. If discovery is unavailable/ambiguous, set `sent_copy.folder` to an explicit existing folder and rerun discovery. Never guess folder names. Modified UTF-7, quoted and literal folder names are supported; folders with control characters are refused. This version does not enable IMAP UTF8=ACCEPT.
+
+Preparation stays offline and refuses missing/stale pins. The full IMAP destination, credential-path reference, folder and UIDVALIDITY are fingerprint-bound in the reviewed manifest alongside the SMTP scope and exact MIME. Changed configuration/pin invalidates pending approval. Rediscover only under operator control and prepare fresh approvals afterward. The copied message is the exact submitted MIME, including Message-ID/threading/attachments, with no added Bcc header: Bcc recipients remain only in the approval envelope and private database. Newly appended copies receive `\Seen`; existing messages/flags are never changed.
+
+### Independent send and filing receipts
+
+SMTP acceptance is committed first. A separate `sent_copies` table in the same SQLite database records an atomic, durable single-use filing claim **before any IMAP operation**. Only an accepted send whose manifest approved filing can acquire it. One claim can issue at most one APPEND, including concurrent invocations. Before appending, verify the pinned folder still exists and UIDVALIDITY matches; search by Message-ID and verify exact bytes to recognize an already filed provider copy. Conflicting/duplicate matches block appending. After APPEND, require APPENDUID UIDVALIDITY/UID and verify size and exact bytes via `BODY.PEEK[]` without marking existing messages read. No UID EXPUNGE, STORE, MOVE, COPY, DELETE or CREATE is used.
+
+Send status and filing state remain separate: `status=accepted` can coexist with `sent_copy=pending/saved/failed/uncertain`. With synchronization disabled/unapproved, `sent_copy=not-written` means InboxTether made no copy; it says nothing about provider-created copies. Definitive setup/connection/append rejection reports failed filing; lost acknowledgment, missing/bad APPENDUID, changed mailbox identity after APPEND, verification failure or interrupted claim reports uncertain. Neither can cause SMTP resubmission. This conservative version does not retry even definitely failed filing claims automatically.
+
+### Recovery (trusted operator only)
+
+```sh
+# Recover a durable accepted message with NO previous filing claim:
+/usr/local/libexec/inboxtether-send --config /etc/inboxtether-send/sender.json file-sent SEND_ID
+# Reconcile an interrupted/uncertain append; search/fetch only, NEVER APPEND:
+/usr/local/libexec/inboxtether-send --config /etc/inboxtether-send/sender.json reconcile-sent SEND_ID
+```
+
+These commands work with SMTP `enabled=false` if Sent configuration still matches the approved policy. They cannot send SMTP or approve another message. `reconcile-sent` marks saved only after an exact existing match; absence remains uncertain, never permission to reappend. A missing/unwritable/recreated folder leaves SMTP acceptance intact and produces a filing warning/receipt. Fix configuration through an operator; never create a replacement send to repair a missing Sent copy. SMTP failure/uncertainty, including lost SMTP receipt persistence, never automatically starts filing.
+
+Standard IMAP has no generic idempotent APPEND. A lost connection cannot guarantee both eventual filing and zero duplicates. This implementation favors no second APPEND after uncertainty. It prevents its own repeated attempts; an external auto-filer can race it. Verify provider auto-filing policy before enablement. An old restored snapshot may predate a send/append claim: keep sending disabled, quarantine restores and reconcile latest durable receipts before any write. Never blindly restore old pending state then retry. Include the entire SQLite database (both tables) using consistent backup, plus the destination pin, configuration and both secrets in the encrypted off-host backup; older backup scripts must be updated/reviewed before live Sent testing. Historical send/filing receipts survive config changes and disabling; changed config never grants old approval new authority.
+
+### Mailcow permissions and residual limits
+
+The installed Mailcow inspected during isolated SMTP preparation supports per-application SMTP/IMAP/POP3/Sieve/EAS/DAV protocol flags. An IMAP-only application password disables SMTP for that credential, but **does not itself enforce append-only or Sent-folder-only access**. It may retain broader mailbox read/write authority. Do not claim otherwise or widen Reader credentials. Folder ACL restrictions/delegation, if configured, need independent verification on the actual deployment; no such restriction is assumed tested. Minimum required access is LIST, read-only SELECT/search/peek and APPEND on the chosen Sent folder, with UIDPLUS verification. Application code restricts operations, but compromise of the trusted sender/host can expose its broader provider-granted credential authority. Shared hosting administrator/root access remains outside the boundary. Plaintext live state and secrets require filesystem protection; encrypted backups do not encrypt live staging storage.
 
 ## Browser approval and client experience
 
@@ -90,6 +125,6 @@ This first implementation supports the trusted terminal only. Existing Secure Dr
 
 ## Validation and deployment gates
 
-Tests use synthetic messages, mock SMTP, local Unix sockets and failure injection. CI additionally runs a dedicated Linux root test that drops to transient numeric process identities (without creating users) to verify actual peer authentication and denial of client access to sender configuration/state. There is no live provider, DNS, SMTP delivery, passkey/OIDC or production test in this development work.
+Tests use synthetic messages, mock SMTP, local Unix sockets and failure injection. CI additionally runs a dedicated Linux root test that drops to transient numeric process identities (without creating users) to verify actual peer authentication and denial of client access to sender configuration/state. Sent synchronization is validated using mocks only, not live IMAP. The earlier isolated Mailcow SMTP test does not establish live Sent behavior. No passkey/OIDC or production deployment is validated by these tests.
 
 Before deployment: complete independent review of privilege separation and sender-runtime ownership; verify Linux hosted CI; settle SMTP account restrictions and encrypted backup/reconciliation procedure; approve isolated mock/provider testing separately; choose operator terminal workflow and retention; review actual provider MIME/Sent behavior; and explicitly authorize installation/credentials/enablement. No merge, deployment, release or real sending is authorized by this documentation.

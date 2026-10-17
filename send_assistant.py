@@ -15,6 +15,7 @@ from email.message import EmailMessage
 from email.parser import BytesParser
 from email.utils import format_datetime
 import hashlib
+import imaplib
 import json
 import os
 from pathlib import Path
@@ -59,7 +60,8 @@ def trusted_installation(config, config_path):
         info = path.lstat()
         require(stat.S_ISREG(info.st_mode) and info.st_uid in (0, os.geteuid())
                 and not (stat.S_IMODE(info.st_mode) & 0o022), 'Untrusted sender code.')
-    for path in (config.state_dir, config.password_file.parent, config.socket_path.parent, config_path.absolute().parent):
+    private_parents = (config.sent_copy.password_file.parent,) if config.sent_copy else ()
+    for path in (config.state_dir, config.password_file.parent, config.socket_path.parent, config_path.absolute().parent, *private_parents):
         trusted_ancestors(path)
 
 
@@ -76,6 +78,233 @@ def private_file(path):
         os.close(fd)
 
 
+@contextmanager
+def sent_connection(config):
+    sent = config.sent_copy
+    require(sent is not None and sent.enabled, 'Sent synchronization is disabled.')
+    context = ssl.create_default_context()
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+    client = None
+    try:
+        client = imaplib.IMAP4_SSL(sent.host, sent.port, ssl_context=context, timeout=10)
+        secret = private_file(sent.password_file).decode('utf-8').rstrip('\r\n')
+        require(0 < len(secret) <= 4096 and not any(c in secret for c in '\r\n\x00'))
+        require(client.login(sent.username, secret)[0] == 'OK', 'IMAP authentication failed.')
+        secret = None
+        # Providers may change advertised capabilities after authentication.
+        typ, rows = client.capability()
+        require(typ == 'OK' and all(isinstance(r, bytes) for r in rows), 'IMAP capability refresh failed.')
+        caps = b' '.join(rows).upper().split()
+        require(b'UIDPLUS' in caps, 'Sent verification requires UIDPLUS.')
+        yield client
+    finally:
+        if client is not None:
+            try:
+                client.logout()
+            except Exception:
+                try:
+                    client.shutdown()
+                except Exception:
+                    pass
+
+
+def sent_folders(client):
+    typ, rows = client.list('""', '"*"')
+    require(typ == 'OK' and len(rows) <= 1024, 'Sent folder discovery failed.')
+    folders = []
+    prefix = rb'\(([^)]*)\) (?:NIL|"(?:[^"\\]|\\.)*") '
+    for row in rows:
+        if isinstance(row, tuple):
+            header, wire = row
+            match = re.fullmatch(prefix + rb'\{([0-9]+)\}', header)
+            require(match is not None and int(match[2]) == len(wire), 'Invalid literal folder.')
+        else:
+            require(isinstance(row, bytes))
+            match = re.fullmatch(prefix + rb'("(?:[^"\\]|\\.)*"|[^\s"{}]+)', row)
+            require(match is not None, 'Invalid folder response.')
+            wire = match[2]
+            if wire.startswith(b'"'):
+                wire = re.sub(rb'\\(.)', rb'\1', wire[1:-1])
+        flags = match[1].upper().split()
+        if b'\\NOSELECT' not in flags:
+            folders.append((folder_name(wire), b'\\SENT' in flags))
+    return folders
+
+
+def choose_sent(client, override):
+    folders = sent_folders(client)
+    matches = [name for name, special in folders if name == override] if override is not None else [name for name, special in folders if special]
+    require(len(matches) == 1, 'Sent folder missing or ambiguous; configure an explicit existing folder.')
+    return matches[0]
+
+
+def discover_sent(config):
+    """Trusted operator setup only. Broker prepares offline from this private pin."""
+    with sent_connection(config) as client:
+        folder = choose_sent(client, config.sent_copy.folder)
+        validity = sent_select(client, folder)
+    pin = {'policy': config.sent_copy.scope(), 'folder': folder, 'uidvalidity': validity}
+    trusted_ancestors(config.state_dir)
+    # Atomic update, never follow an existing destination symlink.
+    path = config.state_dir / 'sent-destination.json'
+    temporary = config.state_dir / ('sent-pin-' + secrets.token_hex(16))
+    fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+    try:
+        with os.fdopen(fd, 'wb') as out:
+            out.write(canonical(pin))
+            out.flush()
+            os.fsync(out.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+    return {'sent_folder': folder, 'selection': 'override' if config.sent_copy.folder is not None else 'special-use',
+            'notice': 'Pinned for future approvals; no message appended.'}
+
+
+def sent_destination(config):
+    sent = config.sent_copy
+    require(sent is not None and sent.enabled, 'Sent synchronization disabled.')
+    pin = json.loads(private_file(config.state_dir / 'sent-destination.json'))
+    require(set(pin) == {'policy', 'folder', 'uidvalidity'} and pin['policy'] == sent.scope(), 'Run trusted discover-sent after configuration changes.')
+    folder_wire(pin['folder'])
+    require(type(pin['uidvalidity']) is int and 0 < pin['uidvalidity'] <= 4294967295, 'Invalid pinned mailbox identity.')
+    if sent.folder is not None:
+        require(pin['folder'] == sent.folder, 'Pinned folder differs from override.')
+    return pin
+
+
+def sent_select(client, folder):
+    require(client.select(folder_wire(folder), readonly=True)[0] == 'OK', 'Sent folder unavailable.')
+    kind, values = client.response('UIDVALIDITY')
+    require(kind == 'UIDVALIDITY' and values and re.fullmatch(rb'[1-9][0-9]*', values[0]), 'Missing UIDVALIDITY.')
+    validity = int(values[0])
+    require(validity <= 4294967295)
+    return validity
+
+
+def sent_fetch(client, uid, expected):
+    # Check size before requesting the bounded exact message. A malicious IMAP
+    # server is outside the trust model; imaplib itself may allocate literals.
+    typ, rows = client.uid('FETCH', str(uid), '(RFC822.SIZE)')
+    require(typ == 'OK')
+    metadata = b' '.join(r for r in rows if isinstance(r, bytes))
+    require(re.search(rb'\bUID ' + str(uid).encode() + rb'\b', metadata, re.I))
+    sizes = re.findall(rb'RFC822.SIZE ([0-9]+)', metadata, re.I)
+    require(len(sizes) == 1 and int(sizes[0]) == len(expected), 'Stored MIME size differs.')
+    typ, rows = client.uid('FETCH', str(uid), '(BODY.PEEK[])')
+    require(typ == 'OK')
+    literals = [r for r in rows if isinstance(r, tuple)]
+    require(len(literals) == 1 and re.search(rb'\bUID ' + str(uid).encode() + rb'\b', literals[0][0], re.I))
+    require(literals[0][1] == expected, 'Stored MIME bytes differ.')
+
+
+def find_sent(client, item):
+    mid = item['manifest']['preview']['Message-ID']
+    require(re.fullmatch(r'<[A-Za-z0-9._@+\-]{1,254}>', mid), 'Unsafe Message-ID.')
+    typ, rows = client.uid('SEARCH', None, 'HEADER', 'Message-ID', '"' + mid + '"')
+    require(typ == 'OK' and len(rows) == 1 and isinstance(rows[0], bytes))
+    uids = rows[0].split()
+    require(len(uids) <= 20 and all(re.fullmatch(rb'[1-9][0-9]*', u) and int(u) <= 4294967295 for u in uids), 'Unbounded or invalid Sent matches.')
+    for uid in uids:
+        # A conflicting same-ID message is a reconciliation problem; fail closed.
+        sent_fetch(client, int(uid), item['raw'])
+    require(len(uids) <= 1, 'Duplicate existing Sent copies; operator review required.')
+    return int(uids[0]) if uids else None
+
+
+def file_sent_copy(config, item, reconcile=False):
+    """No SMTP path, no retries. Caller durably claims BEFORE any IMAP I/O."""
+    result = {'state': 'uncertain' if reconcile else 'failed', 'retry_allowed': False,
+              'mime_sha256': item['manifest']['mime_sha256']}
+    appending = False
+    try:
+        require(digest(item['raw']) == item['manifest']['mime_sha256'])
+        pin = item['manifest']['sent_filing']
+        require(config.sent_copy and config.sent_copy.enabled and pin['policy'] == config.sent_copy.scope())
+        folder = pin['folder']
+        with sent_connection(config) as client:
+            # Verify the exact pinned target exists; never rediscover a different destination.
+            require(choose_sent(client, folder) == folder)
+            validity = sent_select(client, folder)
+            require(validity == pin['uidvalidity'], 'Pinned mailbox identity changed.')
+            uid = find_sent(client, item)
+            if uid is not None:
+                result.update(state='saved', folder=folder, uidvalidity=validity, uid=uid, reconciled=True)
+                return result
+            if reconcile:
+                return result  # Absence is not proof an interrupted APPEND never completed.
+            appending = True
+            typ, _ = client.append(folder_wire(folder), '(\\Seen)', None, item['raw'])
+            if typ in ('NO', 'BAD'):
+                result['state'] = 'failed'
+                return result
+            require(typ == 'OK', 'Unknown APPEND result.')
+            kind, values = client.response('APPENDUID')
+            require(kind == 'APPENDUID' and values and re.fullmatch(rb'[1-9][0-9]* [1-9][0-9]*', values[0]), 'Missing APPENDUID.')
+            returned_validity, uid = map(int, values[0].split())
+            require(returned_validity == validity and uid <= 4294967295, 'Mailbox identity changed.')
+            sent_fetch(client, uid, item['raw'])
+            result.update(state='saved', folder=folder, uidvalidity=validity, uid=uid, reconciled=False)
+    except Exception:
+        # Never expose IMAP responses, credentials, email bodies or exception text.
+        result['state'] = 'uncertain' if appending or reconcile else 'failed'
+    return result
+
+
+@dataclass(frozen=True)
+class SentConfig:
+    """Separate IMAP credential; resolved destinations never come from MCP arguments."""
+    host: str
+    username: str
+    password_file: Path
+    port: int = 993
+    enabled: bool = False
+    folder: str | None = None
+
+    def validate(self):
+        require(type(self.enabled) is bool and isinstance(self.host, str)
+                and re.fullmatch(r'[A-Za-z0-9.-]{1,253}', self.host), 'Invalid Sent configuration.')
+        require(type(self.port) is int and 1 <= self.port <= 65535)
+        address(self.username)
+        require(isinstance(self.password_file, Path) and self.password_file.is_absolute())
+        if self.folder is not None:
+            folder_wire(self.folder)
+
+    def scope(self):
+        return {'host': self.host, 'port': self.port, 'username': self.username,
+                'credential_reference': digest(str(self.password_file).encode()),
+                'folder_override': self.folder}
+
+
+def folder_wire(folder):
+    """Canonical IMAP modified UTF-7, quoted as one protocol argument."""
+    text(folder, 256)
+    require(folder and not any(ord(c) < 32 or ord(c) == 127 for c in folder), 'Unsafe Sent folder.')
+    chunks, buffered = [], []
+    def flush():
+        if buffered:
+            chunks.append('&' + base64.b64encode(''.join(buffered).encode('utf-16be')).decode().rstrip('=').replace('/', ',') + '-')
+            buffered.clear()
+    for c in folder:
+        if 32 <= ord(c) <= 126:
+            flush()
+            chunks.append('&-' if c == '&' else c)
+        else:
+            buffered.append(c)
+    flush()
+    encoded = ''.join(chunks)
+    return '"' + encoded.replace('\\', '\\\\').replace('"', '\\"') + '"'
+
+
+def folder_name(wire):
+    def decode(match):
+        value = match.group(1)
+        return '&' if not value else base64.b64decode(value.replace(',', '/') + '=' * (-len(value) % 4), validate=True).decode('utf-16be')
+    value = re.sub(r'&([A-Za-z0-9+,]*)-', decode, wire.decode('ascii'))
+    folder_wire(value)
+    return value
+
+
 @dataclass(frozen=True)
 class SenderConfig:
     identity: str
@@ -88,6 +317,7 @@ class SenderConfig:
     socket_path: Path
     client_uid: int
     enabled: bool = False
+    sent_copy: SentConfig | None = None
 
     @classmethod
     def load(cls, path, read_only=False):
@@ -95,6 +325,13 @@ class SenderConfig:
         enabled = obj.pop('enabled', False)
         require(type(enabled) is bool and (enabled or read_only), 'Sending is disabled.')
         require(obj.pop('mode', None) == 'secure', 'Only Secure Send Mode exists.')
+        obj.setdefault('sent_copy', None)
+        sent = obj['sent_copy']
+        if sent is not None:
+            require(isinstance(sent, dict) and set(sent) <= set(SentConfig.__dataclass_fields__), 'Invalid Sent configuration.')
+            sent = dict(sent)
+            sent['password_file'] = Path(sent['password_file'])
+            obj['sent_copy'] = SentConfig(**sent)
         require(set(obj) == set(cls.__dataclass_fields__) - {'enabled'}, 'Unknown or missing sender configuration.')
         obj = dict(obj)
         for field in ('password_file', 'state_dir', 'socket_path'):
@@ -105,6 +342,11 @@ class SenderConfig:
 
     def validate(self):
         require(type(self.enabled) is bool, 'Invalid sending setting.')
+        if self.sent_copy is not None:
+            require(isinstance(self.sent_copy, SentConfig))
+            self.sent_copy.validate()
+            require(self.sent_copy.username == self.identity, 'Sent mailbox must match sending identity.')
+            require(self.sent_copy.password_file != self.password_file, 'Separate IMAP credential required.')
         address(self.identity)
         text(self.smtp_username, 254)
         require(isinstance(self.smtp_host, str) and re.fullmatch(r'[A-Za-z0-9.-]{1,253}', self.smtp_host))
@@ -116,10 +358,13 @@ class SenderConfig:
         require(os.geteuid() > 0, 'Do not run the trusted sender as root.')
 
     def scope(self):
-        return {'operation': 'smtp-send', 'mode': 'secure', 'identity': self.identity,
+        scope = {'operation': 'smtp-send', 'mode': 'secure', 'identity': self.identity,
                 'envelope_sender': self.identity, 'smtp_host': self.smtp_host,
                 'smtp_port': self.smtp_port, 'tls': self.tls, 'smtp_username': self.smtp_username,
                 'credential_reference': digest(str(self.password_file).encode('utf-8')), 'client_uid': self.client_uid}
+        if self.sent_copy and self.sent_copy.enabled:
+            scope['sent_copy'] = self.sent_copy.scope()
+        return scope
 
 
 def attachment(value):
@@ -204,6 +449,8 @@ def prepare_message(config, arguments):
     manifest = {'version': 1, 'expires_at': time.time() + TTL, 'scope': config.scope(),
                 'recipients': {'to': to, 'cc': cc, 'bcc': bcc}, 'preview': view,
                 'reply_context': reply, 'mime_sha256': digest(raw), 'sent_copy': 'not-written'}
+    if config.sent_copy and config.sent_copy.enabled:
+        manifest['sent_filing'] = sent_destination(config)
     return manifest, raw
 
 
@@ -231,6 +478,7 @@ class SendStore:
             db.execute('PRAGMA trusted_schema=OFF')
             db.execute('PRAGMA synchronous=FULL')
             db.execute('CREATE TABLE IF NOT EXISTS sends (id TEXT PRIMARY KEY, manifest BLOB NOT NULL, raw BLOB NOT NULL, fingerprint TEXT NOT NULL, expires REAL NOT NULL, state TEXT NOT NULL, actor BLOB, result BLOB)')
+            db.execute('CREATE TABLE IF NOT EXISTS sent_copies (send_id TEXT PRIMARY KEY, state TEXT NOT NULL, result BLOB)')
             db.commit()
             yield db
         finally:
@@ -264,6 +512,8 @@ class SendStore:
     def eligible(self, item):
         require(self.config.enabled, 'Sending is disabled.')
         require(item['manifest']['scope'] == self.config.scope(), 'Send configuration changed; prepare a new review.')
+        if 'sent_filing' in item['manifest']:
+            require(item['manifest']['sent_filing'] == sent_destination(self.config), 'Sent destination changed; prepare a new review.')
 
     def claim(self, key, fingerprint):
         # Approval and durable single-use claim are one transaction; no MCP operation can call this.
@@ -282,6 +532,42 @@ class SendStore:
         with self.db() as db:
             changed = db.execute("UPDATE sends SET state=?,result=? WHERE id=? AND state='attempting'", (result['status'], canonical(result), key)).rowcount
             require(changed == 1, 'Send receipt could not be recorded.')
+            db.commit()
+
+    def filing(self, key):
+        with self.db() as db:
+            row = db.execute('SELECT state,result FROM sent_copies WHERE send_id=?', (key,)).fetchone()
+        if row is None:
+            return None
+        require(row['state'] in ('attempting', 'saved', 'failed', 'uncertain'), 'Invalid filing state.')
+        result = json.loads(row['result']) if row['result'] else {}
+        require(isinstance(result, dict) and (not result or (result.get('state') == row['state']
+                and result.get('retry_allowed') is False
+                and result.get('mime_sha256') == self.get(key)['manifest']['mime_sha256'])), 'Invalid filing receipt.')
+        require(row['state'] == 'attempting' or result, 'Missing filing receipt.')
+        return {'state': row['state'], **result}
+
+    def claim_filing(self, key):
+        item = self.get(key)
+        require(item['state'] == 'accepted' and item['result'] is not None
+                and json.loads(item['result'])['status'] == 'accepted', 'SMTP acceptance not recorded.')
+        require('sent_filing' in item['manifest'], 'Sent copy was not approved.')
+        require(item['manifest']['scope'] == self.config.scope(), 'Configuration changed; filing blocked.')
+        require(item['manifest']['sent_filing'] == sent_destination(self.config), 'Sent destination changed.')
+        with self.db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            n = db.execute("INSERT OR IGNORE INTO sent_copies VALUES (?,'attempting',NULL)", (key,)).rowcount
+            require(n == 1, 'Filing already claimed; reconcile without appending.')
+            db.commit()
+        return item
+
+    def finish_filing(self, key, result):
+        require(result['state'] in ('saved', 'failed', 'uncertain') and result['retry_allowed'] is False
+                and result['mime_sha256'] == self.get(key)['manifest']['mime_sha256'], 'Invalid filing result.')
+        with self.db() as db:
+            n = db.execute("UPDATE sent_copies SET state=?,result=? WHERE send_id=? AND state IN ('attempting','uncertain')",
+                           (result['state'], canonical(result), key)).rowcount
+            require(n == 1, 'Filing receipt update rejected.')
             db.commit()
 
     def reject(self, key):
@@ -320,6 +606,12 @@ class SendService:
         result = {'status': status, 'retry_allowed': False, 'sent_copy': 'not-written',
                   'mime_sha256': item['manifest']['mime_sha256'],
                   'configuration_matches': scope == self.config.scope(), 'sending_enabled': self.config.enabled}
+        filing = self.store.filing(key)
+        if filing:
+            result['sent_copy'] = 'uncertain' if filing['state'] == 'attempting' else filing['state']
+            result['sent_copy_receipt'] = filing
+        elif status == 'accepted' and 'sent_filing' in item['manifest']:
+            result['sent_copy'] = 'pending'
         if trusted:
             receipt = json.loads(item['result']) if item['result'] else None
             require(receipt is None or (isinstance(receipt, dict) and receipt.get('status') == item['state']),
@@ -335,6 +627,28 @@ class SendService:
         except Exception:
             # Durable 'attempting' survives, and is always reported uncertain.
             return {'status': 'uncertain', 'retry_allowed': False, 'sent_copy': 'not-written'}
+        if result['status'] == 'accepted' and 'sent_filing' in item['manifest']:
+            try:
+                self.file_sent(key)
+            except Exception:
+                pass  # SMTP acceptance is final; filing can never call submit().
+            return self.status(key, trusted=True)
+        return result
+
+    def file_sent(self, key):
+        item = self.store.claim_filing(key)
+        result = file_sent_copy(self.config, item)
+        self.store.finish_filing(key, result)
+        return result
+
+    def reconcile_sent(self, key):
+        item = self.store.get(key)
+        require(item['state'] == 'accepted' and 'sent_filing' in item['manifest'])
+        require(item['manifest']['scope'] == self.config.scope(), 'Configuration changed; reconciliation blocked.')
+        prior = self.store.filing(key)
+        require(prior and prior['state'] in ('attempting', 'uncertain'), 'No ambiguous filing to reconcile.')
+        result = file_sent_copy(self.config, item, reconcile=True)
+        self.store.finish_filing(key, result)
         return result
 
 
@@ -478,17 +792,20 @@ def main(bootstrap_verified=False):
             'Use the administrator-installed isolated sender entrypoint.')
     parser = argparse.ArgumentParser(description='Trusted local send authority; never expose to an AI shell.')
     parser.add_argument('--config', type=Path, required=True)
-    parser.add_argument('command', choices=('serve', 'review', 'approve-send', 'reject', 'status'))
+    parser.add_argument('command', choices=('serve', 'review', 'approve-send', 'reject', 'status', 'discover-sent', 'file-sent', 'reconcile-sent'))
     parser.add_argument('send_id', nargs='?')
     parser.add_argument('--review-dir', type=Path)
     args = parser.parse_args()
     os.umask(0o077)
     try:
-        config = SenderConfig.load(args.config, read_only=args.command in ('review', 'status', 'reject'))
+        config = SenderConfig.load(args.config, read_only=args.command in ('review', 'status', 'reject', 'discover-sent', 'file-sent', 'reconcile-sent'))
         trusted_installation(config, args.config)
         service = SendService(config)
         if args.command == 'serve':
             serve(config)
+            return
+        if args.command == 'discover-sent':
+            print(json.dumps(discover_sent(config)))
             return
         require(args.send_id is not None, 'A send ID is required.')
         if args.command == 'review':
@@ -499,6 +816,10 @@ def main(bootstrap_verified=False):
             print(json.dumps({'fingerprint': item['fingerprint'], 'manifest': item['manifest']}, indent=2, ensure_ascii=True))
         elif args.command == 'approve-send':
             print(json.dumps(approve_interactively(service, args.send_id, args.review_dir)))
+        elif args.command == 'file-sent':
+            print(json.dumps(service.file_sent(args.send_id)))
+        elif args.command == 'reconcile-sent':
+            print(json.dumps(service.reconcile_sent(args.send_id)))
         elif args.command == 'reject':
             service.store.reject(args.send_id)
             print('{"status":"rejected"}')

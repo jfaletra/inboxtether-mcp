@@ -9,5 +9,13 @@
   "password_file": "/etc/inboxtether-send/smtp.secret",
   "state_dir": "/var/lib/inboxtether-send",
   "socket_path": "/run/inboxtether-send/request.sock",
-  "client_uid": 2001
+  "client_uid": 2001,
+  "sent_copy": {
+    "enabled": false,
+    "host": "imap.example.com",
+    "port": 993,
+    "username": "sender@example.com",
+    "password_file": "/etc/inboxtether-send/sent-imap.secret",
+    "folder": null
+  }
 }
