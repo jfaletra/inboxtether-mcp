@@ -1,3 +1,39 @@
+# Release checklists
+
+## v1.2.0 candidate — preparation only
+
+PR #6 remains unmerged. This checklist is not authorization to merge, deploy,
+enable sending/filing, tag, publish a release or publish packages.
+
+1. Record exact PR head; review source, [final security assessment](../security/V1.2-RELEASE-REVIEW.md),
+   [notes](../RELEASE-NOTES-v1.2.0.md) and [upgrade/rollback](UPGRADING-v1.2.md).
+2. Require successful unittest, privileged send-process-isolation, repository-hygiene
+   and pip-audit on that exact head. The active main ruleset requires three of
+   these; isolation must also be explicitly checked until added to required checks.
+3. Verify five unchanged Reader schemas, preserved Basic/Secure Draft policies,
+   disabled Send/Sent defaults, mandatory independent terminal approval, no Basic
+   Send, exact MIME/destination binding, expiry/replay/concurrency and no retries.
+4. Retain sanitized Mailcow acceptance evidence separately from private test
+   identities, credentials, raw mail, receipts and deployment files. No secret or
+   private infrastructure belongs in release archives. Confirm MIT/branding split
+   and previously accepted naming uncertainty; no legal clearance claim.
+5. Only after explicit merge authorization, verify current SHA/checks and merge
+   without bypassing active main rules. Revalidate resulting main SHA afterward.
+6. Only after separate publication authorization, recheck secret scanning/push
+   protection, dependency alerts, private vulnerability reporting, Discussions and
+   required main rules. CodeQL is not configured; do not claim it passed.
+7. Prepare/review source ZIP/tar archives and SHA-256 manifest from the approved
+   final commit. Proposed annotated tag v1.2.0 must name that exact commit. Use
+   existing public/noreply attribution; never generate signing credentials here.
+   Do not create even a draft release/tag ref before approval. Verify published
+   tag/assets/checksums only during the separately approved publication step.
+8. Source publication never installs a service or enables Send/Sent. Production
+   upgrade, credential provisioning, write enablement and live testing have their
+   own approval/backup/rollback gates. Never restore stale pending state or resend
+   an email to repair a Sent-folder failure.
+
+## Historical v1.0.0 checklist
+
 # v1.0.0 release checklist and tag plan
 
 This is a preparation runbook. Public visibility has since been authorized and completed. A version tag, GitHub release, or package publication is not authorized by this file. Production and other repositories are excluded.

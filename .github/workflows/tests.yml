@@ -25,6 +25,15 @@ jobs:
         run: python -m pip check
       - name: Run synthetic tests
         run: python -m unittest discover -s tests -v
+  send-process-isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify synthetic Linux OS and IPC isolation
+        run: sudo /usr/bin/python3 -m unittest discover -s tests -p test_send_isolation_linux.py -v
   repository-hygiene:
     runs-on: ubuntu-latest
     timeout-minutes: 10

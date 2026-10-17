@@ -1,0 +1,38 @@
+# Example only. Do not install/enable without an approved deployment review.
+# sender.json.example has enabled=false and intentionally refuses startup.
+[Unit]
+Description=InboxTether isolated send preparation broker (no network sending endpoint)
+After=network.target
+
+[Service]
+Type=simple
+User=inboxtether-send
+Group=inboxtether-send-ipc
+UMask=0077
+WorkingDirectory=/opt/inboxtether-send
+ExecStart=/usr/local/libexec/inboxtether-send --config /etc/inboxtether-send/sender.json serve
+Restart=no
+RuntimeDirectory=inboxtether-send
+RuntimeDirectoryMode=0750
+StateDirectory=inboxtether-send
+StateDirectoryMode=0700
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX
+# The broker cannot open TCP sockets. The separately run trusted approval CLI
+# needs outbound TCP/TLS and is NOT launched by this preparation-only service.
+StandardOutput=null
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

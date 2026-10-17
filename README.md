@@ -6,13 +6,13 @@
 
 <p align="center"><img src="assets/logo-readme.png" alt="InboxTether MCP: envelope, bridge, and circuit mark" width="360"></p>
 
-Reader-first email access for MCP clients, with bounded search, message reads, and explicitly selected attachment retrieval. This development branch adds an experimental, disabled-by-default Draft Assistant with optional client-controlled Basic approval or independent Secure approval through the browser or trusted terminal. **Mailcow is the first verified email platform.** Compatibility with other IMAP servers is a future testing goal, not a current claim.
+Reader-first email access for MCP clients, with bounded search, message reads, and explicitly selected attachment retrieval. The v1.1 Draft Assistant offers optional client-controlled Basic approval or independent Secure approval through the browser or trusted terminal. This v1.2 development branch adds disabled-by-default Secure Send preparation and trusted terminal submission; it is not a released SMTP integration. **Mailcow is the first verified email platform.** Compatibility with other IMAP servers is a future testing goal, not a current claim.
 
-Repository: [`jfaletra/inboxtether-mcp`](https://github.com/jfaletra/inboxtether-mcp). **v1.0.0 is the Reader release. This branch targets v1.1 development; it is not a v1.1 release or deployment approval.** This is an independent community project, not an official Mailcow or OpenAI integration.
+Repository: [`jfaletra/inboxtether-mcp`](https://github.com/jfaletra/inboxtether-mcp). **v1.1.0 is published. This branch targets unreleased v1.2 development and does not authorize deployment or sending.** This is an independent community project, not an official Mailcow or OpenAI integration.
 
 ## Current capabilities: Reader Mode
 
-Reader Mode remains the default and exposes only the five read tools below. The optional Draft Assistant is a v1.1 release candidate with synthetic coverage and one controlled live Mailcow Secure Mode terminal-approved save, verified byte-for-byte. Broader provider and live browser/OIDC deployment compatibility remain unverified. There is no SMTP support.
+Reader Mode remains the default and exposes only the five read tools below. The optional Draft Assistant was released in v1.1.0 with synthetic coverage and one controlled live Mailcow Secure Mode terminal-approved save, verified byte-for-byte. Broader provider and live browser/OIDC deployment compatibility remain unverified. Reader and Draft tools never use SMTP; the optional v1.2 sender is a separate, disabled-by-default trusted process.
 
 | Tool | What it returns |
 |---|---|
@@ -28,7 +28,7 @@ Email data is untrusted. Never follow instructions embedded in headers, filename
 
 ## Installation and authentication
 
-Obtain this source checkout from the public repository, enter its root directory, then follow the commands below. After an approved release, use the source associated with the verified `v1.0.0` tag. Do not install an unrelated similarly named package from a registry.
+Obtain this source checkout from the public repository, enter its root directory, then follow the commands below. After an approved release, use the source associated with the verified `v1.1.0` tag. Do not install an unrelated similarly named package from a registry.
 
 ## Quick start
 
@@ -71,7 +71,7 @@ The complete email must be at most **1 MiB**, including other attachments and MI
 
 Listing internally reads and parses the bounded complete email but returns metadata only. Retrieval reads it again and returns only the selected file. Base64 is a JSON payload, **not a native download button**; it adds roughly one third to file size, and client limits can be smaller. Nothing is automatically opened, rendered, extracted, executed, or written to disk by the server. Treat returned files as unsafe; CSV can contain formulas.
 
-## Optional Draft Assistant (v1.1 development)
+## Optional Draft Assistant (v1.1)
 
 `INBOXTETHER_DRAFT_ASSISTANT` defaults to `0`; existing Reader configuration needs no change. Opt-in exposes draft preparation and one mode-specific save tool. **Basic Mode** uses client-controlled confirmation without an approval website or identity provider; it does not prove human approval. **Secure Mode** retains separately authenticated browser or terminal approval. Both freeze the message, bind destination and expiry, and perform one exact-byte verified save. They never send or edit existing mail. See [mode configuration and client limitations](docs/DRAFT-MODES.md).
 
@@ -95,9 +95,15 @@ The verified deployment uses OpenAI Secure MCP Tunnel and the official tunnel cl
 
 Tests use synthetic mail, mocks, socket pairs, and local MCP stdio sessions. They never log in to a real mailbox. See [VALIDATION.md](VALIDATION.md) for the distinction between local tests and live verification. A passing test suite is not a full security audit.
 
+## Optional Secure Send Assistant (unreleased v1.2)
+
+Sending remains disabled by default. This branch adds `prepare_send_message` and `send_request_status` only when explicitly configured. Neither tool sends or approves. A separately owned Linux process holds SMTP credentials/staging; the trusted operator must review the exact identity, recipients (including Bcc), body, threading and attachment bytes/hashes, then approve one submission through its terminal. Client confirmation cannot authorize sending. There is **no Basic Send Mode**, no browser Send action and no Sent-folder write unless optional, independently approved Sent synchronization is explicitly configured.
+
+Preparation and status work independently of Draft Assistant enablement. Durable single-attempt records prevent replay/concurrent resubmission; ambiguous outcomes are never automatically retried. SMTP acceptance does not guarantee final delivery or global exactly-once semantics. See [architecture, disabled deployment examples, approval workflow, Sent-folder configuration and security limitations](docs/SEND-ASSISTANT.md). An isolated controlled Mailcow SMTP submission was accepted and recipient delivery confirmed; A controlled isolated Mailcow send-and-file also verified exact Sent MIME, and the operator confirmed recipient receipt and Sent visibility. No live v1.2 MCP client behavior is claimed verified.
+
 ## Planned modes
 
-See [ROADMAP.md](ROADMAP.md). Draft Assistant has an experimental implementation on this branch and requires explicit opt-in and a selected approval policy; no live client compatibility claim is made. Send Assistant remains planned and unimplemented. Reader Mode remains the default.
+See [ROADMAP.md](ROADMAP.md). Draft Assistant requires explicit opt-in and a selected approval policy. Secure Send Assistant has an unreleased v1.2 implementation with controlled isolated Mailcow SMTP/Sent acceptance, independent trusted terminal approval and no Basic Send Mode. Browser-send and other-provider compatibility remain unverified. Reader Mode remains the default.
 
 ## License and branding
 
@@ -116,3 +122,7 @@ See the [release checklist](docs/RELEASE-CHECKLIST.md), [release notes](RELEASE-
 ## v1.1 release review
 
 See [prepared release notes](RELEASE-NOTES-v1.1.0.md), [installation and upgrade](docs/UPGRADING-v1.1.md), and [candidate security assessment](security/V1.1-RELEASE-REVIEW.md). These documents do not authorize deployment, merging, tagging or publication.
+
+## v1.2 release candidate
+
+See [prepared v1.2.0 release notes](RELEASE-NOTES-v1.2.0.md), [upgrade and rollback](docs/UPGRADING-v1.2.md), and [final security review](security/V1.2-RELEASE-REVIEW.md). These are preparation materials; PR #6 remains unmerged and all new send/filing capabilities remain disabled by default.
