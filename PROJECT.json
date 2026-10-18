@@ -7,11 +7,12 @@
   "implemented_modes": [
     "reader",
     "basic-draft-assistant",
-    "secure-draft-assistant"
+    "secure-draft-assistant",
+    "secure-send-assistant",
+    "sent-folder-synchronization"
   ],
   "planned_modes": [
-    "browser-send-approval",
-    "sent-folder-synchronization"
+    "browser-send-approval"
   ],
   "verified_email_platforms": [
     "Mailcow"
@@ -20,10 +21,10 @@
   "source_license": "MIT",
   "branding_license": "reserved rights; owner-authorized project distribution",
   "distribution": "source repository; no PyPI package or hosted endpoint published",
-  "version": "1.1.0",
-  "release_status": "v1.1.0 published; v1.2 Secure Send development is unreleased and disabled by default",
+  "version": "1.2.1",
+  "release_status": "v1.2.1 candidate prepared; not tagged or published; v1.2.0 remains published",
   "experimental_modes": [
     "secure-send-assistant"
   ],
-  "development_target": "1.2"
+  "development_target": "1.2.1"
 }

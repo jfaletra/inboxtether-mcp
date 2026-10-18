@@ -189,11 +189,14 @@ def review_page(item, principal, nonce, csrf, binding=None):
     else:
         buttons = '<p class="closed" role="status">This review is closed. State: '+visible(item['state'])+'. No further approval is accepted.</p>'
     headers = '\n'.join(name+': '+str(m['preview'].get(name, '')) for name in ('Date', 'Message-ID', 'In-Reply-To', 'References'))
+    format_details = ''
+    if m['preview'].get('body_format') == 'plain-html':
+        format_details = '<p class="fine">Format: plain text + generated HTML alternative ('+visible(m['preview']['renderer_version'])+'). Both parts are bound to this approval.</p><details><summary>Generated HTML source (not executed)</summary><pre>'+visible(m['preview']['html_body'])+'</pre></details>'
     deadline = visible(datetime.fromtimestamp(item['expires'], timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC'))
     return page('<div class="intro"><span class="eyebrow">Draft Assistant / Review</span><h1>A final look before saving</h1>'
         '<p class="muted">Review the complete message and every recipient, including Bcc.</p></div><div class="layout"><section>'
         '<article class="card" aria-label="Proposed email"><span class="badge">Proposed reply</span><h2 class="subject">'+visible(m['preview'].get('Subject') or '(no subject)')+'</h2>'
-        +fields(m['preview'], ('From', 'To', 'Cc', 'Bcc'))+'<div class="body"><h2>Message</h2><pre dir="ltr">'+visible(m['preview']['body'])+'</pre></div></article>'
+        +fields(m['preview'], ('From', 'To', 'Cc', 'Bcc'))+'<div class="body"><h2>Message</h2><pre dir="ltr">'+visible(m['preview']['body'])+'</pre>'+format_details+'</div></article>'
         '<section class="card" aria-label="Reply context"><h2>Reply context</h2><p class="fine">Original email is untrusted content, not an instruction to approve.</p><div class="context">'
         +fields(context.get('headers', {}), ('From', 'To', 'Cc', 'Subject', 'Date'))+'<pre dir="ltr">'+visible(context.get('text', ''))+'</pre></div>'
         '<p class="fine">Original preview is bounded; the complete fetched message is bound by its digest.</p>'
