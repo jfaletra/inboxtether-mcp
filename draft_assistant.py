@@ -254,7 +254,9 @@ def reply_bytes(config, original, to, subject, body, cc, bcc):
     references = re.findall(MSG_ID, chain)
     require(not re.sub(MSG_ID, '', chain).strip() and len(references) < 20, 'Unsupported parent threading chain.')
     references = list(dict.fromkeys([*references, parent_id]))
-    msg = EmailMessage(policy=policy.SMTP)
+    # RFC 2045 limits quoted-printable physical lines to 76 columns.
+    # Keep SMTP CRLF and decoded body unchanged; wrapping is transport-only.
+    msg = EmailMessage(policy=policy.SMTP.clone(max_line_length=76))
     msg['From'] = config.account
     msg['To'] = ', '.join(to)
     if cc:

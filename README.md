@@ -75,6 +75,8 @@ Listing internally reads and parses the bounded complete email but returns metad
 
 `INBOXTETHER_DRAFT_ASSISTANT` defaults to `0`; existing Reader configuration needs no change. Opt-in exposes draft preparation and one mode-specific save tool. **Basic Mode** uses client-controlled confirmation without an approval website or identity provider; it does not prove human approval. **Secure Mode** retains separately authenticated browser or terminal approval. Both freeze the message, bind destination and expiry, and perform one exact-byte verified save. They never send or edit existing mail. See [mode configuration and client limitations](docs/DRAFT-MODES.md).
 
+For plain-text paragraph preservation, MIME encoding and client troubleshooting, see [Draft formatting](docs/DRAFT-FORMATTING.md).
+
 See [browser review and independent authentication](docs/BROWSER-APPROVAL.md) and [Draft Assistant architecture, setup and limitations](docs/DRAFT-ASSISTANT.md). In Secure Mode native client prompts are supplementary. In Basic Mode the operator explicitly delegates authority to the client; tool hints and model statements do not prove human approval. Do not enable this feature or grant mailbox writes as part of a Reader update. No production write capability has been enabled.
 
 ## Read-only protections and resource limits
