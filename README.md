@@ -77,6 +77,10 @@ Listing internally reads and parses the bounded complete email but returns metad
 
 For plain-text paragraph preservation, MIME encoding and client troubleshooting, see [Draft formatting](docs/DRAFT-FORMATTING.md).
 
+Optional [generated HTML draft compatibility](docs/HTML-DRAFT-ALTERNATIVE.md) is disabled by default and requires operator configuration. No client compatibility is claimed without live testing.
+
+The v1.2.1 maintenance candidate includes [compatibility results](docs/HTML-COMPATIBILITY-RESULTS.md), [release notes](RELEASE-NOTES-v1.2.1.md), and [upgrade/rollback guidance](docs/UPGRADING-v1.2.1.md). It is not yet tagged or published.
+
 See [browser review and independent authentication](docs/BROWSER-APPROVAL.md) and [Draft Assistant architecture, setup and limitations](docs/DRAFT-ASSISTANT.md). In Secure Mode native client prompts are supplementary. In Basic Mode the operator explicitly delegates authority to the client; tool hints and model statements do not prove human approval. Do not enable this feature or grant mailbox writes as part of a Reader update. No production write capability has been enabled.
 
 ## Read-only protections and resource limits

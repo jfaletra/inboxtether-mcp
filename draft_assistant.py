@@ -14,6 +14,7 @@ from email.parser import BytesParser
 from email.utils import format_datetime
 from datetime import datetime, timezone
 import hashlib
+import html
 import json
 import os
 from pathlib import Path
@@ -30,6 +31,7 @@ from urllib.parse import urlsplit
 TTL = 600
 MAX_PENDING = 32
 MAX_DRAFT = 65536
+HTML_RENDERER_VERSION = "escaped-br-v1"
 ID = re.compile(r'[0-9a-f]{64}')
 MSG_ID = r'<[A-Za-z0-9.!#$%&\x27*+/=?^_`{|}~-]+@[A-Za-z0-9.-]+>'
 
@@ -79,6 +81,7 @@ class Config:
     approval_owner: tuple[str, str] | None = None
     review_origin: str | None = None
     mode: str = "secure"
+    html_alternative: bool = False
 
     @classmethod
     def load(cls):
@@ -109,12 +112,16 @@ class Config:
             subject = text(os.environ.get('INBOXTETHER_APPROVAL_SUBJECT', ''), 256)
             owner = (issuer, subject)
             origin = https_url(os.environ.get('INBOXTETHER_REVIEW_ORIGIN', ''), origin=True)
-        return cls(host, account, folder, directory, owner, origin, mode)
+        alternative = os.environ.get('INBOXTETHER_DRAFT_HTML_ALTERNATIVE', '0')
+        require(alternative in ('0', '1'), 'Invalid HTML alternative setting.')
+        return cls(host, account, folder, directory, owner, origin, mode, alternative == '1')
 
     def scope(self):
         scope = {'host': self.host, 'account': self.account, 'folder': self.folder}
         if self.mode == 'basic':
             scope['approval_mode'] = 'basic'
+        if self.html_alternative:
+            scope.update(body_format='plain-html', renderer_version=HTML_RENDERER_VERSION)
         if self.approval_owner is not None:
             scope['approval_owner'] = dict(zip(('issuer', 'subject'), self.approval_owner))
         return scope
@@ -198,7 +205,7 @@ class Store:
                 'Draft integrity check failed.')
         require(item['manifest']['expires_at'] == item['expires'], 'Draft integrity check failed.')
         require(item['manifest']['scope'] == self.config.scope(), 'Draft configuration changed; prepare a new review.')
-        require(preview(item['raw']) == item['manifest']['preview'], 'Draft integrity check failed.')
+        require(preview(item['raw'], self.config.html_alternative) == item['manifest']['preview'], 'Draft integrity check failed.')
         return item
 
     def approve(self, key, fingerprint, actor=None):
@@ -231,12 +238,68 @@ class Store:
             db.commit()
 
 
-def preview(raw):
+def render_html(body):
+    """Only escaped canonical text plus fixed markup; never accept raw HTML."""
+    require(isinstance(body, str) and body.endswith('\r\n'))
+    require('\r' not in body.replace('\r\n', '') and '\n' not in body.replace('\r\n', ''))
+    return ('<html><body><div>' + html.escape(body, quote=True).replace('\r\n', '<br>')
+            + '</div></body></html>\r\n')
+
+
+def alternative_text(part, kind):
+    """Strict generated-leaf validation; no attachments, headers or encodings."""
+    require(not part.defects and not part.is_multipart() and part.get_content_type() == kind)
+    allowed = {'content-type', 'content-transfer-encoding', 'mime-version'}
+    require(all(name.lower() in allowed for name in part.keys()))
+    require(all(len(part.get_all(name, [])) <= 1 for name in allowed))
+    require(part.get_content_charset() == 'utf-8' and
+            part.get_params() == [(kind, ''), ('charset', 'utf-8')])
+    require(str(part.get('Content-Transfer-Encoding', '')).lower() == 'quoted-printable')
+    require(part.get('MIME-Version') in (None, '1.0'))
+    payload = part.get_payload()
+    require(isinstance(payload, str) and payload.isascii())
+    lines = payload.split('\r\n')
+    require(all(len(line) <= 76 and not line.endswith((' ', '\t')) and
+                re.fullmatch(r'(?:[!-<>-~]|[ \t]|=[0-9A-F]{2})*=?', line) for line in lines))
+    require(not lines[-1] and (len(lines) < 2 or not lines[-2].endswith('=')))
+    try:
+        body = part.get_payload(decode=True).decode('utf-8', errors='strict')
+    except (UnicodeError, AttributeError, TypeError):
+        raise DraftError('Invalid alternative MIME text.') from None
+    require(body.endswith('\r\n') and '\r' not in body.replace('\r\n', '')
+            and '\n' not in body.replace('\r\n', ''))
+    return body
+
+
+def preview(raw, html_alternative=False):
+    require(isinstance(raw, bytes) and len(raw) <= MAX_DRAFT)
     msg = BytesParser(policy=policy.default).parsebytes(raw)
-    require(not msg.defects and not msg.is_multipart() and msg.get_content_type() == 'text/plain')
+    require(not msg.defects)
+    extra = {}
+    if html_alternative:
+        allowed = {'from', 'to', 'cc', 'bcc', 'subject', 'date', 'message-id',
+                   'in-reply-to', 'references', 'mime-version', 'content-type'}
+        require(all(name.lower() in allowed for name in msg.keys()) and
+                all(len(msg.get_all(name, [])) <= 1 for name in allowed))
+        require(all(len(msg.get_all(name, [])) == 1 for name in allowed - {'cc', 'bcc'}))
+        require(msg.get_content_type() == 'multipart/alternative' and msg.is_multipart()
+                and msg.get('MIME-Version') == '1.0')
+        require([name for name, value in msg.get_params()] == ['multipart/alternative', 'boundary'])
+        require(re.fullmatch(r'[A-Za-z0-9=_-]{1,70}', msg.get_boundary() or ''))
+        require(not (msg.preamble or '').strip() and not (msg.epilogue or '').strip())
+        parts = list(msg.iter_parts())
+        require(len(parts) == 2)
+        body = alternative_text(parts[0], 'text/plain')
+        markup = alternative_text(parts[1], 'text/html')
+        require(markup == render_html(body), 'HTML alternative differs from approved plain text.')
+        extra = {'body_format': 'plain-html', 'renderer_version': HTML_RENDERER_VERSION,
+                 'html_body': markup}
+    else:
+        require(not msg.is_multipart() and msg.get_content_type() == 'text/plain')
+        body = msg.get_content()
     return {**{name: str(msg.get(name, '')) for name in
                ('From', 'To', 'Cc', 'Bcc', 'Subject', 'Date', 'Message-ID', 'In-Reply-To', 'References')},
-            'body': msg.get_content()}
+            'body': body, **extra}
 
 
 def reply_bytes(config, original, to, subject, body, cc, bcc):
@@ -254,8 +317,10 @@ def reply_bytes(config, original, to, subject, body, cc, bcc):
     references = re.findall(MSG_ID, chain)
     require(not re.sub(MSG_ID, '', chain).strip() and len(references) < 20, 'Unsupported parent threading chain.')
     references = list(dict.fromkeys([*references, parent_id]))
-    # RFC 2045 limits quoted-printable physical lines to 76 columns.
-    # Encode the body at 76 columns; retain the original header policy below.
+    # The shared Secure Send caller supplies only an account; never infer HTML
+    # from its environment or add this draft-only feature to Send Assistant.
+    html_alternative = getattr(config, 'html_alternative', False)
+    # RFC 2045: encode both plain-only and alternative bodies at 76 columns.
     msg = EmailMessage(policy=policy.SMTP.clone(max_line_length=76))
     msg['From'] = config.account
     msg['To'] = ', '.join(to)
@@ -269,6 +334,9 @@ def reply_bytes(config, original, to, subject, body, cc, bcc):
     msg['In-Reply-To'] = parent_id
     msg['References'] = ' '.join(references)
     msg.set_content(body, subtype='plain', charset='utf-8', cte='quoted-printable')
+    if html_alternative:
+        plain_body = msg.get_content().replace('\r\n', '\n').replace('\n', '\r\n')
+        msg.add_alternative(render_html(plain_body), subtype='html', charset='utf-8', cte='quoted-printable')
     # Header folding is unchanged from v1.2.0; only body transfer wrapping changes.
     raw = msg.as_bytes(policy=policy.SMTP)
     require(len(raw) <= MAX_DRAFT, 'Serialized draft exceeds 64 KiB.')
@@ -314,7 +382,7 @@ class DraftService:
         manifest = {'version': 1, 'expires_at': time.time() + TTL, 'scope': self.config.scope(), 'drafts_uidvalidity': validity,
                     'source': {'mailbox': mailbox, 'uid': uid, 'uidvalidity': uidvalidity, 'sha256': digest(original)},
                     'reply_context': self.reader.parse_message(original),
-                    'mime_sha256': digest(raw), 'preview': preview(raw)}
+                    'mime_sha256': digest(raw), 'preview': preview(raw, self.config.html_alternative)}
         key = self.store.put(manifest, raw)
         return {'draft_id': key, 'approval_fingerprint': digest(canonical(manifest)),
                 'expires_in_seconds': TTL, 'state': 'pending_client_confirmation' if self.config.mode == 'basic' else 'pending_operator_review',
