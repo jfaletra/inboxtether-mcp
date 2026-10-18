@@ -4,6 +4,8 @@ import quopri
 import unittest
 from email import policy
 from email.parser import BytesParser
+from email.message import EmailMessage
+from unittest.mock import patch
 
 from test_draft_assistant import DraftFixture
 import draft_assistant as d
@@ -98,6 +100,27 @@ class DraftMimeFormattingTests(DraftFixture, unittest.TestCase):
         self.assertEqual(msg.get_content_type(), 'text/plain')
         self.assertEqual(lf(msg.get_content()), body + '\n')
         self.assertEqual(len(list(msg.walk())), 1)
+
+    def test_encoding_fix_keeps_original_header_bytes_and_decoded_body(self):
+        body = ('Unicode café and a long synthetic line. ' * 12) + '\n\nSignature  \nExample User'
+        arguments = (self.config, b'Message-ID: <parent@example.com>\r\n\r\nSynthetic',
+                     ['one@example.com', 'two@example.com'],
+                     'A long synthetic subject with Unicode café and words ' * 3,
+                     body, ['copy@example.com'], None)
+        # Compare the original v1.2.0 SMTP policy with the correction, using the
+        # same identities/date. No network, staging or client UI is involved.
+        with patch.object(d, 'format_datetime', return_value='Sat, 17 Oct 2026 12:00:00 +0000'), \
+                patch.object(d.secrets, 'token_hex', return_value='a' * 48):
+            corrected = d.reply_bytes(*arguments)
+            with patch.object(d, 'EmailMessage', side_effect=lambda **kw: EmailMessage(policy=policy.SMTP)):
+                baseline = d.reply_bytes(*arguments)
+        old_headers, old_encoded = baseline.split(b'\r\n\r\n', 1)
+        new_headers, new_encoded = corrected.split(b'\r\n\r\n', 1)
+        self.assertEqual(new_headers, old_headers)
+        self.assertNotEqual(new_encoded, old_encoded)
+        self.assertEqual(quopri.decodestring(new_encoded), quopri.decodestring(old_encoded))
+        self.assertEqual(lf(quopri.decodestring(new_encoded).decode()), body + '\n')
+        self.assertLessEqual(max(map(len, new_encoded.split(b'\r\n'))), 76)
 
     def test_mock_imap_save_preserves_exact_approved_multiline_bytes(self):
         result, raw, msg = self.staged('Hello\n\nFirst paragraph.\n\nSecond paragraph.\nSignature')

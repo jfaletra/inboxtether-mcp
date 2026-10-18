@@ -15,7 +15,9 @@ Quoted-printable **encoded** lines are limited to 76 characters excluding CRLF
 ([RFC 2045, section 6.7](https://www.rfc-editor.org/rfc/rfc2045.html#section-6.7)).
 Soft wraps (`=` followed by CRLF) are removed during decoding; they are not
 paragraph breaks. The draft composer explicitly uses a 76-column SMTP policy
-instead of Python's 78-column default. The decoded text is unchanged.
+instead of Python's 78-column default. Headers retain the original SMTP
+serialization policy; header bytes and decoded body bytes remain unchanged for
+identical prepared inputs, identities and timestamps.
 
 ## Review, save and client editing
 

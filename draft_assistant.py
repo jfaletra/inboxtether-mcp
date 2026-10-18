@@ -255,7 +255,7 @@ def reply_bytes(config, original, to, subject, body, cc, bcc):
     require(not re.sub(MSG_ID, '', chain).strip() and len(references) < 20, 'Unsupported parent threading chain.')
     references = list(dict.fromkeys([*references, parent_id]))
     # RFC 2045 limits quoted-printable physical lines to 76 columns.
-    # Keep SMTP CRLF and decoded body unchanged; wrapping is transport-only.
+    # Encode the body at 76 columns; retain the original header policy below.
     msg = EmailMessage(policy=policy.SMTP.clone(max_line_length=76))
     msg['From'] = config.account
     msg['To'] = ', '.join(to)
@@ -269,7 +269,8 @@ def reply_bytes(config, original, to, subject, body, cc, bcc):
     msg['In-Reply-To'] = parent_id
     msg['References'] = ' '.join(references)
     msg.set_content(body, subtype='plain', charset='utf-8', cte='quoted-printable')
-    raw = msg.as_bytes()
+    # Header folding is unchanged from v1.2.0; only body transfer wrapping changes.
+    raw = msg.as_bytes(policy=policy.SMTP)
     require(len(raw) <= MAX_DRAFT, 'Serialized draft exceeds 64 KiB.')
     return raw
 
