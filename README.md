@@ -1,4 +1,4 @@
-# InboxTether MCP — 2.0.0rc2
+# InboxTether MCP — 2.0.0rc3
 
 Your email. Your AI. Your control.
 

@@ -121,11 +121,15 @@ class ExactSocketPeerTests(unittest.TestCase):
             with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as endpoint:
                 endpoint.bind(str(path));path.chmod(0o660)
             owner=os.geteuid();runner=Mock();pause=Mock();readiness=iter([False,True])
+            # These peers are mocked: no system account or group lookup/allocation.
+            reader_uid,web_uid=[uid for uid in range(1,4) if uid!=owner][:2]
             def probe(path):
                 runner.assert_not_called()
                 return next(readiness)
-            with patch('socket_access.pwd.getpwnam',side_effect=lambda name:SimpleNamespace(pw_uid=1002 if name=='inboxtether-web' else owner)),patch('socket_access.socket_ready',side_effect=probe):
-                socket_access.grant('broker',{'reader_uid':1001,'web_uid':1002},base=runtime,
+            with patch('socket_access.pwd.getpwnam',side_effect=lambda name:SimpleNamespace(pw_uid=web_uid if name=='inboxtether-web' else owner)),patch('socket_access.socket_ready',side_effect=probe):
+                socket_access.grant('broker',{'reader_uid':reader_uid,'web_uid':web_uid},base=runtime,
                                     runner=runner,sleep=pause,clock=lambda:0)
             self.assertEqual(pause.call_count,1)
             self.assertEqual(runner.call_count,4)
+            self.assertEqual([call.args[0][2] for call in runner.call_args_list],
+                             [f'u:{reader_uid}:--x',f'u:{reader_uid}:rw-',f'u:{web_uid}:--x',f'u:{web_uid}:rw-'])

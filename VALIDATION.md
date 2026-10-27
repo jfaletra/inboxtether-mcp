@@ -1,73 +1,45 @@
-# InboxTether 2.0.0rc2 validation
+# InboxTether 2.0.0rc3 focused validation
 
-304 unique synthetic cases passed on disposable Ubuntu 24.04 arm64 / Python 3.12.3:
-294 existing cases plus 10 focused regressions, zero failures/errors/skips. The source
-and dependency installation followed the published documentation. The runner creates
-a short 0700 temporary directory under a controlled home (or private writable checkout),
-removes it on exit, and needs no externally configured TMPDIR. Enrollment safety checks
-were preserved. IP socket operations are rejected in the test runner; local Unix sockets
-and socketpairs are allowed. Imported unittest IDs are deduplicated.
+The only Python-code change is the socket-readiness test fixture in
+`tests/test_rc2_regressions.py`. Its fixed mock peer UIDs collided with the actual
+socket owner on GitHub runners. The application correctly refused that identity
+combination; no application defect or security-control change was required.
 
-## Four bounded corrections
+The fixture now chooses two positive, bounded, distinct synthetic peer UIDs from
+1..3 excluding the real socket owner. The mocked web lookup and exact four ACL
+assertions use those values. All account lookup and ACL changes remain mocked:
+the fixture creates no OS users/groups, grants no real ACLs and needs no privilege.
+The failing path does not use a fixed group ID.
 
-- Grant only the configured Reader and actual named web identity access to the existing
-  broker socket; retain proxy-only access to the web socket. Directory traversal and
-  socket read/write ACLs do not grant directory write or journal/credential access.
-- Serialize web socket ownership with a 0600 lock in the existing runtime directory.
-  Refuse live/unsafe endpoints, recover verified disconnected owned sockets, and remove
-  only the listener's own inode on close. The existing ACL helper waits for the current
-  endpoint to listen, avoiding grants to an old socket during crash recovery.
-- Use private short-path Linux fixture directories instead of shared default /tmp.
-- Replace ast.dump-format pins with portable canonical JSON AST verification. Eight
-  function bodies (the seven Basic Reader/Draft interfaces plus the Secure Draft save
-  alternative) match the public v1.2.1 baseline. Meaningful parameter/body/type-parameter
-  changes still fail the pin. Python 3.11 and 3.12 both pass the portable contract check.
-  server.py and draft_assistant.py remain byte-identical to rc1.
+## Completed local checks
 
-## Actual disposable Linux checks
+- Full 304-case suite passed locally on macOS / Python 3.11.5, zero failures/errors/skips.
+- The original rc2 failing case was reproduced under both UIDs 1001 and 1002 in a
+  disposable Ubuntu 24.04 arm64 / Python 3.12.3 environment.
+- All 304 rc3 cases passed there as UID 0, UID 1001 and UID 1002, with zero
+  failures/errors/skips in each run. Separate test identities existed only in that VM.
+- Every runtime Python file, all other test code, the Reader/Draft contract pins,
+  dependency constraints, workflow, licenses and artwork notices are byte-identical
+  to rc2. The seven Reader/Draft interfaces, Secure Draft alternative, 13 organization
+  actions, approval behavior and security controls are unchanged. Sending is absent.
 
-Published service identities/units, private filesystem permissions, owner enrollment,
-HTTPS proxy and login/session, exact browser-manifest approval/CSRF, Python MCP SDK
-stdio and Unix IPC all passed. Optional client consent approved one exact synthetic
-batch, rejected a changed fingerprint and refused replay. Narrow sender/context
-preferences were created, inspected, edited and revoked through the actual broker.
-Reader journal access, web IMAP credential access and web IPv4 socket creation were
-denied. No production resource or real mailbox was accessed.
+The complete suite retains fabricated Reader/Draft/organization/correction adapters,
+real MCP stdio/internal Unix IPC checks, exact consent/preference/replay protections
+and private temporary directories. Operational settings are cleared by the runner,
+which rejects IP socket operations. No production email or configuration is needed.
+Previous rc2 service/login/crash/rollback evidence covers unchanged application code;
+this fixture correction is not a new service deployment or live acceptance.
 
-Three normal web restarts and forced SIGKILL recovery restored healthy authenticated
-browser/broker access without manual socket deletion. A protected source/configuration
-backup, deliberate source-manifest failure, source restore and full service restart
-passed. Journal checksums stayed unchanged; two distinct synthetic approvals and
-preference revision 3 survived. No journal was restored or rewound, no daemon mailbox
-move attempt occurred, and execution stayed disabled. Client consent was disabled again
-after testing. This is source-only restore evidence, not legacy downgrade/migration.
+## Hosted check and review gate
 
-Reader/search/attachments and Drafts preparation/save use fabricated IMAP fixtures.
-Organization, flags, source-integrity/Keep protections, durable claims, rule revision
-binding, one-message overrides and receipt-linked corrections pass synthetic tests,
-including real SDK/Unix transports and simulated HTTP where applicable. No vendor
-client UI or live IMAP/provider acceptance is claimed. Organization/corrections remain
-experimental until separately authorized live acceptance; client-relayed consent does
-not independently authenticate a human approver.
+The unchanged `.github/workflows/ci.yml` runs the full 304 tests, dependency consistency,
+source/manifest hygiene and the constrained advisory audit on the CI-only branch
+`ci/v2.0.0rc3-validation`. Publication recommendation requires complete success for
+exactly the candidate commit. The final review report supplied alongside the checksummed
+archives records the actual GitHub run URL and result. Validation creates no rc3 tag
+or GitHub release and does not change the stable branch or release.
 
-## Dependencies and package
-
-pip check passed. All 56 constrained runtime/test/audit package versions match the
-installed environment and license inventory; their current advisory audit reported
-zero known vulnerabilities. Dependencies are not vendored. MIT, branding rights and
-third-party/license inventory notices are unchanged. Installer bootstrap tools are
-outside the application constraint inventory. Advisory checks cannot exclude undisclosed
-vulnerabilities, and pattern scans cannot establish the absence of every possible secret.
-
-Source/package checks reject credential/address/private-path patterns, unsafe paths,
-operational artifacts, sending imports/tools and manifest drift. All 97 archive files
-are listed by the member manifest; ZIP/tar member bytes are compared to their source.
-No installation-specific inventory, rules, state, credentials or deployment configuration is
-included. The retained public repository author attribution is provenance. Source
-contains no executable email-sending capability; local Unix RPC send framing and MIME
-serialization are not email transmission.
-
-## Reproduce from the extracted archive
+## Reproduce
 
 ```sh
 python3 -m venv .venv
@@ -78,7 +50,9 @@ python3 -m venv .venv
 .venv/bin/python -m pip_audit -r constraints-validated.txt --no-deps --disable-pip --strict --progress-spinner off
 ```
 
-Service tests require a disposable Linux host, synthetic configuration and identities,
-the documented existing proxy and unit examples, and fabricated message adapters.
-Do not run validation against operational configuration. No GitHub action was triggered,
-and nothing was published, deployed to production or changed in any connected plugin.
+No dependencies are vendored. Source manifest and archive checksums must be verified
+before review. Pattern/advisory checks are bounded evidence, not guarantees of absence
+of undisclosed vulnerabilities or every secret. Organization, corrections and actual
+ChatGPT/Claude/provider acceptance remain experimental. Optional client-relayed consent
+is lower assurance, not independently verified human authorization. Sending stays
+excluded from the 2.0 line. No production deployment or mailbox work is authorized.

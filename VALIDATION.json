@@ -1,72 +1,82 @@
 {
-  "candidate": "2.0.0rc2",
+  "candidate": "2.0.0rc3",
   "date": "2026-10-26",
-  "environment": {
-    "distribution": "Ubuntu 24.04",
-    "architecture": "arm64",
-    "python": "3.12.3",
-    "kernel": "6.8.0-142-generic",
-    "disposable": true
+  "change_scope": "One test fixture plus version/provenance/validation documentation and checksum manifest; no application or workflow changes",
+  "fixture_correction": {
+    "file": "tests/test_rc2_regressions.py",
+    "test": "ExactSocketPeerTests.test_acl_waits_until_stale_endpoint_is_replaced_and_listening",
+    "cause": "Fixed mock peer UIDs could equal actual socket owner",
+    "fix": "Choose two distinct positive synthetic peer UIDs from 1..3 excluding the actual owner; use them consistently in mock lookup and exact ACL assertions",
+    "system_accounts_or_groups_modified_by_fixture": false
   },
-  "synthetic_tests": {
-    "unique_cases": 304,
-    "existing_cases": 294,
-    "focused_rc2_regressions": 10,
+  "local_complete_suite": {
+    "os": "Darwin",
+    "python": "3.11.5",
+    "tests": 304,
     "failures": 0,
     "errors": 0,
-    "skips": 0,
-    "self_contained": true,
-    "private_temp": "0700 short temporary directory under controlled test home; no external TMPDIR required",
-    "network_guard": "IP sockets rejected in test runner; Unix sockets and local socketpairs allowed"
+    "skipped": 0,
+    "synthetic_only": true
   },
-  "source_contract": {
-    "basic_reader_draft_interfaces": 7,
-    "unchanged_function_bodies_including_secure_draft_alternative": 8,
-    "reader_draft_source_files_byte_unchanged_from_rc1": true,
-    "contract_reference": "Public v1.2.1 canonical AST; version-independent JSON encoding; Python 3.11 and 3.12 checked",
+  "disposable_linux": {
+    "distribution": "Ubuntu 24.04 arm64",
+    "python": "3.12.3",
+    "results": [
+      {
+        "baseline_fixture_uid": 1001,
+        "reproduced_original_failure": true
+      },
+      {
+        "baseline_fixture_uid": 1002,
+        "reproduced_original_failure": true
+      },
+      {
+        "uid": 0,
+        "tests": 304,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "synthetic_only": true
+      },
+      {
+        "uid": 1001,
+        "tests": 304,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "synthetic_only": true
+      },
+      {
+        "uid": 1002,
+        "tests": 304,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "synthetic_only": true
+      }
+    ],
+    "production_resources": false
+  },
+  "hosted_ci_requirement": {
+    "branch": "ci/v2.0.0rc3-validation",
+    "workflow": ".github/workflows/ci.yml",
+    "required_tests": 304,
+    "require_complete_success": true,
+    "evidence": "Final review report alongside the source archives records the actual run URL/status for the exact candidate commit; no rc3 tag or release is created by validation"
+  },
+  "preserved": {
+    "runtime_python_files_byte_identical_to_rc2": 37,
+    "seven_reader_draft_interfaces": "unchanged",
+    "secure_draft_alternative": "unchanged",
     "organization_actions": 13,
-    "sending_tools_and_executable_email_send": "absent"
-  },
-  "actual_linux_checks": [
-    "Documented dependency installation, separate service identities and owner enrollment CLI",
-    "HTTPS proxy, password login/session, exact browser approval/CSRF and peer-restricted broker",
-    "Actual Python MCP SDK stdio ClientSession and Unix broker communication",
-    "Client-relayed consent: incorrect fingerprint and replay refused; exact synthetic batch approved",
-    "Preference create/inspect/edit/revoke; narrow synthetic sender and subject context",
-    "Explicit Reader/web broker socket ACLs; proxy-only web socket ACL",
-    "Reader journal and web IMAP-secret read access denied; web IPv4 socket denied",
-    "Stop/start, three normal restarts, forced SIGKILL auto-recovery",
-    "Protected source/config backup, deliberate source manifest failure and exact source restore; healthy restarted services and unchanged journal"
-  ],
-  "dependencies": {
-    "pip_check": "passed",
-    "pinned_packages": 56,
-    "installed_versions_and_license_inventory": "match",
-    "known_advisories": 0,
-    "vendored_dependencies": false,
-    "license_and_notice_files": "unchanged",
-    "advisory_limit": "Known advisories at validation time only"
-  },
-  "package": {
-    "source_files_including_manifest": 97,
-    "manifest": "MANIFEST.sha256",
-    "private_pattern_findings": 0,
-    "operational_state_or_credentials": "absent",
-    "archives": "Deterministic ZIP and tar.gz; independently checked member bytes, paths and hashes"
-  },
-  "execution": {
-    "real_mailbox_access": false,
-    "actual_daemon_mailbox_move_attempts": 0,
-    "execution_gate": "disabled",
-    "client_consent_gate_after_tests": "disabled",
-    "correction_testing": "Fabricated message/receipt adapters, including real SDK/Unix IPC and simulated browser HTTP; no provider mailbox"
+    "approval_security_controls": "unchanged",
+    "sending": "absent",
+    "dependencies_licenses_artwork_notices_workflow": "unchanged"
   },
   "limits": [
-    "No live ChatGPT/Claude or other vendor client UI acceptance",
-    "No live IMAP/provider or production acceptance",
-    "Organization and receipt corrections remain experimental pending separately authorized live acceptance",
-    "Source-only restore tested; no legacy downgrade, private state import or production migration certified",
-    "Client-relayed consent intentionally does not independently verify human approval"
+    "Organization, corrections and live client/provider acceptance remain experimental",
+    "This test-only correction adds no new live acceptance or production certification",
+    "Optional client-session-consent remains lower assurance and is not independently verified human authorization"
   ],
-  "publication": "Not authorized or performed; review required"
+  "publication": "Not authorized; candidate requires owner review"
 }

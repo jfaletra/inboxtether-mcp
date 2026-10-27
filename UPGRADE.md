@@ -1,6 +1,6 @@
 # Candidate installation, upgrade and rollback
 
-2.0.0rc2 is an isolated source candidate with a neutral `organize_email` interface.
+2.0.0rc3 is an isolated source candidate with a neutral `organize_email` interface.
 It excludes previously optional email sending. Existing clients must discover the new
 contract in a separate test configuration. No existing private deployment or plugin
 should be changed to try it. There is no automatic legacy state/configuration migration.
