@@ -1,82 +1,154 @@
 {
-  "candidate": "2.0.0rc3",
-  "date": "2026-10-26",
-  "change_scope": "One test fixture plus version/provenance/validation documentation and checksum manifest; no application or workflow changes",
-  "fixture_correction": {
-    "file": "tests/test_rc2_regressions.py",
-    "test": "ExactSocketPeerTests.test_acl_waits_until_stale_endpoint_is_replaced_and_listening",
-    "cause": "Fixed mock peer UIDs could equal actual socket owner",
-    "fix": "Choose two distinct positive synthetic peer UIDs from 1..3 excluding the actual owner; use them consistently in mock lookup and exact ACL assertions",
-    "system_accounts_or_groups_modified_by_fixture": false
+  "candidate": "2.0.0",
+  "prepared_date": "2026-10-27",
+  "scope": "Documentation, version, provenance, acceptance/release records and manifest only",
+  "baseline": {
+    "version": "2.0.0rc3",
+    "source_zip_sha256": "46a9135d88bb2cb87c6bd532d33fec7a3d2a582011ccecb6bac6fca12bd44c91",
+    "commit": "cf7f2cbad4a699e42b9bc6cd3eee268b858f52bf"
   },
-  "local_complete_suite": {
-    "os": "Darwin",
-    "python": "3.11.5",
-    "tests": 304,
-    "failures": 0,
-    "errors": 0,
-    "skipped": 0,
-    "synthetic_only": true
+  "current_candidate_checks": {
+    "local_synthetic_suite": {
+      "os": "macOS",
+      "python": "3.11.5",
+      "tests": 304,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "synthetic_only": true
+    },
+    "python_files_byte_identical_to_baseline": 58,
+    "runtime_python_files": 37,
+    "test_python_files": 21,
+    "mcp_definitions": {
+      "profiles": [
+        {
+          "profile": "reader",
+          "tool_count": 5,
+          "names": [
+            "list_mailboxes",
+            "search_messages",
+            "read_message",
+            "list_attachments",
+            "retrieve_attachment"
+          ],
+          "complete_definitions_identical_to_rc3": true
+        },
+        {
+          "profile": "basic",
+          "tool_count": 8,
+          "names": [
+            "list_mailboxes",
+            "search_messages",
+            "read_message",
+            "list_attachments",
+            "retrieve_attachment",
+            "prepare_reply_draft",
+            "save_draft",
+            "organize_email"
+          ],
+          "complete_definitions_identical_to_rc3": true
+        },
+        {
+          "profile": "secure",
+          "tool_count": 8,
+          "names": [
+            "list_mailboxes",
+            "search_messages",
+            "read_message",
+            "list_attachments",
+            "retrieve_attachment",
+            "prepare_reply_draft",
+            "save_approved_draft",
+            "organize_email"
+          ],
+          "complete_definitions_identical_to_rc3": true
+        }
+      ],
+      "mailbox_or_broker_calls": 0,
+      "scope": "SDK metadata inspection only; not new client acceptance"
+    },
+    "dependency_license_consistency": {
+      "pinned_packages": 56,
+      "installed_versions_match_all_pins": true,
+      "license_inventory_versions_and_metadata_match": true,
+      "dependencies_vendored": false
+    },
+    "advisory_check": {
+      "date": "2026-10-27",
+      "pinned_packages": 56,
+      "reported_known_vulnerabilities": 0,
+      "method": "pip-audit strict constrained resolution; no dependency installation/upgrade"
+    },
+    "manifest": "Regenerated; independently checked by scripts/verify_release.py and archive verification",
+    "limitations": "No new Linux/AI-client/mailbox/service acceptance run in this documentation-only preparation"
   },
-  "disposable_linux": {
-    "distribution": "Ubuntu 24.04 arm64",
-    "python": "3.12.3",
-    "results": [
-      {
-        "baseline_fixture_uid": 1001,
-        "reproduced_original_failure": true
-      },
-      {
-        "baseline_fixture_uid": 1002,
-        "reproduced_original_failure": true
-      },
-      {
-        "uid": 0,
-        "tests": 304,
-        "failures": 0,
-        "errors": 0,
-        "skipped": 0,
-        "synthetic_only": true
-      },
-      {
-        "uid": 1001,
-        "tests": 304,
-        "failures": 0,
-        "errors": 0,
-        "skipped": 0,
-        "synthetic_only": true
-      },
-      {
-        "uid": 1002,
-        "tests": 304,
-        "failures": 0,
-        "errors": 0,
-        "skipped": 0,
-        "synthetic_only": true
-      }
+  "historical_rc3_synthetic_checks": {
+    "ubuntu_24_04_python_3_12_3": "304 passed as each of UIDs 0, 1001 and 1002",
+    "github_actions": {
+      "run": "https://github.com/jfaletra/inboxtether-mcp/actions/runs/40427695602",
+      "commit": "cf7f2cbad4a699e42b9bc6cd3eee268b858f52bf",
+      "tests": 304,
+      "conclusion": "success"
+    },
+    "new_stable_candidate_hosted_ci": "Not run; no GitHub writes authorized"
+  },
+  "accepted_unchanged_rc3": {
+    "backend": "Real disposable Dovecot plus MCP SDK; reading, Drafts, verified moves, HTTPS owner sessions, corrections and preference lifecycle",
+    "codex_cli": {
+      "version": "0.164.0-alpha.11.1",
+      "actual_ai_client": true,
+      "graphical": false,
+      "mcp_calls": 24,
+      "completed": 22,
+      "initial_safely_blocked_calls": 2,
+      "initial_issues": [
+        "Unattended client approval policy",
+        "Missing required payload"
+      ],
+      "result": "Requested bounded workflows passed after client settings/guidance correction"
+    },
+    "claude_desktop": {
+      "app_version": "3.6556.2",
+      "model": "Sonnet 5.5 Medium",
+      "graphical": true,
+      "mcp_calls": 19,
+      "successful": 19,
+      "result": "Requested bounded workflows passed"
+    },
+    "both_real_client_workflows": [
+      "Folder listing/search/read",
+      "Basic reply preparation and one Drafts save",
+      "Source-bound classification and one exact approved verified move",
+      "Narrow preference approval/inspection/revocation"
     ],
-    "production_resources": false
+    "browser_approval": "Real HTTPS password-session forms/cookies/CSRF driven programmatically by an operator harness; not graphical browser interaction or independent-human certification",
+    "draft_approval": "Basic/client-controlled confirmation",
+    "preference_approval": "Optional lower-assurance client-session-consent; not independently verifiable human authorization",
+    "evidence": {
+      "real_dovecot_backend": {
+        "operator_report_sha256": "6f2150f1cc04640631d2913e9e85bc534ef31d39d491bd7ad2abf53b01d7a2c5",
+        "raw_private_evidence_in_source_package": false
+      },
+      "codex_cli": {
+        "operator_report_sha256": "c5c2fa78a0cf3bcdd8173a3c318bec21fa8d705ae35cf2dfd6cc9b19e37af9be",
+        "raw_private_evidence_in_source_package": false
+      },
+      "graphical_claude_desktop": {
+        "operator_report_sha256": "a9f7e2f05d86e15d839b841ce5d1a527843ecb8adba134df1d15699395bc2f21",
+        "raw_private_evidence_in_source_package": false
+      }
+    }
   },
-  "hosted_ci_requirement": {
-    "branch": "ci/v2.0.0rc3-validation",
-    "workflow": ".github/workflows/ci.yml",
-    "required_tests": 304,
-    "require_complete_success": true,
-    "evidence": "Final review report alongside the source archives records the actual run URL/status for the exact candidate commit; no rc3 tag or release is created by validation"
-  },
-  "preserved": {
-    "runtime_python_files_byte_identical_to_rc2": 37,
-    "seven_reader_draft_interfaces": "unchanged",
-    "secure_draft_alternative": "unchanged",
-    "organization_actions": 13,
-    "approval_security_controls": "unchanged",
-    "sending": "absent",
-    "dependencies_licenses_artwork_notices_workflow": "unchanged"
-  },
-  "limits": [
-    "Organization, corrections and live client/provider acceptance remain experimental",
-    "This test-only correction adds no new live acceptance or production certification",
-    "Optional client-session-consent remains lower assurance and is not independently verified human authorization"
+  "remaining_unverified_in_real_client_passes": [
+    "Ordinary ChatGPT graphical interaction",
+    "Graphical browser approval UI",
+    "Secure browser-approved Drafts",
+    "Attachment UI/download handling",
+    "Client-driven future rule matching",
+    "Receipt-linked corrections in a graphical client",
+    "Other clients/models/provider mappings and production deployment"
   ],
-  "publication": "Not authorized; candidate requires owner review"
+  "preserved": "All application/tests/configuration examples/requirements/constraints/CI/licenses/artwork and trust/security controls unchanged; sending absent",
+  "publication_at_preparation": "Awaiting explicit owner approval; no publish/tag/merge/stable-branch change/deployment"
 }

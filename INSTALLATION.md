@@ -21,6 +21,31 @@ INBOXTETHER_DRAFTS_FOLDER=Drafts
 INBOXTETHER_DRAFT_STATE_DIR=/var/lib/inboxtether-drafts
 ```
 
+### Drafts special-use prerequisite
+
+An existing folder named `Drafts` is insufficient by itself. The configured wire
+mailbox must be selectable and its authenticated IMAP `LIST` response must advertise
+the `\Drafts` special-use flag. Preparation checks that flag and pins the mailbox's
+UIDVALIDITY; saves recheck the identity. InboxTether does not create the folder or
+assign its server-side special-use role.
+
+For a new disposable Dovecot 2.3 test server with an existing Drafts folder, configure
+its mailbox role in the applicable namespace, then reload the test server:
+
+```conf
+namespace inbox {
+  mailbox Drafts {
+    special_use = \Drafts
+  }
+}
+```
+
+Verify the authenticated `LIST "" "Drafts"` response contains `\Drafts` before
+preparing a reply. Substitute the exact configured wire path if it differs. If the
+folder exists but lacks this role, 2.0.0 can return a generic mailbox-request error
+from `prepare_reply_draft`; inspect the special-use flag as well as access rights.
+No approval or Drafts save is needed to perform that read-only preflight.
+
 Basic delegates approval to the client and requires the complete returned confirmation
 object unchanged for `save_draft`. If independent owner authorization is required,
 select `INBOXTETHER_DRAFT_MODE=secure`, remove the Basic acknowledgment and use the
@@ -40,6 +65,38 @@ separate OS identities: Reader/Draft, `inboxtether-organizer` (broker/executor) 
 journal or its IMAP credential. Reader cannot impersonate the owner browser peer.
 Use a dedicated IMAP organization login with explicitly reviewed mapping to the
 logical account; Reader and organization password files are separate.
+
+### Exact namespace paths and authentication separators
+
+Mailbox hierarchy and login-name separators are separate requirements:
+
+- **Folder namespace:** Configure the six exact, existing IMAP wire paths and their
+  UIDVALIDITY values in `mailboxes`. The published Organizer accepts 1–512 ASCII
+  characters per path from `A-Z a-z 0-9 _ @ . + / -`. Slash-separated components
+  cannot be empty, `.` or `..`; the six paths must remain distinct ignoring case.
+  Literal slash and dot hierarchies can be represented, for example `INBOX/Industry`
+  or `INBOX.Industry`, only when those exact paths already exist on the server.
+  These examples do not establish that a particular namespace is configured.
+  InboxTether does not discover, translate or normalize namespace prefixes or
+  hierarchy delimiters. `*` is unsupported in a configured path and is never a
+  wildcard for discovering or choosing a destination.
+- **Dedicated Organizer login:** `account` is the logical mailbox identity;
+  `login_account` is a different, explicitly reviewed principal mapped to it.
+  Both values accept 1–320 characters from `A-Z a-z 0-9 _ . + @ -`. In particular,
+  `*` is rejected before the broker starts. A Dovecot master-login name such as
+  `owner@example.com*organizer` is therefore unsupported by 2.0.0 (unchanged from rc3).
+  This restriction concerns the login string, not the mailbox hierarchy delimiter.
+
+The disposable Dovecot acceptance fixture used `auth_master_user_separator = +`.
+An illustrative corresponding login is `login_account = "owner@example.com+organizer"`.
+`+` is an accepted login-name character; InboxTether does not configure Dovecot or assume
+that `+` has authentication semantics on another server. Use a genuinely supported
+and scoped dedicated login/mapping. Do not broaden the validators, guess aliases,
+or change an existing production server's namespace/authentication settings to try
+this example. Identity or folder-pin changes need the documented operator assessment.
+
+References: [Dovecot namespaces](https://doc.dovecot.org/2.3/configuration_manual/namespace/)
+and [Dovecot master users](https://doc.dovecot.org/2.3/configuration_manual/authentication/master_users/).
 
 Copy and customize the examples into administrator-controlled configuration paths:
 

@@ -1,45 +1,87 @@
-# InboxTether 2.0.0rc3 focused validation
+# InboxTether 2.0.0 validation and acceptance
 
-The only Python-code change is the socket-readiness test fixture in
-`tests/test_rc2_regressions.py`. Its fixed mock peer UIDs collided with the actual
-socket owner on GitHub runners. The application correctly refused that identity
-combination; no application defect or security-control change was required.
+Prepared on 2026-10-27 from the exact published v2.0.0rc3 source ZIP:
+`46a9135d88bb2cb87c6bd532d33fec7a3d2a582011ccecb6bac6fca12bd44c91`,
+commit `cf7f2cbad4a699e42b9bc6cd3eee268b858f52bf`.
+Only documentation, version/provenance/validation/release records and the checksum
+manifest change. All 58 Python files are byte-identical: 37 application/support
+files and 21 test files. Dependency files, examples, CI, licenses and artwork are
+unchanged. The seven Reader/Draft contracts, Secure alternative, 13 organization
+actions, exact approvals, protections, preferences and replay/receipt controls are
+preserved. Sending remains absent.
 
-The fixture now chooses two positive, bounded, distinct synthetic peer UIDs from
-1..3 excluding the real socket owner. The mocked web lookup and exact four ACL
-assertions use those values. All account lookup and ACL changes remain mocked:
-the fixture creates no OS users/groups, grants no real ACLs and needs no privilege.
-The failing path does not use a fixed group ID.
+## Checks on this stable candidate
 
-## Completed local checks
+- The complete 304-case synthetic suite passed on macOS / Python 3.11.5 with zero
+  failures, errors or skips. The existing runner clears operational settings and
+  rejects IP socket operations. No production resources were supplied.
+- Full MCP metadata/schema/annotation comparison against extracted rc3 matched in
+  Reader-only (5 tools), Basic Drafts/organization (8) and Secure Drafts/organization
+  (8) profiles. This is SDK metadata inspection, not new AI-client acceptance.
+- All 56 installed pinned package versions and recorded license metadata matched
+  the unchanged constraints/inventory; dependency consistency passed. The strict
+  2026-10-27 pip-audit check reported zero known vulnerabilities in those pins.
+  This is bounded advisory evidence, not an undisclosed-vulnerability guarantee.
+- The source manifest is regenerated. Archive entries, checksums, license/artwork
+  notices, local documentation links and source/private-pattern hygiene are checked
+  separately during packaging. No dependencies, private configuration or state are
+  bundled. Root MIT and separate artwork restrictions remain intact.
 
-- Full 304-case suite passed locally on macOS / Python 3.11.5, zero failures/errors/skips.
-- The original rc2 failing case was reproduced under both UIDs 1001 and 1002 in a
-  disposable Ubuntu 24.04 arm64 / Python 3.12.3 environment.
-- All 304 rc3 cases passed there as UID 0, UID 1001 and UID 1002, with zero
-  failures/errors/skips in each run. Separate test identities existed only in that VM.
-- Every runtime Python file, all other test code, the Reader/Draft contract pins,
-  dependency constraints, workflow, licenses and artwork notices are byte-identical
-  to rc2. The seven Reader/Draft interfaces, Secure Draft alternative, 13 organization
-  actions, approval behavior and security controls are unchanged. Sending is absent.
+The unchanged rc3 application/test baseline previously passed all 304 tests on
+Ubuntu 24.04 / Python 3.12.3 as UIDs 0, 1001 and 1002, and [GitHub Actions](https://github.com/jfaletra/inboxtether-mcp/actions/runs/40427695602)
+for the exact commit above. Those are historical rc3 results, not a new hosted run
+of this 2.0.0 documentation snapshot. No GitHub write or new Linux/mailbox/client
+acceptance was performed during this preparation.
 
-The complete suite retains fabricated Reader/Draft/organization/correction adapters,
-real MCP stdio/internal Unix IPC checks, exact consent/preference/replay protections
-and private temporary directories. Operational settings are cleared by the runner,
-which rejects IP socket operations. No production email or configuration is needed.
-Previous rc2 service/login/crash/rollback evidence covers unchanged application code;
-this fixture correction is not a new service deployment or live acceptance.
+## Actual acceptance of the unchanged rc3 application
 
-## Hosted check and review gate
+| Layer/client | Actual coverage | Boundaries |
+|---|---|---|
+| Dovecot 2.3.21 on disposable Ubuntu 24.04 / Python 3.12.3, MCP SDK stdio/Unix broker | Real TLS IMAP reading/search, Basic Drafts save, approved moves, receipt-linked correction, one-message correction, preference create/edit/revoke and future constraints, restart preservation | Programmatic protocol/backend acceptance; not an AI assistant or graphical browser |
+| Signed-in Codex CLI 0.164.0-alpha.11.1 | Reading/search, reply preparation, one saved draft, source-bound classification, one separately approved verified move, narrow preference approval/inspection/revocation | Actual AI client, not graphical or SDK simulation. 24 MCP calls: 22 completed, two initial calls safely blocked by client approval settings and an omitted payload; corrected settings/guidance completed the test |
+| Signed-in Claude Desktop 3.6556.2, Sonnet 5.5 Medium | Same bounded workflows; eight tools and all 13 actions discovered; **19 successful MCP calls** | Actual native graphical chat and local MCP connection, not CLI/SDK simulation. Guided test of one client/model/configuration |
 
-The unchanged `.github/workflows/ci.yml` runs the full 304 tests, dependency consistency,
-source/manifest hygiene and the constrained advisory audit on the CI-only branch
-`ci/v2.0.0rc3-validation`. Publication recommendation requires complete success for
-exactly the candidate commit. The final review report supplied alongside the checksummed
-archives records the actual GitHub run URL and result. Validation creates no rc3 tag
-or GitHub release and does not change the stable branch or release.
+The client tests used synthetic messages on disposable Dovecot, never a production
+mailbox. Complete displayed draft/batch/preference plans were compared independently
+with the backend before fresh exact consent. One Drafts save and one move completed
+in each real-client pass. Independent IMAP checks verified the saved MIME and moved
+bytes, destination UID/UIDVALIDITY, source removal and persistent flags. The graphical
+Claude move preserved an empty flag set; protected flagged/customer originals stayed
+unchanged. All test connections/environments were removed after verification.
 
-## Reproduce
+**Graphical Claude MCP testing is distinct from browser approval.** The separate
+browser-password-session mechanism was exercised through real verified HTTPS login
+and review forms, cookies and CSRF by an operator harness. No graphical browser
+approval click-through was tested, and the synthetic owner does not certify a human
+identity. Draft saves used Basic/client-controlled confirmation. Preference decisions
+used optional `client-session-consent`, which is lower assurance and cannot
+independently prove human approval. Native client permission prompts are not backend
+owner authorization. See [trust guarantees](WORKFLOWS.md).
+
+Initial Claude UI/clipboard coordination and JSON presentation needed explicit
+guidance. The model initially misidentified its host and later abbreviated a receipt;
+neither claim was treated as evidence. Exact copied JSON and independent checks
+provided the comparisons. No application defect or extra mailbox write resulted.
+
+## Remaining unverified client workflows and known limits
+
+Ordinary ChatGPT graphical interaction, graphical browser approval, Secure Drafts
+browser/OIDC use, attachment presentation/download UI, client-driven future rule
+matching and receipt-linked corrections in a graphical client were not exercised
+by the two real-client passes. Corrections remain experimental at that UI level;
+their backend and synthetic evidence is separate. Other clients/models, provider
+account mappings/ACLs and production deployment are not certified by these results.
+
+Use the fixed categories and exact folder/login character constraints; the revised
+[installation prerequisites](INSTALLATION.md) document IMAP `\Drafts` special use
+and unsupported `*` separators. No new installation rerun is claimed for these
+documentation-only corrections. Native Windows organization, automatic legacy-state
+migration, automatic moves, inverse rollback and uncertain retries are unsupported.
+The existing discovery/journal/review bounds fail closed. A guarded smoke test does
+not certify arbitrary classification quality, sender authenticity, every credential
+exposure pattern or universal compatibility. See [README limitations](README.md).
+
+## Reproduce focused checks
 
 ```sh
 python3 -m venv .venv
@@ -50,9 +92,7 @@ python3 -m venv .venv
 .venv/bin/python -m pip_audit -r constraints-validated.txt --no-deps --disable-pip --strict --progress-spinner off
 ```
 
-No dependencies are vendored. Source manifest and archive checksums must be verified
-before review. Pattern/advisory checks are bounded evidence, not guarantees of absence
-of undisclosed vulnerabilities or every secret. Organization, corrections and actual
-ChatGPT/Claude/provider acceptance remain experimental. Optional client-relayed consent
-is lower assurance, not independently verified human authorization. Sending stays
-excluded from the 2.0 line. No production deployment or mailbox work is authorized.
+Publication, tagging, stable-branch changes, installation and mailbox acceptance on
+a new deployment are separate owner-controlled actions. This dated preparation
+record grants none of them. [Machine-readable record](VALIDATION.json) includes the
+baseline and operator evidence report hashes without private raw transcripts/state.

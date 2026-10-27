@@ -3,7 +3,7 @@
   "public_base_repository": "https://github.com/jfaletra/inboxtether-mcp",
   "public_base_commit": "8084558358ddfb7cd01fc6fc680a261a10bb23b3",
   "public_base_tag": "v1.2.1",
-  "candidate_version": "2.0.0rc3",
+  "candidate_version": "2.0.0",
   "later_modules": "Owner-authorized existing organization, browser approval, preferences and corrections, generalized in an isolated source candidate",
   "changes": [
     "Sending implementation and registrations removed",
@@ -15,9 +15,10 @@
   ],
   "migration": "Fresh installation only; no legacy state import or in-place production upgrade",
   "previous_candidate": {
-    "version": "2.0.0rc2",
-    "source_zip_sha256": "59e7d27ce579bf5c55c0af573423319f8885eb8ea7f44deefaa7301d883a05a1",
-    "source_commit": "e870f6b81a1447ba859dd1c34fe8e78959fcad99"
+    "version": "2.0.0rc3",
+    "source_zip_sha256": "46a9135d88bb2cb87c6bd532d33fec7a3d2a582011ccecb6bac6fca12bd44c91",
+    "source_commit": "cf7f2cbad4a699e42b9bc6cd3eee268b858f52bf",
+    "release": "https://github.com/jfaletra/inboxtether-mcp/releases/tag/v2.0.0rc3"
   },
   "rc2_corrections": [
     "Explicit web service peer access to existing broker Unix socket",
@@ -25,5 +26,11 @@
     "Private short-path Linux test temporary directories",
     "Portable canonical-AST contract pins frozen independently from public v1.2.1"
   ],
-  "rc3_correction": "Test-only: dynamically select bounded distinct synthetic peer UIDs excluding the actual socket owner; preserve exact ACL assertions. No users/groups are created and no runtime code is changed."
+  "rc3_correction": "Test-only: dynamically select bounded distinct synthetic peer UIDs excluding the actual socket owner; preserve exact ACL assertions. No users/groups are created and no runtime code is changed.",
+  "stable_preparation": {
+    "date": "2026-10-27",
+    "scope": "Version, reviewed Drafts/namespace documentation, acceptance/release records and regenerated manifest only",
+    "application_tests_examples_dependencies_ci_licenses_artwork": "Byte-identical to the exact published rc3 archive",
+    "publication_at_preparation": "Not authorized; no tag, merge, stable branch change or deployment"
+  }
 }

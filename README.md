@@ -1,4 +1,4 @@
-# InboxTether MCP — 2.0.0rc3
+# InboxTether MCP — 2.0.0
 
 Your email. Your AI. Your control.
 
@@ -9,9 +9,11 @@ approval, narrow owner preferences and receipt-linked corrections are included.
 Send/Sent settings or send launchers are included. MIME's SMTP formatting policy is
 used solely to serialize drafts and is not a transport.
 
-This is a review candidate, not a published release or deployment. Organization and
-new-client workflows are experimental pending controlled live acceptance. Mailcow
-is the previously validated provider; other IMAP providers are not certified.
+Prepared for the 2.0.0 stable release with the application code from the validated
+v2.0.0rc3. Controlled synthetic-mail acceptance covered real Dovecot, Codex CLI and
+graphical Claude Desktop. This is bounded evidence for those configurations, not
+universal provider/client certification. Receipt-linked corrections remain
+experimental at the real-client/UI level; see the validation matrix below.
 
 ## Tools
 
@@ -48,17 +50,30 @@ The client launches `.venv/bin/python server.py` and owns its stdin/stdout. This
 starts no public HTTP endpoint. Read connections use TLS, EXAMINE and BODY.PEEK.
 The fixed host/account cannot be selected by tool arguments.
 
+Draft saves require a selectable mailbox advertising the IMAP `\Drafts` special-use
+flag. Organizer requires exact literal folder paths; its login-name constraints reject
+`*`, including master-login names that use it. Folder hierarchy and authentication
+separators are distinct; see the installation prerequisites below.
+
 See [installation](INSTALLATION.md) for Draft Assistant, organization, browser review,
 roles, mailbox rights and clean initialization. Read [approval and learning](WORKFLOWS.md)
 before enabling write capabilities. All write switches are off by default.
 
 ## Compatibility and limitations
 
-The MCP SDK stdio handshake, tool declarations, synthetic tool calls and Unix broker
-flows are tested. ChatGPT and Claude are intended compatible-client targets, not
-certified live UI integrations for this candidate. Use a client's supported stdio
-launcher or independently configured MCP transport; no assistant-specific plugin,
-tunnel or authentication platform is bundled or required by the application protocol.
+The MCP SDK/backend checks and actual signed-in Codex CLI and graphical Claude
+Desktop acceptance are distinct evidence. Claude completed 19 successful MCP calls;
+Codex completed the same bounded workflows after two safely blocked initial calls
+and corrected client permissions/guidance. Both used disposable Dovecot mailboxes.
+Browser-password-session approval used the real verified HTTPS service driven by
+an operator harness, not a graphical browser. Draft saves used Basic mode; preference
+decisions used optional lower-assurance client-session consent. See the exact
+[acceptance matrix and limits](VALIDATION.md) before making compatibility claims.
+Ordinary ChatGPT graphical acceptance, secure browser-approved Drafts, graphical
+corrections and other provider/client configurations remain unverified in these
+client passes. Use a client's supported stdio launcher or independently configured
+MCP transport; no assistant-specific plugin, tunnel or authentication platform is
+bundled or required by the application protocol.
 Client prompts may omit details or remember grants. They are not independent proof
 of an owner decision. See [trust guarantees](WORKFLOWS.md).
 
@@ -88,4 +103,5 @@ operations in the test process. Never supply production credentials to tests.
 Application source, tests and documentation are MIT. The included project icon has
 separate distribution/reuse terms in `assets/BRANDING-RIGHTS.txt`; it is not MIT.
 This is an independent community project, with no affiliation claim for any client
-or email provider. Publication and live acceptance require separate owner review.
+or email provider. See [release notes](RELEASE_NOTES.md). Publication, deployment
+and acceptance on a new installation require separate owner review.
