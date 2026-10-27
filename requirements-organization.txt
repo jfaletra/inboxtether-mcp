@@ -1,0 +1,7 @@
+-r requirements.txt
+starlette==1.8.0
+uvicorn==0.54.0
+PyJWT[crypto]==2.15.1
+cryptography==50.0.2
+dkimpy==1.1.8
+dnspython==2.9.0

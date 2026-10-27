@@ -1,0 +1,27 @@
+{
+  "project": "InboxTether MCP",
+  "public_base_repository": "https://github.com/jfaletra/inboxtether-mcp",
+  "public_base_commit": "8084558358ddfb7cd01fc6fc680a261a10bb23b3",
+  "public_base_tag": "v1.2.1",
+  "candidate_version": "2.0.0rc2",
+  "later_modules": "Owner-authorized existing organization, browser approval, preferences and corrections, generalized in an isolated source candidate",
+  "changes": [
+    "Sending implementation and registrations removed",
+    "Neutral organization contract and consent vocabulary",
+    "Fresh-install config and JSON journal bootstrap",
+    "Installation-specific state imports omitted",
+    "Self-contained synthetic tests and neutral examples",
+    "Documentation, licensing inventory and checksum packaging"
+  ],
+  "migration": "Fresh installation only; no legacy state import or in-place production upgrade",
+  "previous_candidate": {
+    "version": "2.0.0rc1",
+    "source_zip_sha256": "12bbca26e594bfffc71169f918f7f6f2805205d2664f86e3a9c8cdc009587e6b"
+  },
+  "rc2_corrections": [
+    "Explicit web service peer access to existing broker Unix socket",
+    "Safe owned stale-socket recovery and live-endpoint ACL readiness",
+    "Private short-path Linux test temporary directories",
+    "Portable canonical-AST contract pins frozen independently from public v1.2.1"
+  ]
+}

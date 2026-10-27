@@ -1,23 +1,9 @@
-.env
-*.env
-!.env.example
-!*.env.example
 .venv/
 __pycache__/
-*.py[cod]
-secrets/
-*password*
-*.pem
-*.key
+*.pyc
+.env
 *.log
-.DS_Store
-
-# Draft approval state is private and must stay outside the checkout.
+operation.json
+operation.next
+owner.json
 *.sqlite3
-*.sqlite3-*
-draft-state/
-
-# Approval service runtime state and secrets are never source artifacts.
-*.sock
-*.secret
-csrf.bin

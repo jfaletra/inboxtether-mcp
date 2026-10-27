@@ -1,0 +1,20 @@
+name: candidate-validation
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  synthetic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -c constraints-validated.txt -r requirements-test.txt -r requirements-audit.txt
+      - run: python -m pip check
+      - run: python run_tests.py
+      - run: python scripts/verify_release.py
+      - run: python -m pip_audit -r constraints-validated.txt --no-deps --disable-pip --strict --progress-spinner off

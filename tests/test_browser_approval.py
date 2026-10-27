@@ -408,7 +408,7 @@ class BrokerGuardTests(BrowserFixture, unittest.TestCase):
             self.assertEqual(listener.family, socket.AF_UNIX)
             self.assertEqual(path.stat().st_mode & 0o777, 0o660)
             with self.assertRaises(d.DraftError): w.private_listener(path)
-        path.unlink(); runtime.chmod(0o755)
+        self.assertFalse(path.exists()); runtime.chmod(0o755)
         with self.assertRaises(d.DraftError): w.private_listener(path)
 
     def test_no_browser_or_broker_smtp_mailbox_or_mcp_authority(self):
