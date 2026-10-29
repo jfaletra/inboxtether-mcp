@@ -194,31 +194,29 @@ class NativeMoveService(MoveService):
         return operation
 
     def prepare(self,uids):
-        # Preserve the base workflow but add preference revision BEFORE first write.
-        require(type(uids) is list and 1<=len(uids)<=10 and all(type(u) is int and u>0 for u in uids)
-                and len(set(uids))==len(uids),'Exact 1..10 UIDs required')
-        value=self.load();w=value['workflow'];scope=[]
-        for uid in uids:
-            d=w['decisions'].get(str(uid),{})
-            require(d.get('move_eligible') is True and d.get('customer') is False and d.get('category') in self.pins,
-                    'Customer/Keep/uncertain source cannot enter batch')
-            scope.append((uid,d['category']))
-        for key,old in value['batches'].items():
-            if old['state'] in ('prepared','approved') and not old['attempts'] and self.clock()>=old['manifest']['expires']:
-                old['state']='expired';self.registry.batch(key).write(old)
-        key=secrets.token_hex(32)
-        self.operation(key,scope).validate(review_seconds=1800,review_binding=self.review_binding())
-        return self.status(key)
+        # New normal reviews of every size share the fixed, separately bound deadlines.
+        from bulk_moves import begin
+        return begin(self,uids)
 
     def has_correction(self,key):return key in self.load()['client_native']['corrections']
 
     def status(self,key):
-        self.load()
+        from bulk_moves import preparation_status,is_bulk,enrich
+        loaded=self.load()
+        if key in loaded.get('candidate_selections',{}) and key not in loaded['batches']:
+            from candidate_selection import compact
+            return compact(self,key)
+        if key in loaded.get('bulk_preparations',{}) and key not in loaded['batches']:return preparation_status(self,key)
         if key in self.registry.read()['client_native']['corrections']:
             value=CorrectionJournal(self.registry,key).read()
             return {**value,'batch_id':key,'review_url':self.origin+self.review_path_prefix+'/review/'+key,
                     'expired':self.clock()>=value['manifest']['expires']}
-        return super().status(key)
+        value=super().status(key)
+        if is_bulk(value['manifest']):
+            value.update(enrich(value))
+            if value['state'] in ('paused','executing') and value.get('bulk_execution'):
+                value['expired']=self.clock()>=value['manifest']['execution_deadline']
+        return value
 
     def checked_review(self,key,fp):
         value=self.status(key)
@@ -233,7 +231,7 @@ class NativeMoveService(MoveService):
     def record_decision(self,key,fp,decision,method):
         value=self.checked_review(key,fp)
         require(value['state']=='prepared' and not value['attempts'] and value['approval'] is None,'Review consumed')
-        value={k:v for k,v in value.items() if k not in ('batch_id','review_url','expired')}
+        value={k:v for k,v in value.items() if k not in ('batch_id','review_url','expired','summary_by_destination','total_messages','verified_messages','remaining_messages','chunk_size','approval_start_deadline','execution_deadline','can_continue')}
         value['state']=decision
         value['approval']={'method':method,'principal':copy.deepcopy(self.owner),'fingerprint':fp,'at':self.clock()}
         self.journal_for(key).write(value)
@@ -253,13 +251,33 @@ class NativeMoveService(MoveService):
             operation=self.correction_operation(key,value['manifest'])
         else:
             operation=self.operation(key,[(e['uid'],e['category']) for e in value['manifest']['moves']])
-        return operation.execute_consented(self.owner,method)
+        result=operation.execute_consented(self.owner,method)
+        from bulk_moves import is_bulk
+        if not is_bulk(value['manifest']):return result
+        current=self.status(key)
+        # Avoid repeating the 200-message manifest on every acknowledged chunk.
+        report={k:current[k] for k in ('batch_id','fingerprint','state','approval','expired','review_url','summary_by_destination','total_messages','verified_messages','remaining_messages','chunk_size','approval_start_deadline','execution_deadline','can_continue')}
+        report['receipt_offset']=len(value['attempts'])
+        report['attempts']=current['attempts'][report['receipt_offset']:]
+        report['full_receipts_available_via_status']=True
+        return report
 
     def cancel(self,key,fp):
+        self.chat_enabled();value=self.load()
+        if key in value.get('bulk_preparations',{}) and key not in value['batches']:
+            r=value['bulk_preparations'][key]
+            require(r['fingerprint']==fp,'Exact preparation fingerprint required')
+            if r['state']=='cancelled':return {'batch_id':key,'state':'cancelled','moves':0}
+            from bulk_moves import cancel_preparation
+            return cancel_preparation(self,key,fp)
+        raw=value['batches'].get(key)
+        if raw and raw['fingerprint']==fp and not raw['attempts'] and 'bulk_execution' not in raw and raw['state'] in ('prepared','approved','expired') and self.clock()>=raw['manifest']['expires']:
+            self.registry.retire_expired(self.clock(),only=key)
+            return {'batch_id':key,'state':'expired','moves':0}
         self.chat_enabled();value=self.status(key)
         require(value['fingerprint']==fp and value['state'] in ('prepared','approved') and not value['attempts'],
                 'Only exact unattempted reviews can be cancelled')
-        raw={k:v for k,v in value.items() if k not in ('batch_id','review_url','expired')};raw['state']='rejected'
+        raw={k:v for k,v in value.items() if k not in ('batch_id','review_url','expired','summary_by_destination','total_messages','verified_messages','remaining_messages','chunk_size','approval_start_deadline','execution_deadline','can_continue')};raw['state']='rejected'
         self.journal_for(key).write(raw)
         return {'state':'rejected','batch_id':key}
 
@@ -386,11 +404,28 @@ class NativeMoveService(MoveService):
 
     def dispatch(self,action,payload):
         require(type(payload) is dict,'Object payload required')
+        if action=='candidates':
+            from candidate_discovery import candidates
+            return candidates(self,payload)
+        if action=='prepare' and set(payload)=={'selection_ref'}:
+            from candidate_selection import prepare
+            return prepare(self,payload['selection_ref'])
+        if action=='prepare' and set(payload)=={'batch_id'}:
+            if payload['batch_id'] in self.load().get('candidate_selections',{}) and payload['batch_id'] not in self.load()['batches']:
+                from candidate_selection import prepare
+                return prepare(self,payload['batch_id'],continuation=True)
+            from bulk_moves import advance
+            return advance(self,payload['batch_id'])
         if action=='consent':
             self.chat_enabled();exact(payload,('batch_id','fingerprint','decision'))
             require(payload['decision'] in ('approved','rejected'),'Explicit decision required')
             return self.record_decision(payload['batch_id'],payload['fingerprint'],payload['decision'],CHAT)
-        if action=='cancel':exact(payload,('batch_id','fingerprint'));return self.cancel(payload['batch_id'],payload['fingerprint'])
+        if action=='cancel':
+            exact(payload,('batch_id','fingerprint'))
+            if payload['batch_id'] in self.load().get('candidate_selections',{}) and payload['batch_id'] not in self.load()['batches']:
+                from candidate_selection import cancel
+                return cancel(self,payload['batch_id'],payload['fingerprint'])
+            return self.cancel(payload['batch_id'],payload['fingerprint'])
         if action=='correction_context':exact(payload,('uid',));return self.correction_context(payload['uid'])
         if action=='preferences':require(not payload,'No preference arguments');return self.preferences()
         if action=='prepare_preference':return self.prepare_preference(payload)

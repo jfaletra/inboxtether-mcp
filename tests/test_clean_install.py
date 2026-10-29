@@ -107,6 +107,35 @@ class CleanInstallTests(unittest.TestCase):
         bad=copy.deepcopy(self.config);bad['mailboxes']['INBOX']['uidvalidity']=0
         with self.assertRaises(OrganizerError):runtime.validate(bad)
 
+    def test_saved_discovery_before_initialization_has_no_mailbox_or_state_access(self):
+        with patch.object(Adapter,'connection',side_effect=AssertionError('No IMAP')):
+            with self.assertRaises(Refused):
+                with self.context(read_only=True) as service:service.dispatch('candidates',{})
+        self.assertFalse((self.root/'operation.json').exists())
+        self.assertFalse((self.root/'account.lock').exists())
+
+    def test_clean_install_200_classifications_reference_one_consent_verified_chunks_restart(self):
+        Adapter.messages={('INBOX',u):replace(mail(uid=u,body='Wholesale inventory stock availability.',flags=() if u%2 else ('\\Seen','$Custom')),source_uidvalidity=self.config['mailboxes']['INBOX']['uidvalidity']) for u in range(1,201)}
+        for u in range(1,201):
+            item=self.call('next');self.assertEqual(item['uid'],u)
+            decision=self.call('propose',{'uid':u,'request_id':item['request_id'],'request_fingerprint':item['request_fingerprint'],'category':'Suppliers','customer_risk':'clear','reason':'supplier-notice'})
+            self.assertTrue(decision['move_eligible'])
+        selection=self.call('candidates',{'select_count':200});self.assertNotIn('uids',selection);self.assertEqual(selection['selected_messages'],200)
+        batch=self.call('prepare',{'selection_ref':selection['selection_ref']});chunks=1
+        while batch['state']=='preparing':
+            self.reload();batch=self.call('prepare',{'batch_id':batch['batch_id']});chunks+=1
+        self.assertEqual(chunks,20);self.assertEqual(Adapter.moves,[])
+        with self.context() as service:
+            exact=service.status(batch['batch_id']);self.assertEqual([e['uid'] for e in exact['manifest']['moves']],list(range(1,201)))
+            self.assertTrue(all(e['category']=='Suppliers' for e in exact['manifest']['moves']))
+        self.consent(batch);self.config['execution_enabled']=True;self.reload()
+        for i in range(20):
+            result=self.call('execute',{'batch_id':batch['batch_id']});self.assertEqual(result['verified_messages'],10*(i+1));self.reload()
+        self.assertEqual(result['state'],'completed');self.assertEqual(len(Adapter.moves),200)
+        with self.context() as service:
+            exact=service.status(batch['batch_id']);self.assertTrue(all(a['state']=='verified' and a['flags']==e['evidence']['flags'] and a['raw_sha256']==e['raw_sha256'] for a,e in zip(exact['attempts'],exact['manifest']['moves'])))
+        with self.assertRaises(Refused):self.call('execute',{'batch_id':batch['batch_id']})
+
 class PackagingContractTests(unittest.TestCase):
     def test_catalog_has_no_sending_even_with_old_switch_enabled(self):
         import server
@@ -116,4 +145,4 @@ class PackagingContractTests(unittest.TestCase):
         with patch.dict(os.environ,env,clear=True):tools=asyncio.run(server.create_server().list_tools())
         self.assertEqual({t.name for t in tools},{'list_mailboxes','search_messages','read_message','list_attachments',
                          'retrieve_attachment','prepare_reply_draft','save_draft','organize_email'})
-        self.assertEqual(len(next(t for t in tools if t.name=='organize_email').inputSchema['properties']['action']['enum']),13)
+        self.assertEqual(len(next(t for t in tools if t.name=='organize_email').inputSchema['properties']['action']['enum']),14)

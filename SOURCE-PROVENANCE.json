@@ -1,36 +1,24 @@
 {
   "project": "InboxTether MCP",
-  "public_base_repository": "https://github.com/jfaletra/inboxtether-mcp",
-  "public_base_commit": "8084558358ddfb7cd01fc6fc680a261a10bb23b3",
-  "public_base_tag": "v1.2.1",
+  "repository": "https://github.com/jfaletra/inboxtether-mcp",
+  "public_main_commit": "8084558358ddfb7cd01fc6fc680a261a10bb23b3",
+  "pr_number": 11,
+  "public_candidate_base_commit": "062db6eabf47f4a9a2b0d01750aa729924fc6843",
   "candidate_version": "2.0.0",
-  "later_modules": "Owner-authorized existing organization, browser approval, preferences and corrections, generalized in an isolated source candidate",
+  "release_state": "Unreleased refreshed candidate; no push, merge, tag or publication",
   "changes": [
-    "Sending implementation and registrations removed",
-    "Neutral organization contract and consent vocabulary",
-    "Fresh-install config and JSON journal bootstrap",
-    "Installation-specific state imports omitted",
-    "Self-contained synthetic tests and neutral examples",
-    "Documentation, licensing inventory and checksum packaging"
+    "Portable bulk preparation and verified execution chunks",
+    "Practical fixed approval/start and execution deadlines",
+    "Saved candidate discovery and actionable sanitized errors",
+    "Snapshot-bound compact selections with explicit exclusions",
+    "Self-contained public clean-install and regression fixtures"
   ],
-  "migration": "Fresh installation only; no legacy state import or in-place production upgrade",
-  "previous_candidate": {
-    "version": "2.0.0rc3",
-    "source_zip_sha256": "46a9135d88bb2cb87c6bd532d33fec7a3d2a582011ccecb6bac6fca12bd44c91",
-    "source_commit": "cf7f2cbad4a699e42b9bc6cd3eee268b858f52bf",
-    "release": "https://github.com/jfaletra/inboxtether-mcp/releases/tag/v2.0.0rc3"
-  },
-  "rc2_corrections": [
-    "Explicit web service peer access to existing broker Unix socket",
-    "Safe owned stale-socket recovery and live-endpoint ACL readiness",
-    "Private short-path Linux test temporary directories",
-    "Portable canonical-AST contract pins frozen independently from public v1.2.1"
+  "configuration": "Public clean-install schema; client-neutral consent/tool names; no private state migration",
+  "preserved": [
+    "Reader/Draft contracts",
+    "Browser approval fallback",
+    "Exact consent and customer safeguards",
+    "Durable receipts and replay claims"
   ],
-  "rc3_correction": "Test-only: dynamically select bounded distinct synthetic peer UIDs excluding the actual socket owner; preserve exact ACL assertions. No users/groups are created and no runtime code is changed.",
-  "stable_preparation": {
-    "date": "2026-10-27",
-    "scope": "Version, reviewed Drafts/namespace documentation, acceptance/release records and regenerated manifest only",
-    "application_tests_examples_dependencies_ci_licenses_artwork": "Byte-identical to the exact published rc3 archive",
-    "publication_at_preparation": "Not authorized; no tag, merge, stable branch change or deployment"
-  }
+  "sending": "Excluded"
 }

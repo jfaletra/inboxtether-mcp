@@ -90,7 +90,7 @@ class NativeTests(NativeFixture):
     def test_expired_and_replayed_consent(self):
         b=self.batch();self.approve(b)
         with self.assertRaises(Refused):self.approve(b)
-        self.now+=1801
+        self.now=b['manifest']['expires']
         with self.assertRaises(Refused):self.execute(b)
     def test_preference_change_blocks_old_consent_and_execution(self):
         b=self.batch();self.approve(b);p=self.preference();self.approve_preference(p)

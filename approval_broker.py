@@ -18,6 +18,7 @@ import struct
 import sys
 
 from draft_assistant import Config, DraftError, ID, Store, canonical, require
+from organization_errors import OrganizationError,public_error
 
 MAX_FRAME = 1_048_576
 REVIEW_ERRORS = frozenset(('missing_batch', 'expired', 'authorization', 'broker_timeout', 'broker_error'))
@@ -97,6 +98,10 @@ class Broker:
                     data = receive(self.request)
                     require(len(canonical(data)) <= (32768 if hasattr(broker, 'allowed_uids') else 4096), 'IPC request limit exceeded.')
                     result = {'ok': True, 'result': broker.dispatch(data, uid)}
+                except OrganizationError as exc:
+                    raw=exc.public;info=public_error(raw.get('error_code'),raw.get('stage'),uid=raw.get('failed_uid'),preparation_id=raw.get('preparation_id'))
+                    result={'ok':False,'organization_error':info}
+                    logging.getLogger('inboxtether.organization').warning('organization_refused code=%s stage=%s failed_uid=%s preparation_id=%s',info['error_code'],info['stage'],info.get('failed_uid','-'),info.get('preparation_id','-'))
                 except ReviewError as exc:
                     result = {'ok': False, 'error_code': exc.code}
                     logging.getLogger('inboxtether.review').warning('review_broker code=%s', exc.code)

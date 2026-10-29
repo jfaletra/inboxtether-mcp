@@ -70,8 +70,11 @@ def load():
         require(all(type(v[n]) is bool for n in GATES),'Invalid operator gates');return v
     def baseline_check(value):require(value==baseline and binding(current())==expected,'Configuration binding changed')
     @contextlib.contextmanager
-    def context():
+    def context(read_only=False):
         v=current()
+        if read_only:
+            for p in (registry.journal.path,registry.journal.directory/'account.lock'):
+                require(p.is_file() and not p.is_symlink() and p.stat().st_uid==os.geteuid() and p.stat().st_mode&0o777==0o600,'Candidate discovery requires initialized state')
         with registry:
             state=registry.read()
             adapter=IMAPMailbox(spec['host'],spec['account'],spec['password_file'],live_enabled=True,

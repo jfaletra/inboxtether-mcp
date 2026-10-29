@@ -75,12 +75,16 @@ class MoveService:
         result={'uid':uid,'category':decision.get('category') or 'Inbox / Keep','move_eligible':decision.get('move_eligible',False),'origin':'client','reason':decision['reason']}
         w['accepted'][request['id']]={'submitted':digest(proposal),'result':result};self.save(value);return result
     def operation(self,batch_id,scope):
-        w=self.load()['workflow'];decisions={u:w['decisions'][str(u)] for u,c in scope}
+        value=self.load();w=value['workflow'];decisions={u:w['decisions'][str(u)] for u,c in scope}
         def available(uid):
             self.assert_baseline(self.baseline)
             require(uid not in w['excluded'],'Organizer source exclusion')
             self.registry.available(uid,batch_id)
-        return BatchOperation(self.mailbox,self.policy,decisions,self.baseline,self.assert_baseline,self.registry.batch(batch_id),
+        operation_type=BatchOperation
+        if len(scope)>10 or batch_id in value.get('bulk_preparations',{}) or value['batches'].get(batch_id,{}).get('manifest',{}).get('schema')=='inboxtether-owner-bulk-1':
+            from bulk_moves import BulkOperation
+            operation_type=BulkOperation
+        return operation_type(self.mailbox,self.policy,decisions,self.baseline,self.assert_baseline,self.registry.batch(batch_id),
             {n:self.paths[n] for n in ('INBOX',*{c for u,c in scope})},scope=scope,
             source_uv=self.registry.identity['source_uidvalidity'],pins={c:self.pins[c] for u,c in scope},
             run_id=self.seed['run_id'],run_fingerprint=self.seed['fingerprint'],assert_available=available,clock=self.clock)

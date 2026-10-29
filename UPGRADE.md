@@ -1,9 +1,11 @@
 # Installation, upgrade and rollback
 
-2.0.0 retains the validated rc3 application code and neutral `organize_email` interface.
+This refreshed 2.0.0 candidate extends the rc3 public application with bulk filing
+and the neutral `organize_email` interface.
 It excludes previously optional email sending. Existing clients must discover the new
 contract in a separate test configuration. No existing private deployment or plugin
-should be changed to try it. There is no automatic legacy state/configuration migration.
+should be changed to try it. The public journal remains distinct from installation-specific
+state; no private ledger, receipts, witness, account pins or migration tool is shipped. There is no automatic legacy state/configuration migration.
 
 For a new installation, retain a protected source/configuration backup before future
 updates. Stop the client transport, then approval web, then broker; validate the source
@@ -35,3 +37,15 @@ directory. It preserves live endpoints and refuses unsafe paths. A verified disc
 service-owned socket is recovered automatically after a crash; ordinary close removes
 only that listener's own endpoint. No manual socket deletion is part of restart/rollback.
 The lock file may persist safely in the existing preserved runtime directory.
+
+## Public candidate additions
+
+Bulk preparation/execution and candidate selections add optional journal fields.
+Do not copy a private runtime journal into a clean public installation. New ordinary
+reviews use24-hour review/start and30-hour fixed execution deadlines; existing exact
+manifests retain their original deadlines and approvals. No update renews approval.
+Before upgrade, require no active execution, acknowledged paused chunk, in-flight
+preparation or unresolved unexpected claim. Preserve every existing claim and receipt.
+Use an offline protected diagnostic copy to establish compatibility; source rollback
+must retain current state and keep execution disabled if compatibility is uncertain.
+Synthetic clean-install tests do not certify legacy migration or downgrade.

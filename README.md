@@ -9,11 +9,13 @@ approval, narrow owner preferences and receipt-linked corrections are included.
 Send/Sent settings or send launchers are included. MIME's SMTP formatting policy is
 used solely to serialize drafts and is not a transport.
 
-Prepared for the 2.0.0 stable release with the application code from the validated
-v2.0.0rc3. Controlled synthetic-mail acceptance covered real Dovecot, Codex CLI and
-graphical Claude Desktop. This is bounded evidence for those configurations, not
-universal provider/client certification. Receipt-linked corrections remain
-experimental at the real-client/UI level; see the validation matrix below.
+This is the refreshed, **unreleased 2.0.0 candidate**. It adds up to 200-message
+bulk filing, compact server-side selection references, paginated candidate discovery,
+a 24-hour owner review/start window and a separate fixed 30-hour execution deadline.
+It is based on the public rc3/stable-preparation tree, with tested organization
+improvements adapted to the public clean-install configuration. It has not been
+published or deployed as this public candidate. See [current validation](VALIDATION.md)
+for exact tested and unverified scope; older acceptance is not certification of this revision.
 
 ## Tools
 
@@ -21,10 +23,10 @@ experimental at the real-client/UI level; see the validation matrix below.
 |---|---|
 | Default Reader | `list_mailboxes`, `search_messages`, `read_message`, `list_attachments`, `retrieve_attachment` |
 | Draft Assistant | `prepare_reply_draft` and Basic `save_draft` or Secure `save_approved_draft` |
-| Organization | `organize_email`, with 13 action-specific payloads |
+| Organization | `organize_email`, with 14 action-specific payloads |
 
 Organization actions: `next`, `propose`, `prepare`, `status`, `execute`, `consent`,
-`cancel`, `correction_context`, `preferences`, `prepare_preference`,
+`cancel`, `candidates`, `correction_context`, `preferences`, `prepare_preference`,
 `decide_preference`, `filed_context`, `prepare_correction`.
 
 There is no server-side AI provider or model key. The connected assistant proposes

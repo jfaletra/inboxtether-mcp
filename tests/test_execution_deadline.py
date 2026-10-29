@@ -17,7 +17,7 @@ class DeadlineTests(Fixture):
  def remaining(self,b,seconds):self.now=b['manifest']['expires']-seconds
  def test_two_messages_require_full_batch_window_before_any_claim(self):
   b=self.approved();before=self.state(b);self.remaining(b,MARGIN+2*PER-1)
-  with self.assertRaisesRegex(Refused,'Insufficient manifest lifetime'):self.execute(b)
+  with self.assertRaisesRegex(Refused,'execution_budget_insufficient'):self.execute(b)
   self.assertEqual(self.state(b),before);self.assertEqual(self.box.moves,[])
  def test_exact_threshold_allows_verified_two_message_batch(self):
   b=self.approved();self.remaining(b,MARGIN+2*PER)

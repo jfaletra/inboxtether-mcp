@@ -2,6 +2,7 @@
 import os
 from approval_broker import Broker, ReviewError
 from journal import require
+from organization_errors import OrganizationError,translate
 
 class MoveBroker(Broker):
     def __init__(self,service_context,web_uid,reader_uid,owner):
@@ -12,7 +13,15 @@ class MoveBroker(Broker):
         require(type(request) is dict,'Request object required')
         if request.get('operation')=='organize':
             require(uid==self.reader_uid and set(request)=={'operation','action','payload'},'Reader peer required; no owner authority')
-            with self.service_context() as service:return service.dispatch(request['action'],request['payload'])
+            stage='context'
+            try:
+                selection_write=request['action']=='candidates' and type(request['payload']) is dict and bool({'select_count','exclude_uids'} & set(request['payload']))
+                context=self.service_context(read_only=True) if request['action']=='candidates' and not selection_write else self.service_context()
+                with context as service:
+                    stage={'prepare':'preparation','candidates':'pagination','execute':'execution','consent':'consent'}.get(request['action'],'request')
+                    return service.dispatch(request['action'],request['payload'])
+            except Exception as exc:
+                raise translate(exc,stage) from None
         if request.get('operation')=='review' and (uid!=self.web_uid or request.get('principal')!=self.owner):
             raise ReviewError('authorization')
         require(uid==self.web_uid and request.get('principal')==self.owner,'Owner web peer required')

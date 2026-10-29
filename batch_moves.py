@@ -14,12 +14,12 @@ EXECUTION_SECONDS_PER_MESSAGE=90
 EXECUTION_FINAL_MARGIN_SECONDS=30
 
 class BatchOperation:
-    def __init__(self,mailbox,policy,decisions,baseline,assert_baseline,journal,paths,*,scope,source_uv,pins,run_id,run_fingerprint,assert_available,clock=time.time):
+    def __init__(self,mailbox,policy,decisions,baseline,assert_baseline,journal,paths,*,scope,source_uv,pins,run_id,run_fingerprint,assert_available,clock=time.time,scope_limit=10):
         self.mailbox,self.policy,self.decisions=mailbox,policy,decisions
         self.baseline,self.assert_baseline,self.journal=baseline,assert_baseline,journal
         self.paths,self.clock=paths,clock
         self.scope=tuple(scope)
-        require(1<=len(self.scope)<=10, 'Batch size must be 1..10')
+        require(type(scope_limit) is int and scope_limit in (10,200) and 1<=len(self.scope)<=scope_limit, 'Batch size outside permitted scope')
         require(all(type(u) is int and 0<u<=4294967295 and c in CATEGORIES for u,c in self.scope), 'Invalid source or category')
         require(len({u for u,c in self.scope})==len(self.scope) and set(decisions)=={u for u,c in self.scope}, 'Duplicate or missing source decision')
         require(type(source_uv) is int and 0<source_uv<=4294967295, 'Invalid source UIDVALIDITY')
@@ -31,7 +31,7 @@ class BatchOperation:
     def unchanged(self):self.assert_baseline(self.baseline)
     def identities(self):
         require(self.mailbox.inbox_identity()[0]==self.uv,'Source identity changed')
-        for _,category in self.scope:require(self.mailbox.folder(category)==self.pins[category],'Destination identity changed')
+        for category in dict.fromkeys(c for _,c in self.scope):require(self.mailbox.folder(category)==self.pins[category],'Destination identity changed')
     def snapshot(self,uid,category):
         self.unchanged();self.assert_available(uid);self.identities();e=self.decisions[uid]
         require(e.get('category')==category and e.get('customer') is False and e.get('move_eligible') is True and e.get('classification_origin')=='client','Recorded proposal not eligible')
