@@ -3,22 +3,26 @@
   "repository": "https://github.com/jfaletra/inboxtether-mcp",
   "public_main_commit": "8084558358ddfb7cd01fc6fc680a261a10bb23b3",
   "pr_number": 11,
-  "public_candidate_base_commit": "062db6eabf47f4a9a2b0d01750aa729924fc6843",
+  "public_candidate_base_commit": "27465c6ca68e784df96b51ea34e251f04ff214cb",
   "candidate_version": "2.0.0",
-  "release_state": "Unreleased refreshed candidate; no push, merge, tag or publication",
+  "release_state": "Unreleased final synchronization candidate; PR update only, no merge/tag/publication",
   "changes": [
-    "Portable bulk preparation and verified execution chunks",
-    "Practical fixed approval/start and execution deadlines",
-    "Saved candidate discovery and actionable sanitized errors",
-    "Snapshot-bound compact selections with explicit exclusions",
-    "Self-contained public clean-install and regression fixtures"
+    "Opt-in revocable owner automatic filing for exactly four folders; off by default",
+    "Manual exact chat consent and independent browser fallback preserved",
+    "200-message bulk manifests and acknowledged ten-message chunks",
+    "24-hour review/start and fixed 30-hour execution deadline",
+    "Candidate discovery, paginated details, compact snapshot selections and sanitized errors",
+    "Shared fail-closed nested classification.reply.customer_risk lookup",
+    "Bounded inert HTML extraction and unfinished-markup rejection",
+    "History-preserving guarded classification corrections",
+    "Self-contained synthetic regression and public clean-install fixtures"
   ],
-  "configuration": "Public clean-install schema; client-neutral consent/tool names; no private state migration",
+  "configuration": "Existing public clean-install schema with optional automatic policy; client-neutral names; no private state import",
   "preserved": [
-    "Reader/Draft contracts",
-    "Browser approval fallback",
-    "Exact consent and customer safeguards",
-    "Durable receipts and replay claims"
+    "Reader/Draft source and tool contracts",
+    "Public socket/peer/owner-login security fixes",
+    "Customer/identity/uncertainty guards",
+    "Source integrity, flags, verified receipts and permanent no-retry claims"
   ],
   "sending": "Excluded"
 }

@@ -50,5 +50,15 @@
     "customer_terms": [],
     "owner_keep_rules": []
   },
-  "senders": []
+  "senders": [],
+  "automatic_filing_policy": {
+    "enabled": false,
+    "revision": "0000000000000000000000000000000000000000000000000000000000000000",
+    "folders": [
+      "Industry",
+      "Marketing",
+      "Orders",
+      "Suppliers"
+    ]
+  }
 }

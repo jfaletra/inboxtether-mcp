@@ -124,7 +124,10 @@ journal and persists the discovery frontier. Restart resumes that journal. There
 no dependency on a historical ledger or an existing mailbox inventory. An identity,
 policy or folder-pin change stops for operator assessment; never delete state to fix it.
 
-Keep `execution_enabled:false` and `client_session_consent:false` initially. Set the
+Keep `execution_enabled:false`, `client_session_consent:false` and the optional
+`automatic_filing_policy.enabled:false` initially. Omission of the automatic-policy
+field also means disabled. Configure standing automatic authority only through the
+separate [owner activation procedure](AUTOMATIC_FILING.md). Set the
 latter true only after intentionally accepting the documented delegated-client trust
 model. It is needed for conversational preference approvals. Execution is a separate
 operator switch and is rechecked at the move boundary. Turning a gate off does not

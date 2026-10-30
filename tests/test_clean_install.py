@@ -136,6 +136,44 @@ class CleanInstallTests(unittest.TestCase):
             exact=service.status(batch['batch_id']);self.assertTrue(all(a['state']=='verified' and a['flags']==e['evidence']['flags'] and a['raw_sha256']==e['raw_sha256'] for a,e in zip(exact['attempts'],exact['manifest']['moves'])))
         with self.assertRaises(Refused):self.call('execute',{'batch_id':batch['batch_id']})
 
+    def test_absent_automatic_policy_is_disabled_and_revocation_does_not_reset_state(self):
+        self.config.pop('automatic_filing_policy',None);self.reload()
+        self.assertFalse(self.call('automatic_policy')['enabled'])
+        self.config.update(execution_enabled=True,automatic_filing_policy={'enabled':True,'revision':'a'*64,'folders':['Industry','Marketing','Orders','Suppliers']});self.reload()
+        p=self.call('next');self.call('propose',{'uid':p['uid'],'request_id':p['request_id'],'request_fingerprint':p['request_fingerprint'],'category':'Suppliers','customer_risk':'clear','reason':'supplier-notice'})
+        selected=self.call('candidates',{'select_count':1,'filing_mode':'automatic'});b=self.call('prepare',{'selection_ref':selected['selection_ref']})
+        before=(self.root/'operation.json').read_bytes();self.config['automatic_filing_policy']={'enabled':False,'revision':'b'*64,'folders':['Industry','Marketing','Orders','Suppliers']}
+        self.assertFalse(self.call('automatic_policy')['enabled'])
+        with self.assertRaises(Refused):self.call('execute',{'batch_id':b['batch_id']})
+        self.assertEqual((self.root/'operation.json').read_bytes(),before);self.assertEqual(Adapter.moves,[])
+
+    def test_clean_install_200_automatic_classifications_reference_chunks_restart(self):
+        self.config.update(execution_enabled=True,automatic_filing_policy={'enabled':True,'revision':'a'*64,'folders':['Industry','Marketing','Orders','Suppliers']});self.reload()
+        Adapter.messages={('INBOX',u):replace(mail(uid=u,body='Wholesale inventory stock availability.',flags=() if u%2 else ('\\Seen','$Custom')),source_uidvalidity=self.config['mailboxes']['INBOX']['uidvalidity']) for u in range(1,201)}
+        for u in range(1,201):
+            item=self.call('next');self.assertEqual(item['uid'],u)
+            self.assertTrue(self.call('propose',{'uid':u,'request_id':item['request_id'],'request_fingerprint':item['request_fingerprint'],'category':'Suppliers','customer_risk':'clear','reason':'supplier-notice'})['move_eligible'])
+        sel=self.call('candidates',{'select_count':200,'filing_mode':'automatic'});self.assertNotIn('uids',sel);self.assertEqual(sel['selected_messages'],200)
+        b=self.call('prepare',{'selection_ref':sel['selection_ref']});preparation_chunks=1
+        while b['state']=='preparing':
+            self.reload();b=self.call('prepare',{'batch_id':b['batch_id']});preparation_chunks+=1
+        self.assertEqual(preparation_chunks,20)
+        for i in range(20):
+            self.reload();out=self.call('execute',{'batch_id':b['batch_id']});self.assertEqual(out['verified_messages'],10*(i+1));self.assertIsNone(out['approval'])
+        self.assertEqual(out['state'],'completed');self.assertEqual(len(Adapter.moves),200)
+        with self.context() as service:
+            saved=service.status(b['batch_id']);self.assertEqual([m['uid'] for m in saved['manifest']['moves']],list(range(1,201)))
+            self.assertTrue(all(a['flags']==m['evidence']['flags'] and a['raw_sha256']==m['raw_sha256'] for a,m in zip(saved['attempts'],saved['manifest']['moves'])))
+        with self.assertRaises(Refused):self.call('execute',{'batch_id':b['batch_id']})
+
+    def test_automatic_revocation_rechecked_at_public_move_boundary(self):
+        self.config.update(execution_enabled=True,automatic_filing_policy={'enabled':True,'revision':'a'*64,'folders':['Industry','Marketing','Orders','Suppliers']});self.reload()
+        item=self.call('next');self.call('propose',{'uid':item['uid'],'request_id':item['request_id'],'request_fingerprint':item['request_fingerprint'],'category':'Suppliers','customer_risk':'clear','reason':'supplier-notice'})
+        sel=self.call('candidates',{'select_count':1,'filing_mode':'automatic'});b=self.call('prepare',{'selection_ref':sel['selection_ref']})
+        Adapter.before_move=lambda:self.config.update(automatic_filing_policy={'enabled':False,'revision':'b'*64,'folders':['Industry','Marketing','Orders','Suppliers']})
+        with self.assertRaises(Refused):self.call('execute',{'batch_id':b['batch_id']})
+        self.assertEqual(Adapter.moves,[]);self.assertEqual(self.call('status',{'batch_id':b['batch_id']})['state'],'uncertain')
+
 class PackagingContractTests(unittest.TestCase):
     def test_catalog_has_no_sending_even_with_old_switch_enabled(self):
         import server
@@ -145,4 +183,4 @@ class PackagingContractTests(unittest.TestCase):
         with patch.dict(os.environ,env,clear=True):tools=asyncio.run(server.create_server().list_tools())
         self.assertEqual({t.name for t in tools},{'list_mailboxes','search_messages','read_message','list_attachments',
                          'retrieve_attachment','prepare_reply_draft','save_draft','organize_email'})
-        self.assertEqual(len(next(t for t in tools if t.name=='organize_email').inputSchema['properties']['action']['enum']),14)
+        self.assertEqual(len(next(t for t in tools if t.name=='organize_email').inputSchema['properties']['action']['enum']),15)

@@ -22,7 +22,7 @@ class BulkFixture(unittest.TestCase):
   self.identity={'host':'synthetic.example.org','account':'owner@synthetic.example.org','source_path':'Shared/test/INBOX','source_uidvalidity':self.box.uv}
   self.r=Registry(self.root,self.identity);self.r.__enter__();self.addCleanup(self.r.__exit__)
   self.now=1000;self.baseline={'ledger':'original','witness':'original'};self.current=copy.deepcopy(self.baseline);self.policy=Policy();self.owner={'kind':'local-owner','id':'a'*32}
-  decisions={str(u):{**m.evidence(),'category':('Marketing' if u%2 else 'Orders'),'customer':False,'move_eligible':True,'classification_origin':'client','rule_ids':['synthetic'],'classification':{'category':'Marketing' if u%2 else 'Orders','customer_risk':'clear','reason':'promotion' if u%2 else 'vendor-purchase'}} for u,m in self.box.source.items()}
+  decisions={str(u):{**m.evidence(),'category':('Marketing' if u%2 else 'Orders'),'customer':False,'move_eligible':True,'classification_origin':'client','rule_ids':['synthetic'],'classification':{'mode':'client-contextual-proposal-1','classifier':self.policy.fingerprint,'packet_sha256':digest(self.policy.prepare(m)[1]),'reply':{'category':'Marketing' if u%2 else 'Orders','customer_risk':'clear','reason':'promotion' if u%2 else 'vendor-purchase'},'request_id':digest({'synthetic_request_uid':u}),'request_fingerprint':digest({'synthetic_binding_uid':u})}} for u,m in self.box.source.items()}
   seed={'run_id':'1'*64,'fingerprint':'2'*64,'inventory':list(self.box.source),'decisions':decisions,'excluded':[],'frontier':201}
   def baseline(expected):
    if expected!=self.current:raise Refused('Baseline changed')

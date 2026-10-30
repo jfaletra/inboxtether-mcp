@@ -1,40 +1,48 @@
 {
-  "candidate": "2.0.0",
-  "status": "unreleased refreshed candidate",
-  "date": "2026-10-29",
+  "version": "2.0.0",
+  "status": "unreleased final PR candidate",
+  "date": "2026-10-30",
   "base_pr": 11,
-  "base_commit": "062db6eabf47f4a9a2b0d01750aa729924fc6843",
-  "synthetic_tests": {
-    "tests": 402,
+  "base_commit": "27465c6ca68e784df96b51ea34e251f04ff214cb",
+  "macOS_python_3_11": {
+    "tests": 506,
     "failures": 0,
     "errors": 0,
     "skipped": 0,
     "synthetic_only": true
   },
-  "environment": {
-    "os": "Darwin",
-    "python": "3.11.5"
+  "Linux_python_3_12_3": {
+    "tests": 506,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "synthetic_only": true
   },
-  "clean_install": {
-    "fresh_pinned_venv": true,
-    "pip_check": "passed",
-    "empty_public_journal_200_classifications_reference_preparation_single_consent_20_execution_chunks": "passed",
-    "mailbox": "fabricated adapter only"
+  "clean_linux_install": {
+    "fresh_venv": true,
+    "dependency_consistency": "passed",
+    "read_only_source": true,
+    "unprivileged_service_identity": true,
+    "isolated_network_namespace": true,
+    "synthetic_only": true,
+    "manual_and_automatic_200_message_reference_prepare_and_20_chunks_with_restart": "passed"
   },
   "dependencies": {
-    "audited_pins": 56,
-    "known_findings": 0
+    "unchanged_pinned_packages": 56,
+    "strict_advisory_known_findings": 0,
+    "linux_verification_wheels": 57,
+    "wheel_note": "56 constrained runtime/test/audit dependencies plus pip tooling; same source-only dkimpy version built as a wheel"
   },
-  "production_access": false,
-  "new_live_client_acceptance": false,
-  "new_linux_validation": false,
-  "github_changes": false,
-  "sending": "absent",
-  "limitations": [
-    "No new live IMAP/provider acceptance for this public revision",
-    "No new graphical client/browser acceptance",
-    "No private legacy state import, downgrade or production migration acceptance",
-    "Selection audit history bounded to64 records and journal to16MiB",
-    "Network disconnect causes are not addressed by compact handoff"
+  "source_and_package_checks": "Exact checksum manifest and archive/bundle checks are rerun after metadata freeze. External evidence includes final artifact verification.",
+  "production_access": "Read-only application source/checksum reconciliation only; no email, configuration change or state mutation",
+  "new_live_IMAP_or_graphical_client_acceptance": false,
+  "github_ci": "Fresh PR-head validation required; exact completed run links are recorded in PR #11 after push",
+  "sending": "excluded",
+  "limits": [
+    "No private journal/ledger/witness/receipt import or automatic migration/downgrade",
+    "No new graphical-client, real HTTPS browser or live-provider acceptance for this public build",
+    "Historical Keeps remain closed and conservative customer/identity/context checks may cause false Keeps",
+    "Selection references last two hours; finite journal/audit capacities fail closed, without automatic compaction",
+    "Transport disconnects require saved-state inspection, never an uncertain retry"
   ]
 }

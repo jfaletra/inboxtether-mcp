@@ -1,0 +1,27 @@
+[
+  {
+    "id": "dealer_closing_br",
+    "kind": "technical",
+    "html": "<html><body><p>Wholesale dealer bulletin. New optics offers.</p><br></br><br></br><br></br><br></br></body></html>"
+  },
+  {
+    "id": "industry_surplus_body",
+    "kind": "technical",
+    "html": "<html><head><title>Industry bulletin</title></head><p>Professional webinar recording and industry news.</p></body></html>"
+  },
+  {
+    "id": "seller_compact_doctype",
+    "kind": "technical",
+    "html": "<!doctypehtml><html><body><p>Discover our selling platform. Register for promotional offers.</p></body></html>"
+  },
+  {
+    "id": "tools_navigation",
+    "kind": "customer-rule-retained",
+    "html": "<html><body><p>Seasonal savings and promotional offers.</p><a href=\"https://vendor.example.org/tools\">Gunsmith Tools</a></body></html>"
+  },
+  {
+    "id": "industry_transfer_copy",
+    "kind": "customer-rule-retained",
+    "html": "<html><body><p>Professional webinar: online retail and FFL transfer workflows.</p></body></html>"
+  }
+]

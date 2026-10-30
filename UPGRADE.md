@@ -13,7 +13,9 @@ manifest; install only reviewed source; start broker, web, then client. Do not e
 execution as part of a source update. A service restart invalidates browser sessions;
 logging in again never reapproves or extends an expired manifest.
 
-For rollback, disable execution and client consent first. Preserve all current journals,
+For rollback, revoke automatic filing using the existing enrollment helper, then
+disable execution and client consent. Keep the new policy revision and all receipts;
+never restore a backup configuration that silently re-enables an old authority. Preserve all current journals,
 classifications, rules, approvals, receipts and attempt claims. Never restore an older
 journal, erase a claim, retry uncertainty, or undo mail using an inverse script.
 Before state initialization, an unused candidate can be removed without mailbox work.
@@ -49,3 +51,9 @@ preparation or unresolved unexpected claim. Preserve every existing claim and re
 Use an offline protected diagnostic copy to establish compatibility; source rollback
 must retain current state and keep execution disabled if compatibility is uncertain.
 Synthetic clean-install tests do not certify legacy migration or downgrade.
+
+Automatic-policy data is optional; absent means disabled. Runtime reloads the policy
+at each automatic execution/message/MOVE boundary. Source/account/configuration
+bindings remain distinct from revocable execution gates and automatic policy.
+Rollback to source that does not understand automatic manifests is not safe after
+such manifests exist; retain compatible source and current state with execution off.

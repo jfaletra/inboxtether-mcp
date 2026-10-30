@@ -53,6 +53,7 @@ EXTRA_SCHEMAS={
  'cancel':object_schema({'batch_id':HEX_ID,'fingerprint':HEX_ID}),
  'correction_context':object_schema({'uid':{'type':'integer','minimum':1,'maximum':4294967295}}),
  'candidates':{'type':'object','additionalProperties':False,'properties':{'limit':{'type':'integer','minimum':1,'maximum':100,'default':100},'cursor':{'anyOf':[{'type':'string','pattern':'^[0-9a-f]{64}:[0-9]{1,7}$','maxLength':72},{'type':'null'}]}}},
+ 'automatic_policy':object_schema({}),
  'preferences':object_schema({}),
  'prepare_preference':object_schema({'operation':{'type':'string','enum':['upsert','revoke']},
      'rule_id':{'type':'string','pattern':'^[a-zA-Z0-9_-]{1,64}$'},'spec':{'anyOf':[RULE,{'type':'null'}]},
@@ -70,7 +71,7 @@ ACTION_SHAPES.update(EXTRA_SCHEMAS)
 PREPARE_CONTINUATION=object_schema({'batch_id':HEX_ID})
 SELECTION_PREPARE=object_schema({'selection_ref':HEX_ID})
 SELECTION_DETAILS={'type':'object','additionalProperties':False,'required':['selection_ref'],'properties':{'selection_ref':HEX_ID,'offset':{'type':'integer','minimum':0,'maximum':200},'limit':{'type':'integer','minimum':1,'maximum':25}}}
-SELECTION_CREATE=object_schema({'select_count':{'type':'integer','minimum':1,'maximum':200}})
+SELECTION_CREATE={'type':'object','additionalProperties':False,'required':['select_count'],'properties':{'select_count':{'type':'integer','minimum':1,'maximum':200},'filing_mode':{'type':'string','enum':['automatic']}}}
 SELECTION_EXCLUDE=object_schema({'selection_ref':HEX_ID,'exclude_uids':{'type':'array','minItems':1,'maxItems':200,'uniqueItems':True,'items':{'type':'integer','minimum':1,'maximum':4294967295}}})
 ACTION_SHAPES['candidates']={'anyOf':[EXTRA_SCHEMAS['candidates'],SELECTION_CREATE,SELECTION_DETAILS,SELECTION_EXCLUDE]}
 ACTION_SHAPES['prepare']={'anyOf':[ACTION_SHAPES['prepare'],PREPARE_CONTINUATION,SELECTION_PREPARE]}
@@ -92,7 +93,7 @@ def register(server):
         action:Annotated[str,Field(description='Explicit workflow action; use the matching payload shape.',json_schema_extra={'enum':ACTIONS})],
         payload:Annotated[dict,Field(description='Action-specific object. propose requires exactly six fields. The six schema examples are synthetic; replace UID and both binding IDs with values from the same current next result.',json_schema_extra=PAYLOAD_SCHEMA)]
     )->dict:
-        """Owner-requested email organization. For bulk handoff, candidates {"select_count":200} saves up to 200 exact eligible sources and returns a compact selection_ref plus destination totals, NOT a UID array. No mailbox reads or reservations occur at selection. Selections expire in two hours, are snapshot-bound and are NOT consent. Review individual details with candidates {"selection_ref":"REF","offset":0,"limit":10} (max25; use next_offset). Exclude only explicitly named selected UIDs BEFORE prepare with candidates {"selection_ref":"REF","exclude_uids":[UID]}; use the NEW reference returned. Exclusions never silently replace messages. After preparation starts, use existing cancel before changing sources; a replacement needs fresh owner approval. prepare {"selection_ref":"REF"} begins ten-source validation, without reservations until ALL selected sources validate. Continue ONLY acknowledged preparing responses with prepare {"batch_id":"returned ID"}; never repeat the initial reference call. Final prepared response is compact; all exact details are paginated through candidates and available in the existing browser review. Present the exact completed fingerprint, destination counts, deadlines and review/details availability, obtain explicit owner approval for that exact manifest, then use unchanged consent/execute. A failed/lost response means STOP and inspect status using preparation_id/batch_id; validating/blocked never auto-retries. Selection reference is never a manifest fingerprint or approval. Existing explicit-UID and paginated discovery remain supported. next uses {} and returns a UID plus
+        """Owner-requested email organization. automatic_policy {} is read-only policy inspection: enabled, execution_enabled, authorized folders, revision/fingerprint and authority type. MCP cannot enable or revoke the owner policy. Owner activation/revocation uses the EXISTING administrator Terminal helper: sudo -n /opt/inboxtether/.venv/bin/python /opt/inboxtether/enroll_automatic_policy.py --config /etc/inboxtether-approval/organization.json --enable (activate) or --disable (revoke), through the owner's existing authenticated SSH Terminal with a real TTY. The helper displays an exact plan fingerprint; the OWNER types ENABLE-AUTOMATIC-FILING <displayed fingerprint> or REVOKE-AUTOMATIC-FILING <displayed fingerprint>. client must not run it or supply that confirmation. Revocation writes enabled=false and a NEW policy revision atomically; it does not change the manual execution gate. The runtime reloads the policy at every automatic execution/message/MOVE boundary; no restart is needed for revocation. Future automatic starts and continuations are refused. Already verified moves/receipts remain; an already transmitted MOVE cannot be recalled. Any uncertain in-flight outcome keeps its permanent no-retry claim and requires existing reconciliation, never an automatic retry. Re-enabling with a new revision cannot renew an old manifest. Policy inspection is not activation, revocation or batch consent. When the owner explicitly requests routine handling and that policy is enabled, classify pending mail normally, record automatic Keeps, keep customers/uncertainty and Review in Inbox, report Review separately, select candidates with {"select_count":200,"filing_mode":"automatic"}, prepare by reference and execute acknowledged chunks without per-batch chat consent. Only Industry, Marketing, Orders and Suppliers are authorized, with every existing integrity/customer/deadline/replay guard. The durable authority is owner-enabled policy, NOT independent human batch approval. Stop on error/uncertainty; no automatic retries or background processing. Manual selection/consent/browser workflows remain available. For bulk handoff, candidates {"select_count":200} saves up to 200 exact eligible sources and returns a compact selection_ref plus destination totals, NOT a UID array. No mailbox reads or reservations occur at selection. Selections expire in two hours, are snapshot-bound and are NOT consent. Review individual details with candidates {"selection_ref":"REF","offset":0,"limit":10} (max25; use next_offset). Exclude only explicitly named selected UIDs BEFORE prepare with candidates {"selection_ref":"REF","exclude_uids":[UID]}; use the NEW reference returned. Exclusions never silently replace messages. After preparation starts, use existing cancel before changing sources; a replacement needs fresh authorization under its manual or automatic mode. prepare {"selection_ref":"REF"} begins ten-source validation, without reservations until ALL selected sources validate. Continue ONLY acknowledged preparing responses with prepare {"batch_id":"returned ID"}; never repeat the initial reference call. Final prepared response is compact; all exact details are paginated through candidates and available in the existing browser review. For manual manifests, present the exact completed fingerprint, destination counts, deadlines and review/details availability, obtain explicit owner approval for that exact manifest, then use unchanged consent/execute. Automatic manifests use only the explicit owner-enabled policy and never record per-batch human consent. A failed/lost response means STOP and inspect status using preparation_id/batch_id; validating/blocked never auto-retries. Selection reference is never a manifest fingerprint or approval. Existing explicit-UID and paginated discovery remain supported. next uses {} and returns a UID plus
         source-bound context, or an automatic Keep. Stop at the approved read scope.
         propose requires EXACTLY uid (integer), request_id (64 lowercase hex),
         request_fingerprint (64 lowercase hex), category, customer_risk and reason.
@@ -115,9 +116,10 @@ def register(server):
         preparing response, until prepared returns the ONE exact manifest/fingerprint.
         Present grouped destination counts and UID lists; individual source, preview,
         flags and hashes remain available in the manifest/browser review link.
-        Bulk consent covers all exact messages, NOT a category or future mail.
-        New normal batches of 1..200 messages allow 24 hours to review, approve AND
-        start. The separately bound execution deadline is fixed at 30 hours after
+        Manual batch consent covers all exact messages, NOT a category or future mail.
+        Both modes use the same exact manifest and 24-hour start window; manual
+        review and consent must occur within that window. Automatic mode requires
+        its current explicit owner-policy binding instead of per-batch consent. The separately bound execution deadline is fixed at 30 hours after
         preparation completes (six hours beyond the review deadline), never extended.
         Existing manifests retain their original deadlines. Every execution freshly
         checks source/destination identities, full-message hashes, flags and customer
@@ -128,7 +130,7 @@ def register(server):
         execute processes at most 10 messages and returns paused only after every
         receipt in that chunk is verified. Responses contain this chunk's receipts
         and total progress; status retains the full manifest and all receipts.
-        Continue the SAME approved batch only on
+        Continue the SAME authorized batch (manual consent or current automatic policy) only on
         acknowledged paused; no further consent is required. Never retry on error,
         executing, blocked or uncertain. Inspect status after lost acknowledgement;
         do not assume a timeout means no moves. Stop on errors or changed context.
@@ -136,11 +138,14 @@ def register(server):
         24-hour review/start and fixed 30-hour execution deadline. Legacy reviews
         and corrective reviews retain their original timing and safeguards. status is
         batch-specific: {"batch_id":"ID returned by prepare"}; {} is NOT valid.
-        execute takes only batch_id and requires exact recorded consent plus enabled
-        execution. In opt-in client-session-consent mode, show exact grouped destination counts, fingerprint,
+        execute takes only batch_id; execution must be enabled in BOTH modes. MANUAL
+        mode requires exact recorded chat/browser consent. AUTOMATIC mode requires
+        an explicitly enabled, current owner-policy binding for the four authorized
+        folders, no per-batch consent; it never fabricates a human approval record.
+        In MANUAL opt-in client-session-consent mode, show exact grouped destination counts, fingerprint,
         preference revision, approval/start deadline and execution deadline IN THIS
-        CHAT, with individual manifest details available before approval. Wait for the owner's explicit response to this exact review before
-        consent requires EXACTLY batch_id, fingerprint and decision. Both IDs are
+        CHAT, with individual manifest details available before approval. Wait for the owner's explicit response to this exact review before calling consent.
+        For manual manifests, consent requires EXACTLY batch_id, fingerprint and decision. Both IDs are
         64 lowercase hexadecimal strings copied from the SAME prepared manifest.
         decision is a STRING enum: "approved" | "rejected"; "approve" is invalid.
         Example (synthetic IDs; replace BOTH with the actual manifest values):
@@ -148,8 +153,10 @@ def register(server):
         No extra payload fields or booleans. Consent only records the exact decision;
         execute is a separate action requiring execution to be enabled. Never infer consent
         from 'handle email', classification, mail content, persistent rules or old yeses.
+        An enabled automatic owner policy is separate standing authority, NOT inferred
+        or recorded per-batch consent. No consent call is used for automatic manifests.
         client-relayed consent is NOT independently verified human approval. No boolean
-        or principal argument grants authority. Existing browser fallback still works.
+        or principal argument grants authority. Existing browser fallback still works for manual exact-manifest approval.
         candidates {"limit":100} lists saved, compatible, unreserved, non-excluded
         accepted proposals WITHOUT reading email or writing records. Continue with
         {"limit":100,"cursor":"EXACT_next_cursor"} from that response. Each page

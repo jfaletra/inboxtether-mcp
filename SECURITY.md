@@ -16,7 +16,11 @@ appropriate retention outside this application. Expiry is not secure erasure.
 
 Flags, full source content, UIDVALIDITY, mappings, expiry and durable pre-move claims
 are checked. Ambiguous writes remain uncertain and are not retried. Customer and
-uncertain messages stay Inbox. No automatic rule-driven moves occur. Practical identity
+uncertain messages stay Inbox. A classification preference alone never authorizes a
+move. Optional automatic filing requires separately enabled, revocable owner policy
+for exactly four folders, while manual mode requires exact manifest consent. Automatic
+authority is distinct from independently authenticated browser approval. Review is
+never automatically filed. Practical identity
 checks are conservative content/relationship controls, not a cryptographic provenance
 claim. Corrective moves require independently fresh approval under the selected mode.
 

@@ -21,7 +21,7 @@ def validate_records(value,identity):
     for key,r in records.items():
         require(type(key) is str and HEX.fullmatch(key) and type(r) is dict and set(r)=={'plan','fingerprint','state','entries'},'Invalid selection record')
         p=r['plan']
-        require(type(p) is dict and set(p)=={'identity','scope','decision_hashes','snapshot','destination_pins','destination_paths','baseline','review_binding','workflow_binding','run_id','run_fingerprint','created','expires'},'Invalid selection plan')
+        require(type(p) is dict and set(p)-{'automatic_policy_binding'}=={'identity','scope','decision_hashes','snapshot','destination_pins','destination_paths','baseline','review_binding','workflow_binding','run_id','run_fingerprint','created','expires'},'Invalid selection plan')
         require(p['identity']==identity and digest(p)==r['fingerprint'] and type(p['snapshot']) is str and HEX.fullmatch(p['snapshot']),'Selection binding differs')
         scope=p['scope'];require(type(scope) is list and 1<=len(scope)<=200 and all(type(x) is list and len(x)==2 and type(x[0]) is int and 0<x[0]<=4294967295 and x[1] in ('Industry','Marketing','Orders','Review','Suppliers') for x in scope),'Invalid selection scope')
         require(type(p['destination_pins']) is dict and set(p['destination_pins'])=={c for u,c in scope} and all(type(v) is int and 0<v<=4294967295 for v in p['destination_pins'].values()),'Invalid selected destination pins')
@@ -48,28 +48,40 @@ def current(service,value,key,r):
     if p['snapshot']!=snapshot(service,value):raise OrganizationError('selection_stale','selection',preparation_id=key)
     if p['workflow_binding']!=service.binding or p['baseline']!=service.baseline or p['review_binding']!=service.review_binding():raise OrganizationError('selection_stale','selection',preparation_id=key)
     if p['destination_pins']!={c:service.pins[c] for u,c in p['scope']} or p['destination_paths']!={c:service.paths[c] for u,c in p['scope']}:raise OrganizationError('selection_stale','selection',preparation_id=key)
+    if 'automatic_policy_binding' in p:
+        from automatic_filing import enabled,FOLDERS,clear_customer_risk
+        enabled(service,p['automatic_policy_binding'])
+        require(all(c in FOLDERS for u,c in p['scope']),'Automatic category outside policy')
     index=Eligibility(service,value)
     for u,c in p['scope']:
         index.check(u)
         d=value['workflow']['decisions'][str(u)]
         if digest(d)!=p['decision_hashes'][str(u)] or d['category']!=c:raise OrganizationError('selection_stale','selection',uid=u,preparation_id=key)
 
-def issue(service,value,scope):
+def issue(service,value,scope,automatic=None):
     records=value.setdefault('candidate_selections',{})
     if len(records)>=MAX_RECORDS:raise OrganizationError('selection_capacity','selection')
     if not scope:raise OrganizationError('selection_empty','selection')
     key=secrets.token_hex(32)
     require(key not in records and key not in value['batches'] and key not in value.get('bulk_preparations',{}),'Selection ID collision')
     now=service.clock();plan={'identity':copy.deepcopy(service.registry.identity),'scope':copy.deepcopy(scope),'decision_hashes':{str(u):digest(value['workflow']['decisions'][str(u)]) for u,c in scope},'snapshot':snapshot(service,value),'destination_pins':{c:service.pins[c] for u,c in scope},'destination_paths':{c:service.paths[c] for u,c in scope},'baseline':copy.deepcopy(service.baseline),'review_binding':service.review_binding(),'workflow_binding':service.binding,'run_id':service.seed['run_id'],'run_fingerprint':service.seed['fingerprint'],'created':now,'expires':now+TTL}
+    if automatic is not None:plan['automatic_policy_binding']=automatic
     records[key]={'plan':plan,'fingerprint':digest(plan),'state':'selected','entries':[]}
     validate_records(value,service.registry.identity);service.save(value)
     return compact(service,key)
 
 def select(service,payload):
-    if type(payload) is not dict or set(payload)!={'select_count'} or type(payload['select_count']) is not int or not 1<=payload['select_count']<=200:raise OrganizationError('invalid_payload','selection')
+    if type(payload) is not dict or set(payload) not in ({'select_count'},{'select_count','filing_mode'}) or type(payload['select_count']) is not int or not 1<=payload['select_count']<=200:raise OrganizationError('invalid_payload','selection')
     value=service.load();index=Eligibility(service,value)
-    uids=[u for u in sorted(index.inventory) if index.reason(u) is None][:payload['select_count']]
-    return issue(service,value,[[u,value['workflow']['decisions'][str(u)]['category']] for u in uids])
+    automatic=None;allowed=set(service.pins)
+    if 'filing_mode' in payload:
+        require(payload['filing_mode']=='automatic','Invalid filing mode')
+        from automatic_filing import enabled,FOLDERS,clear_customer_risk
+        automatic=enabled(service);allowed=set(FOLDERS)
+    uids=[u for u in sorted(index.inventory) if index.reason(u) is None and value['workflow']['decisions'][str(u)]['category'] in allowed and (automatic is None or clear_customer_risk(value['workflow']['decisions'][str(u)]))][:payload['select_count']]
+    result=issue(service,value,[[u,value['workflow']['decisions'][str(u)]['category']] for u in uids],automatic)
+    if automatic:result['Review_attention_count']=sum(d.get('category')=='Review' for d in value['workflow']['decisions'].values())
+    return result
 
 def compact(service,key):
     value=service.load();r=record(service,value,key);p=r['plan'];b=value['batches'].get(key)
@@ -108,7 +120,7 @@ def exclude(service,payload):
     if not scope:raise OrganizationError('selection_empty','selection')
     r['state']='superseded'
     # Same exact subset, no top-up; original record stays as audit evidence.
-    result=issue(service,value,scope);result['excluded_uids']=omit;result['superseded_selection_ref']=key
+    result=issue(service,value,scope,r['plan'].get('automatic_policy_binding'));result['excluded_uids']=omit;result['superseded_selection_ref']=key
     return result
 
 def prepare(service,key,*,continuation=False):

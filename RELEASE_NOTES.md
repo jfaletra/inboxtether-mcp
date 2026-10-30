@@ -1,30 +1,39 @@
-# InboxTether MCP 2.0.0 — refreshed release candidate (unreleased)
+# InboxTether MCP 2.0.0 — final release candidate (unreleased)
 
-This candidate replaces the earlier documentation-only stable preparation. It has
-application changes and requires fresh review/CI before merge or publication.
+This updates the existing release PR with the reviewed production improvements,
+adapted to the public clean-install source. It adds no new infrastructure or AI
+provider. It is not yet merged, tagged, published or deployed as this public build.
 
-- Prepare one exact manifest for up to200 accepted noncustomer messages.
-- Execute in acknowledged ten-message chunks with durable verified receipts.
-- Review/approve/start within24 hours, with a separate fixed30-hour execution
-  deadline. Neither approval nor continuation extends the manifest.
-- Discover saved compatible candidates in pages of100 with counts and snapshot
-  cursors. Reject missing or incompatible preference bindings before reservations.
-- Use a compact server-managed reference for up to200 exact candidates; inspect
-  individual details in pages and exclude explicit messages without replacements.
-  The reference path validates all sources before reserving the completed manifest.
-- Return allowlisted actionable errors and preserve blocked progress for inspection.
-- Retire expired, never-attempted ordinary reservations safely on a new preparation.
+- Prepare exact manifests for up to 200 accepted noncustomer messages.
+- Execute in acknowledged ten-message chunks with fresh validation, preserved
+  flags, durable destination receipts and permanent stop-on-ambiguity claims.
+- Review/approve/start within 24 hours; the execution deadline is fixed at 30 hours
+  after preparation. No implicit approval renewal or uncertain retry.
+- Discover compatible saved proposals with paginated counts and actionable errors;
+  use compact, two-hour, snapshot-bound selection references instead of relaying
+  hundreds of UIDs through the assistant. Explicit exclusions never replace mail.
+- Keep manual exact chat consent and independent browser approval as alternatives.
+- Optionally enable an inspectable and revocable owner automatic-filing policy for
+  Industry, Marketing, Orders and Suppliers. It is disabled by default and never
+  manufactures per-batch human consent. Review, customer/potential-customer, mixed
+  and uncertain messages remain in Inbox. No background scheduler is included.
+- Read accepted customer risk from the actual nested saved reply, strictly requiring
+  clear risk; malformed, missing, uncertain and flat legacy fields fail closed.
+- Tolerate only the demonstrated inert HTML forms (closing br, unmatched closing
+  body, compact doctypehtml), while rejecting active content, decoding failures
+  and unfinished markup. Customer keywords and identity rules are not relaxed.
+- Correct explicitly reviewed historical classifications using fresh source-bound
+  context and archive the original decision. Historical Keeps are not automatically
+  reopened, and conservative protections may continue to produce false Keeps.
 
-Existing Reader/Draft functions, exact-manifest chat consent, independent browser
-approval fallback, customer/content protections, persistent flags, source hashes,
-UIDVALIDITY, destination verification and permanent no-retry claims are preserved.
-No new service, database, AI provider, scheduler or authentication platform is added.
-Email sending remains entirely excluded.
+Reader/Draft source and declarations, public socket recovery, approval authentication,
+customer safeguards, full-message hashes, UIDVALIDITY, destination verification and
+replay protections remain. **Sending email is excluded.** Draft preparation/save is
+a separate opt-in workflow, never invoked by organization.
 
-This public source uses neutral tool/configuration names and fresh initialization.
-It contains no private accounts, operational records, deployment paths or mailbox
-data, and includes no import/migration of private state. All writes remain opt-in.
-
-See VALIDATION.md for current test results, clean-install scope, historical versus
-current client acceptance and remaining limitations. No merge, tag, publication or
-production deployment has occurred for this candidate.
+The public distribution contains application source, synthetic tests, templates,
+dependency pins and documentation only. No private configuration, credentials,
+mailbox content, business rules, journals, receipts, witnesses or migration data.
+The public journal remains distinct from private deployment state. No private-state
+migration, downgrade, automatic inverse-move rollback or provider certification is
+claimed. See VALIDATION.md, INSTALLATION.md, AUTOMATIC_FILING.md and UPGRADE.md.

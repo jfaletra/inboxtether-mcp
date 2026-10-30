@@ -230,6 +230,7 @@ class NativeMoveService(MoveService):
 
     def record_decision(self,key,fp,decision,method):
         value=self.checked_review(key,fp)
+        require('automatic_policy_binding' not in value['manifest'],'Automatic manifest uses policy authority; prepare a manual review for consent')
         require(value['state']=='prepared' and not value['attempts'] and value['approval'] is None,'Review consumed')
         value={k:v for k,v in value.items() if k not in ('batch_id','review_url','expired','summary_by_destination','total_messages','verified_messages','remaining_messages','chunk_size','approval_start_deadline','execution_deadline','can_continue')}
         value['state']=decision
@@ -242,7 +243,14 @@ class NativeMoveService(MoveService):
         return CorrectionJournal(self.registry,key) if key in self.load()['client_native']['corrections'] else self.registry.batch(key)
 
     def execute(self,key):
-        value=self.status(key);self.checked_review(key,value['fingerprint'])
+        value=self.status(key)
+        if 'automatic_policy_binding' in value['manifest']:
+            from automatic_filing import execute
+            execute(self,key);current=self.status(key)
+            report={k:current[k] for k in ('batch_id','fingerprint','state','approval','expired','summary_by_destination','total_messages','verified_messages','remaining_messages','chunk_size','execution_deadline','can_continue')}
+            report.update(automatic_authorization=current.get('automatic_authorization'),receipt_offset=len(value['attempts']),attempts=current['attempts'][len(value['attempts']):])
+            return report
+        self.checked_review(key,value['fingerprint'])
         approval=value['approval'];require(approval is not None,'Batch has no approval')
         method=approval['method']
         if method==CHAT:self.chat_enabled()
@@ -404,6 +412,10 @@ class NativeMoveService(MoveService):
 
     def dispatch(self,action,payload):
         require(type(payload) is dict,'Object payload required')
+        if action=='automatic_policy':
+            require(not payload,'No automatic policy authority fields')
+            from automatic_filing import inspect
+            return inspect(self)
         if action=='candidates':
             from candidate_discovery import candidates
             return candidates(self,payload)

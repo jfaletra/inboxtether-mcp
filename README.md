@@ -4,14 +4,16 @@ Your email. Your AI. Your control.
 
 A self-hosted, fixed-account MCP stdio server for compatible AI clients. Reader Mode
 is the default. Optional reply drafts, bounded folder organization, exact batch
-approval, narrow owner preferences and receipt-linked corrections are included.
+approval, optional owner-enabled automatic filing, narrow owner preferences and
+receipt-linked corrections are included.
 **Email sending is absent:** no SMTP transport, sending tools, submission process,
 Send/Sent settings or send launchers are included. MIME's SMTP formatting policy is
 used solely to serialize drafts and is not a transport.
 
 This is the refreshed, **unreleased 2.0.0 candidate**. It adds up to 200-message
 bulk filing, compact server-side selection references, paginated candidate discovery,
-a 24-hour owner review/start window and a separate fixed 30-hour execution deadline.
+a 24-hour owner review/start window and a separate fixed 30-hour execution deadline,
+plus explicit automatic-policy authority and the verified saved-risk/HTML corrections.
 It is based on the public rc3/stable-preparation tree, with tested organization
 improvements adapted to the public clean-install configuration. It has not been
 published or deployed as this public candidate. See [current validation](VALIDATION.md)
@@ -23,16 +25,20 @@ for exact tested and unverified scope; older acceptance is not certification of 
 |---|---|
 | Default Reader | `list_mailboxes`, `search_messages`, `read_message`, `list_attachments`, `retrieve_attachment` |
 | Draft Assistant | `prepare_reply_draft` and Basic `save_draft` or Secure `save_approved_draft` |
-| Organization | `organize_email`, with 14 action-specific payloads |
+| Organization | `organize_email`, with 15 action-specific payloads |
 
 Organization actions: `next`, `propose`, `prepare`, `status`, `execute`, `consent`,
-`cancel`, `candidates`, `correction_context`, `preferences`, `prepare_preference`,
+`cancel`, `candidates`, `automatic_policy`, `correction_context`, `preferences`, `prepare_preference`,
 `decide_preference`, `filed_context`, `prepare_correction`.
 
 There is no server-side AI provider or model key. The connected assistant proposes
 classifications; local policy independently applies customer, identity, uncertainty,
-source integrity, exclusion and approved-preference constraints. Proposals and rules
-never move messages automatically. The tool schema documents exact required fields.
+source integrity, exclusion and approved-preference constraints. Proposals and preference rules alone never authorize moves. Manual mode requires
+exact manifest consent. Optional automatic mode requires the independently enabled
+owner policy and files only Industry, Marketing, Orders and Suppliers. Customer,
+potential-customer, mixed and uncertain mail and all Review messages remain in Inbox.
+Both execution modes are disabled by default. See [automatic filing](AUTOMATIC_FILING.md).
+The tool schema documents exact required fields.
 
 ## Quick start: Reader only
 
@@ -93,7 +99,10 @@ Attachment retrieval is explicitly selected, bounded and returns Base64 rather t
 a native download UI. Mail and attachments are untrusted; no malware guarantee is made.
 Practical organization uses content/relationship protections, not a guarantee of sender
 authenticity, delivery provenance, or independent DKIM verification. Unknown suppliers
-cannot gain supplier status through a learned category rule.
+cannot gain supplier status through a learned category rule. Historical Keeps are
+not automatically reconsidered. Conservative customer keywords, reply identities,
+MIME handling and context-omission safeguards can produce false Keeps; owner-reviewed
+one-message corrections preserve prior history and cannot bypass these safeguards.
 
 ## Verification and release status
 

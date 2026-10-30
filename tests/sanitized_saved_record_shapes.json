@@ -1,0 +1,99 @@
+{
+  "accepted_bound": {
+    "uid": 7,
+    "category": "Marketing",
+    "customer": false,
+    "move_eligible": true,
+    "classification_origin": "client",
+    "reason": "client-validated-proposal",
+    "classification": {
+      "mode": "client-contextual-proposal-1",
+      "classifier": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "packet_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "reply": {
+        "category": "Marketing",
+        "customer_risk": "clear",
+        "reason": "promotion"
+      },
+      "request_id": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "request_fingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    },
+    "owner_preference_binding": {
+      "revision": 0,
+      "policy": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "packet_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "one_message": false,
+      "rule_ids": []
+    }
+  },
+  "accepted_legacy_without_preference_binding": {
+    "uid": 7,
+    "category": "Marketing",
+    "customer": false,
+    "move_eligible": true,
+    "classification_origin": "client",
+    "reason": "client-validated-proposal",
+    "classification": {
+      "mode": "client-contextual-proposal-1",
+      "classifier": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "packet_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "reply": {
+        "category": "Marketing",
+        "customer_risk": "clear",
+        "reason": "promotion"
+      },
+      "request_id": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "request_fingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    }
+  },
+  "customer_keep": {
+    "uid": 8,
+    "category": null,
+    "customer": true,
+    "move_eligible": false,
+    "classification_origin": "automatic_keep",
+    "reason": "customer-protected"
+  },
+  "uncertain_keep": {
+    "uid": 9,
+    "category": null,
+    "customer": false,
+    "move_eligible": false,
+    "classification_origin": "client",
+    "reason": "client-customer-or-uncertainty"
+  },
+  "unsupported_keep": {
+    "uid": 10,
+    "category": null,
+    "move_eligible": false,
+    "classification_origin": "automatic_keep",
+    "reason": "unreadable-or-oversized"
+  },
+  "accepted_one_message_binding": {
+    "uid": 7,
+    "category": "Marketing",
+    "customer": false,
+    "move_eligible": true,
+    "classification_origin": "client",
+    "reason": "client-validated-proposal",
+    "classification": {
+      "mode": "client-contextual-proposal-1",
+      "classifier": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "packet_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "reply": {
+        "category": "Marketing",
+        "customer_risk": "clear",
+        "reason": "promotion"
+      },
+      "request_id": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "request_fingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    },
+    "owner_preference_binding": {
+      "revision": 0,
+      "policy": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "packet_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "one_message": true,
+      "rule_ids": []
+    }
+  }
+}

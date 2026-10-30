@@ -120,6 +120,7 @@ class BatchJournal:
         if is_bulk(batch['manifest']):
             validate_progress(batch)
             if previous and 'bulk_execution' in previous:require(batch.get('bulk_execution')==previous['bulk_execution'],'Bulk execution deadline/start changed')
+        if previous and previous.get('automatic_authorization') is not None:require(batch.get('automatic_authorization')==previous['automatic_authorization'],'Automatic authorization changed')
         if previous is not None:
             require(previous['manifest']==batch['manifest'] and previous['fingerprint']==batch['fingerprint'], 'Immutable manifest changed')
             require(previous['state'] not in ('completed','uncertain','blocked','expired','rejected'), 'Consumed journal cannot be rewritten')

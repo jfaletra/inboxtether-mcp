@@ -20,7 +20,7 @@ FIELDS={'schema','host','account','login_account','password_file','journal','soc
 GATES={'execution_enabled','client_session_consent'}
 
 def validate(v):
-    require(type(v) is dict and set(v)==FIELDS and v['schema']==1,'Exact organization configuration required')
+    require(type(v) is dict and set(v)-{'automatic_filing_policy'}==FIELDS and v['schema']==1,'Exact organization configuration required')
     require(all(type(v[n]) is bool for n in GATES),'Explicit boolean gates required')
     require(v['approval_method']=='browser-password-session' and v['review_path_prefix']=='/inboxtether','Local browser approval required')
     require(type(v['owner']) is dict and set(v['owner'])=={'kind','id'} and v['owner']['kind']=='local-owner'
@@ -51,9 +51,11 @@ def validate(v):
     senders=tuple(ContextualSender(**{**s,'reply_to_domains':tuple(s.get('reply_to_domains',())),
                   'allowed_categories':tuple(s.get('allowed_categories',CATEGORIES))}) for s in v['senders'])
     policy=ClientPolicy(protections,senders,mode='practical')
+    from automatic_filing import policy as automatic_policy
+    automatic_policy(v,{'host':v['host'],'account':v['account'],'source_path':boxes['INBOX']['path'],'source_uidvalidity':boxes['INBOX']['uidvalidity']},{c:boxes[c]['uidvalidity'] for c in CATEGORIES},{c:boxes[c]['path'] for c in CATEGORIES})
     return MailboxNamespace(tuple(entries),digest(boxes)),policy
 
-def binding(v):return digest({k:value for k,value in v.items() if k not in GATES})
+def binding(v):return digest({k:value for k,value in v.items() if k not in GATES and k!='automatic_filing_policy'})
 
 def load():
     path=os.environ['INBOXTETHER_MOVE_CONFIG'];spec=load_protected_json(path)
@@ -117,6 +119,11 @@ def load():
             service=NativeMoveService(registry,Scoped(),policy,copy.deepcopy(seed),baseline,baseline_check,paths,pins,
                 spec['owner'],spec['review_origin'],approval_method=spec['approval_method'],review_path_prefix=spec['review_path_prefix'],
                 client_session_consent=v['client_session_consent'])
+            from automatic_filing import policy as automatic_policy
+            def current_automatic_policy():
+                current_spec=current()
+                return {**automatic_policy(current_spec,registry.identity,pins,paths),'execution_enabled':current_spec['execution_enabled']}
+            service.automatic_policy=current_automatic_policy
             execute=service.execute
             def gated_execute(key):require(current()['execution_enabled'],'Mailbox execution disabled');return execute(key)
             service.execute=gated_execute

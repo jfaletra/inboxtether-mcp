@@ -16,7 +16,7 @@ using the client's/transport's existing controls. Browser review remains availab
 Client-relayed preference approval uses this same weaker trust boundary. Client UI
 behavior and saved permission grants must be assessed separately for each client.
 
-## Exact batch and compact bulk handoff
+## Manual exact batch and compact bulk handoff
 
 1. On an owner request, use `next` and source-bound `propose`. Keep customer,
    uncertain, unsupported and conflicting messages in Inbox. Bind all six proposal
@@ -51,7 +51,7 @@ behavior and saved permission grants must be assessed separately for each client
    `batch_id`, `fingerprint`, `decision:"approved"` (or `"rejected"`). Do not infer
    consent from classification, a prior yes, a rule or a generic request to organize.
 8. `execute {"batch_id":"ID"}` processes up to ten messages per acknowledged chunk.
-   It requires enabled execution, exact consent, current preferences and fresh
+   In manual mode it requires enabled execution, exact consent, current preferences and fresh
    source/destination/hash/flag/customer checks. Continue the same approved batch
    only after `paused` acknowledges verified progress. Report receipts and stop
    on any ambiguous result; claims survive interruptions and cannot be retried.
@@ -79,13 +79,17 @@ exhaustion stops safely. These are on-demand workflows, with no background mail 
 
 ## One message or remember a rule
 
-For a classified Inbox message, `correction_context {uid}` returns fresh source-bound
-context. Submit the corrected category with `propose`. This changes that classification
-only and moves nothing. Cancel an unattempted batch that reserves it before changing
+Saved Keeps are closed decisions and are not automatically retried on later runs.
+For an explicitly owner-selected classified Inbox message, `correction_context {uid}`
+returns fresh source-bound context only when the existing protection guards pass.
+Submit the exact six-field `propose` payload using those fresh bindings. This changes
+only that classification, archives the original decision and moves nothing. It does
+not create a sender rule. Missing context or credible identity/customer uncertainty
+still blocks correction; never edit the journal to bypass it. Cancel an unattempted batch that reserves it before changing
 classification. Never infer persistent learning from a one-message correction.
 
 `preferences {}` lists current revision, active/revoked rules, approval history and
-configured protections/context. A persistent rule requires an EXACT bare sender plus
+configured protections/context. A persistent classification preference requires an EXACT bare sender plus
 a literal subject phrase of 4–200 characters; no domain-wide guesses, wildcards, regex
 or inferred supplier relationships. `prepare_preference` previews upsert/revoke at the
 current revision, with immutable before/after values, fingerprint and expiry. Show
@@ -117,3 +121,16 @@ Missing, changed or ambiguous receipt sources stop. A restored Inbox source cann
 silently enter an ordinary refiling batch. Only a later separately reviewed correction
 anchored to the new verified receipt may move it again. Corrective folder ACLs must
 be separately reviewed on the destination installation.
+
+## Explicit automatic owner policy
+
+See [automatic filing](AUTOMATIC_FILING.md) for activation and revocation. This is
+a separate durable authorization mode, not fabricated chat consent. The owner
+explicitly enables a policy bound to their identity, exact source and four pinned
+destinations. It remains off by default and is inspectable through `automatic_policy`.
+On an owner request, classify pending messages normally, record automatic Keeps,
+report Review/attention separately and select with `filing_mode:"automatic"`.
+The normal compact selection, exact completed manifest and acknowledged ten-message
+chunks remain; automatic manifests never consume or create per-batch human consent.
+Manual batches and corrective/restoration moves still require exact manual approval.
+There is no scheduler or background mailbox processing.

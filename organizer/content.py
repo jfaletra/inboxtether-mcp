@@ -117,6 +117,10 @@ class ReadableHTML(HTMLParser):
     def handle_endtag(self, tag):
         self.tokens += 1
         check(self.tokens <= 10000)
+        if tag == 'br':
+            return  # Observed inert </br>: retain every text node; no stack mutation.
+        if tag == 'body' and tag not in self.stack:
+            return  # Stray body closer is inert; never unwind an unrelated open stack.
         if tag in self.VOID:
             self.bad = True
             return
@@ -145,7 +149,7 @@ class ReadableHTML(HTMLParser):
 
     def handle_decl(self, decl):
         normalized=' '.join(decl.casefold().replace("'",'"').split())
-        ordinary = normalized == 'doctype html' or re.fullmatch(
+        ordinary = normalized in ('doctype html', 'doctypehtml') or re.fullmatch(
             r'doctype html public "-//w3c//dtd (?:xhtml 1\.0|html 4\.01) (?:transitional|strict)//en" "https?://www\.w3\.org/[^"\[\]]{1,150}"',normalized)
         if not ordinary:
             self.bad = True
@@ -159,6 +163,10 @@ class ReadableHTML(HTMLParser):
     def result(self, html):
         check(len(html) <= MAX_TEXT_BYTES)
         self.feed(html); self.close()
+        # HTMLParser may discard an unfinished final start tag when close() runs.
+        # A linear suffix check prevents losing that tail from protection evidence.
+        if html.rfind('<') > html.rfind('>'):
+            self.bad = True
         if any(t not in self.OPTIONAL for t in self.stack) or self.rawdata:
             self.bad = True
         # Detect unfinished tags/comments that HTMLParser treats as literal data at EOF.

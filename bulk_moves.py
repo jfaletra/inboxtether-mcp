@@ -27,7 +27,7 @@ def validate_preparations(value,identity):
     for key,r in records.items():
         require(type(key) is str and len(key)==64 and all(x in '0123456789abcdef' for x in key),'Invalid preparation ID')
         require(type(r) is dict and set(r)=={'plan','fingerprint','state','entries'},'Invalid preparation record')
-        p=r['plan'];require(type(p) is dict and set(p)=={'identity','scope','decision_hashes','baseline','review_binding','workflow_binding','run_id','run_fingerprint','created','expires'},'Invalid preparation plan')
+        p=r['plan'];require(type(p) is dict and set(p)-{'automatic_policy_binding'}=={'identity','scope','decision_hashes','baseline','review_binding','workflow_binding','run_id','run_fingerprint','created','expires'},'Invalid preparation plan')
         require(r['fingerprint']==digest(p) and p['identity']==identity,'Preparation binding differs')
         scope=p['scope'];require(type(scope) is list and 1<=len(scope)<=MAX_BULK and all(type(x) is list and len(x)==2 and type(x[0]) is int and 0<x[0]<=4294967295 and x[1] in CATEGORIES for x in scope),'Invalid bulk scope')
         require(len({u for u,c in scope})==len(scope) and set(p['decision_hashes'])=={str(u) for u,c in scope},'Duplicate/missing bulk decision')
@@ -95,6 +95,7 @@ def advance(service,key):
 def publish(service,value,key,r):
     p=r['plan']
     now=service.clock();manifest={'schema':SCHEMA,'run_id':p['run_id'],'run_fingerprint':p['run_fingerprint'],'baseline':p['baseline'],'review_binding':p['review_binding'],'moves':r['entries'],'created':now,'expires':now+REVIEW_SECONDS,'execution_deadline':now+REVIEW_SECONDS+EXECUTION_SECONDS,'chunk_size':CHUNK_SIZE}
+    if 'automatic_policy_binding' in p:manifest['automatic_policy_binding']=p['automatic_policy_binding']
     require(len(canonical(manifest))<=700000,'Bulk manifest exceeds existing IPC budget; cancel preparation')
     batch={'manifest':manifest,'fingerprint':digest(manifest),'state':'prepared','approval':None,'attempts':[]}
     # One atomic write publishes both the finished preparation and approvable batch.
@@ -112,6 +113,9 @@ def validate_progress(value):
     for a,e in zip(attempts,m['moves']):
         require(a['uid']==e['uid'],'Bulk attempt order differs')
         if a['state']=='verified':require(a['mapping']['category']==e['category'] and a['mapping']['uidvalidity']==e['destination_uidvalidity'] and a['raw_sha256']==e['raw_sha256'] and a['flags']==e['evidence']['flags'],'Verified bulk receipt differs')
+    auth=value.get('automatic_authorization')
+    if auth is not None:
+        require('automatic_policy_binding' in m and value['approval'] is None and auth=={**m['automatic_policy_binding'],'manifest_fingerprint':value['fingerprint'],'at':auth.get('at'),'independent_per_batch_human_approval':False} and m['created']<=auth['at']<m['expires'],'Invalid automatic authorization')
     run=value.get('bulk_execution')
     if run is not None:
         require(set(run)=={'started','deadline'} and m['created']<=run['started']<m['expires'] and run['deadline']==m['execution_deadline'],'Bulk execution window changed')
@@ -125,15 +129,24 @@ def enrich(value):
 
 class BulkOperation(BatchOperation):
     def __init__(self,*args,**kwargs):super().__init__(*args,**kwargs,scope_limit=MAX_BULK)
-    def execute_consented(self,owner,approval_method):
-        require(approval_method in ('browser-password-session','browser-oidc-session','client-session-consent'),'Unsupported bulk consent method')
+    def execute_automatic(self):return self._execute(None,None,automatic=True)
+
+    def execute_consented(self,owner,approval_method):return self._execute(owner,approval_method)
+
+    def _execute(self,owner,approval_method,automatic=False):
+        require(automatic or approval_method in ('browser-password-session','browser-oidc-session','client-session-consent'),'Unsupported bulk consent method')
         value=self.journal.read();require(value is not None,'Unknown bulk manifest');m=value['manifest'];a=value['approval'];validate_progress(value)
-        require(value['state'] in ('approved','paused') and (not value['attempts'] if value['state']=='approved' else all(x['state']=='verified' for x in value['attempts'])),'Consumed/uncertain batch; never retry')
-        require(a is not None and a=={'method':approval_method,'principal':owner,'fingerprint':value['fingerprint'],'at':a.get('at')},'Exact bulk consent required')
+        if automatic:
+            require(callable(getattr(self,'automatic_check',None)) and 'automatic_policy_binding' in m and a is None,'Explicit automatic authority required')
+            self.automatic_check()
+            require(value['state'] in ('prepared','paused') and (not value['attempts'] if value['state']=='prepared' else all(x['state']=='verified' for x in value['attempts'])),'Consumed/uncertain automatic batch; never retry')
+        else:
+            require(value['state'] in ('approved','paused') and (not value['attempts'] if value['state']=='approved' else all(x['state']=='verified' for x in value['attempts'])),'Consumed/uncertain batch; never retry')
+            require(a is not None and a=={'method':approval_method,'principal':owner,'fingerprint':value['fingerprint'],'at':a.get('at')},'Exact bulk consent required')
         require(digest(m)==value['fingerprint'] and m['run_id']==self.run_id and m['run_fingerprint']==self.run_fingerprint and m['baseline']==self.baseline,'Bulk manifest binding changed')
         require([(e['uid'],e['category']) for e in m['moves']]==list(self.scope),'Bulk source scope differs')
-        require(m['created']<=a['at']<m['expires'],'Bulk consent expired')
-        initial=value['state']=='approved';start=len(value['attempts']);deadline=m['execution_deadline'];remaining=len(m['moves'])-start
+        if not automatic:require(m['created']<=a['at']<m['expires'],'Bulk consent expired')
+        initial=value['state']==('prepared' if automatic else 'approved');start=len(value['attempts']);deadline=m['execution_deadline'];remaining=len(m['moves'])-start
         if initial:require(self.clock()<m['expires'] and 'bulk_execution' not in value,'Approval start deadline expired')
         else:require(value['bulk_execution']['deadline']==deadline,'Execution window differs')
         budget={'expires':deadline};self.require_execution_window(budget,remaining)
@@ -144,9 +157,11 @@ class BulkOperation(BatchOperation):
         if initial:
             require(self.clock()<m['expires'],'Approval expired during initial chunk validation')
             value['bulk_execution']={'started':self.clock(),'deadline':deadline}
+            if automatic:value['automatic_authorization']={**m['automatic_policy_binding'],'manifest_fingerprint':value['fingerprint'],'at':self.clock(),'independent_per_batch_human_approval':False}
         for index,entry in enumerate(chunk,start):
             uid,cat=entry['uid'],entry['category'];remaining=len(m['moves'])-index
             try:
+                if automatic:self.automatic_check()
                 self.require_execution_window(budget,remaining)
                 require(self.snapshot(uid,cat)==entry,'Bulk source changed before move')
                 self.require_execution_window(budget,remaining)
@@ -155,6 +170,7 @@ class BulkOperation(BatchOperation):
             attempt={'uid':uid,'state':'claimed','at':self.clock()};value['attempts'].append(attempt);value['state']='executing';self.journal.write(value)
             try:
                 def prepared(raw):
+                    if automatic:self.automatic_check()
                     require(raw==entry['raw_sha256'],'Bulk raw source changed at MOVE boundary');self.require_execution_window(budget,remaining);self.unchanged()
                 uv,dest=self.mailbox.move(self.uv,uid,cat,self.pins[cat],evidence=self.decisions[uid],expires_at=deadline,on_prepared=prepared)
                 require(type(dest) is int and 0<dest<=4294967295 and uv==self.pins[cat],'Invalid bulk destination mapping')
