@@ -6,6 +6,8 @@ An authenticated session authorizes individual decisions, not an approve-all gra
 from __future__ import annotations
 
 import base64
+import errno
+import fcntl
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
@@ -209,7 +211,7 @@ def review_page(item, principal, nonce, csrf, binding=None):
         '<p class="deadline">Approval deadline<br><strong>'+deadline+'</strong></p><p class="fine">This open form expires after at most five minutes. If expired, reopen the review or ask your assistant for a new proposal.</p></aside></div>', nonce=nonce)
 
 
-def create_app(config, verifier=None, broker=None):
+def create_app(config, verifier=None, broker=None, *, renderer=review_page, move_review=False):
     verifier = verifier or OIDCVerifier(config)
     broker = broker or BrokerClient(config.broker_socket)
     csrf = CSRF(config.csrf_key)
@@ -232,7 +234,7 @@ def create_app(config, verifier=None, broker=None):
             if request.method == 'GET':
                 nonce = nonce or secrets.token_hex(32)
                 binding = hashlib.sha256((nonce+'|'+request.headers['authorization']).encode()).hexdigest()
-                return review_page(item, principal, nonce, csrf, binding)
+                return renderer(item, principal, nonce, csrf, binding)
             require(request.method == 'POST' and nonce is not None)
             require(request.headers.getlist('origin') == [config.origin], 'Same-origin submission required.')
             require(request.headers.get('sec-fetch-site', 'same-origin') == 'same-origin')
@@ -251,7 +253,9 @@ def create_app(config, verifier=None, broker=None):
             message = ('Approved for one exact save. Return to your assistant to save it before approval expires. '
                        'No email has been saved or sent by this page.' if decision == 'approved' else
                        'Rejected. This draft cannot be saved through this approval.')
-            return page('<section class="state" role="status"><span class="badge">Decision recorded</span><h1>'+('Approval recorded' if decision == 'approved' else 'Draft rejected')+'</h1><p>'+message+'</p></section>')
+            if move_review:
+                message = 'Exact move batch approved. Return to your assistant to execute before expiry. This page moved no messages.' if decision == 'approved' else 'Move batch rejected. No messages moved.'
+            return page('<section class="state" role="status"><span class="badge">Decision recorded</span><h1>'+('Approval recorded' if decision == 'approved' else ('Move batch rejected' if move_review else 'Draft rejected'))+'</h1><p>'+message+'</p></section>')
         except Exception:
             return page('<section class="state" role="alert"><span class="badge">Action not completed</span><h1>Review expired or unavailable</h1><p>The request was refused, expired, or is no longer pending. '
                         'No mailbox save was attempted by this page. Reopen the review to check its state. If the draft expired, ask your assistant to prepare a new proposal.</p></section>', 409)
@@ -263,38 +267,98 @@ def create_app(config, verifier=None, broker=None):
                      exception_handlers={404: not_found, 405: not_found})
 
 
+class PrivateListener(socket.socket):
+    """Hold the pathname lock until this listener and its owned socket are closed."""
+    def close(self):
+        lock_fd = getattr(self, '_lock_fd', None)
+        if lock_fd is None:
+            return super().close()
+        self._lock_fd = None
+        try:
+            super().close()
+            try:
+                current = self._path.lstat()
+            except FileNotFoundError:
+                pass
+            else:
+                if (current.st_dev, current.st_ino) == self._identity:
+                    self._path.unlink()
+        finally:
+            os.close(lock_fd)
+
+
 def private_listener(path):
+    path = Path(path)
     info = path.parent.lstat()
     require(stat.S_ISDIR(info.st_mode) and not path.parent.is_symlink()
             and info.st_uid == os.geteuid() and stat.S_IMODE(info.st_mode) == 0o750)
-    require(not path.exists() and not path.is_symlink())
-    listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    previous = os.umask(0o117)
+    lock_fd = os.open(str(path)+'.lock', os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+    listener = None
     try:
-        listener.bind(str(path))
-        listener.listen(16)
+        lock_info = os.fstat(lock_fd)
+        require(stat.S_ISREG(lock_info.st_mode) and lock_info.st_uid == os.geteuid()
+                and stat.S_IMODE(lock_info.st_mode) == 0o600 and lock_info.st_nlink == 1)
+        try:
+            fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            require(False)
+        try:
+            stale = path.lstat()
+        except FileNotFoundError:
+            stale = None
+        if stale is not None:
+            require(stat.S_ISSOCK(stale.st_mode) and stale.st_uid == os.geteuid()
+                    and stat.S_IMODE(stale.st_mode) == 0o660)
+            # Refuse a live listener; remove only a verified disconnected owned socket.
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as probe:
+                probe.settimeout(0.2)
+                try:
+                    probe.connect(str(path))
+                except OSError as error:
+                    require(error.errno == errno.ECONNREFUSED)
+                else:
+                    require(False)
+            current = path.lstat()
+            require((current.st_dev, current.st_ino) == (stale.st_dev, stale.st_ino))
+            path.unlink()
+        listener = PrivateListener(socket.AF_UNIX, socket.SOCK_STREAM)
+        previous = os.umask(0o117)
+        try:
+            listener.bind(str(path))
+            created = path.lstat()
+            listener._path = path
+            listener._identity = (created.st_dev, created.st_ino)
+            listener._lock_fd = lock_fd
+            lock_fd = None
+            listener.listen(16)
+        finally:
+            os.umask(previous)
+        return listener
     except BaseException:
-        listener.close()
+        if listener is not None:
+            listener.close()
         raise
     finally:
-        os.umask(previous)
-    return listener
+        if lock_fd is not None:
+            os.close(lock_fd)
 
 
 def main():
     try:
         import uvicorn
-        config = WebConfig.load()
+        if os.environ.get('INBOXTETHER_MOVE_REVIEW','0')=='1' and os.environ.get('INBOXTETHER_OWNER_LOGIN','0')=='1':
+            from owner_login import LocalConfig
+            config=LocalConfig.load()
+        else:
+            config = WebConfig.load()
         # Prebind ourselves: uvicorn's uds= path chmods sockets to 666.
         # Supplying a bound socket preserves mode 660 from birth and avoids TCP.
         with private_listener(config.web_socket) as listener:
-            try:
-                worker = uvicorn.Server(uvicorn.Config(create_app(config), proxy_headers=False,
-                    access_log=False, log_level='critical', server_header=False, workers=1,
-                    limit_concurrency=16, timeout_keep_alive=2, h11_max_incomplete_event_size=16384))
-                worker.run(sockets=[listener])
-            finally:
-                config.web_socket.unlink(missing_ok=True)
+            factory = __import__('move_web').app if os.environ.get('INBOXTETHER_MOVE_REVIEW','0') == '1' else create_app
+            worker = uvicorn.Server(uvicorn.Config(factory(config), proxy_headers=False,
+                access_log=False, log_level='critical', server_header=False, workers=1,
+                limit_concurrency=16, timeout_keep_alive=2, h11_max_incomplete_event_size=16384))
+            worker.run(sockets=[listener])
     except Exception:
         print('Browser approval unavailable. Check protected configuration.', file=__import__('sys').stderr)
         return 1

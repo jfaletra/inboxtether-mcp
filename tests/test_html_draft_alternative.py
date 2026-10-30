@@ -66,7 +66,7 @@ class HtmlDraftTests(DraftFixture, unittest.TestCase):
         with patch.dict(os.environ, {'INBOXTETHER_DRAFT_HTML_ALTERNATIVE': '1'}, clear=True):
             self.assertIsNone(d.Config.load())
 
-    def test_shared_send_composer_does_not_inherit_draft_html_option(self):
+    def test_plain_composer_does_not_inherit_implicit_html_option(self):
         from types import SimpleNamespace
         with patch.dict(os.environ, {'INBOXTETHER_DRAFT_HTML_ALTERNATIVE': '1'}):
             raw = d.reply_bytes(SimpleNamespace(account='sender@example.com'),

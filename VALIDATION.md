@@ -1,118 +1,89 @@
-# Validation evidence
+# InboxTether 2.0.0 final candidate validation
 
-Initial preparation, October 17, 2026: **51 local tests passed** on Python 3.12 with MCP SDK 1.30.0. A clean local CI-equivalent environment passed dependency consistency checks. A separate pip-audit 2.10.1 advisory audit found zero known vulnerabilities and zero skipped packages across fresh runtime resolution (29 packages), the installed Linux runtime snapshot (29 packages), and the auditor tool resolution (27 packages); see security/dependency-audit-2026-10-17.json.
+This unreleased synchronization candidate updates existing PR #11 from commit
+`27465c6ca68e784df96b51ea34e251f04ff214cb`. Its version is 2.0.0; merging,
+tagging and publication still require owner approval.
 
-## Relation to the working implementation
+## Tested for this source
 
-Source was reconciled against the verified deployed Reader implementation. A syntax-tree comparison confirmed the same application logic after normalizing only the three operator-configuration assignments and product-name strings. The community package reads INBOXTETHER_IMAP_HOST, INBOXTETHER_ACCOUNT, and INBOXTETHER_PASSWORD_FILE with example defaults. The working private deployment was not renamed, reconfigured, restarted, or updated during this preparation.
+- **506 tests passed on macOS/Python 3.11 and Linux/Python 3.12.3**, with zero
+  failures, errors or skips. Exact artifact/bundle reruns are retained in release
+  preparation evidence; GitHub-hosted validation is linked in PR #11 after push.
+- Fresh Linux virtual environment and unchanged 56 constrained runtime/test/audit
+  dependencies: installation and pip consistency passed. Strict advisory audit
+  reported no known vulnerabilities on October 30, 2026. This does not establish
+  absence of unknown vulnerabilities or audit the operating system.
+- Synthetic empty public initialization: 200 classifications, compact reference,
+  twenty acknowledged preparation chunks and twenty verified execution chunks,
+  with restarts. Both manual exact-consent and owner-policy modes passed.
+- Manual chat consent, independent owner-password/CSRF browser workflow through
+  fixture HTTP/Unix IPC, exact-fingerprint validation, malformed/expired/replayed
+  requests, revocation and execution-gate changes at the MOVE boundary.
+- Automatic policy disabled by default, four-folder restriction, Review/customer/
+  potential-customer/uncertainty Keeps, strict nested saved-risk handling, history-
+  preserving corrections, current source/destination/hash/flag validation, deadlines,
+  immutable receipts, interrupted execution and permanent no-retry claims.
+- Inert HTML tolerances and active/unsafe/MIME/decoding/unfinished-markup rejection;
+  customer keywords and identity guards remain unchanged.
+- Original Reader/Draft source and canonical tool contracts, real SDK stdio calls,
+  browser listener recovery, fixture peer permissions, source/secret-pattern and
+  sending-import checks. No real message is required by any test.
 
-Mailcow is the first verified platform. Existing live evidence covers mailbox listing, enhanced search, bounded message retrieval, five-tool discovery, and one explicitly user-selected attachment retrieved through the connected MCP plugin with independent size/SHA-256 validation. No private headers, filenames, contents, account/tunnel identifiers, server addresses, or screenshots are included here. The public environment-variable packaging/branding changes have not been deployed to that system. Other IMAP platforms have not been certified.
+The Linux suite ran unprivileged against root-owned read-only source and private
+synthetic scratch in an isolated network namespace. Owner-enrollment tests use a
+fabricated administrator/TTY fixture; no production policy or credential is loaded.
+The initial local run found a missing synthetic format fixture and restricted-path
+Unix socket length failures; fixture packaging and test environment were corrected,
+without weakening application checks. An initial wheel-only dependency download
+failed because pinned dkimpy is source-only; the same pinned source was built into
+a wheel. Complete output and exit codes for failed and passing runs are retained
+outside the public source. No application change was made for wheel packaging.
 
-## Local tests
+## Self-contained verification
 
-The 49 tests for the deployed behavior cover the read-only command guard, TLS configuration, password-file protections, MIME/output limits, actual IMAP framing over socket pairs, MCP stdio initialization/discovery, additive search metadata and identity checks, selected attachment choice, stale IDs, wrong UIDVALIDITY, size boundaries, unsafe type/name/signature, invalid encoding, MIME depth/count limits, and credential-free errors. Two additional tests check the community configuration defaults and explicit operator environment.
+The source archive contains every first-party module, imported synthetic support
+module, JSON fixture, example/configuration template and asset needed by the suite.
+MANIFEST.sha256 detects missing or changed files before acceptance. The companion
+Linux CPython 3.12 x86_64 verification bundle also contains the complete public
+dependency wheel closure, a checksum preflight and an offline installer/verifier.
+System Python/venv, Linux/glibc and standard libraries are platform prerequisites,
+not bundled applications. Dependency versions are pinned in constraints-validated.txt.
+The companion bundle is a release-preparation artifact, not a new runtime service
+or a dependency on private files. Deliberately missing helpers, fixtures, wheels and
+changed source must fail preflight.
 
-Tests use synthetic fixtures and do not authenticate to a mailbox. Local maximum-size tests do not establish maximum-size behavior through every MCP client/tunnel. Basic JPEG signature and checksum validation are not full image validation or malware scanning. Historical v1.0 evidence did not include a live before/after flag comparison; the controlled v1.1 test below now provides that comparison. No deliberate crash/reboot test was performed. Read-only wire behavior is tested; the credential itself may still permit writes through another client.
+## Historical evidence and unverified boundaries
 
-## Package checks
+Earlier public rc3 acceptance exercised signed-in Codex CLI and graphical Claude
+Desktop against disposable Dovecot. That evidence belongs to older code. Separate
+private deployment experience motivated these reviewed component ports; no private
+accounts, business rules, mail, journals, receipts or operational evidence are shipped.
+This preparation does not independently repeat or certify those production moves.
 
-Local configuration JSON and repository-relative documentation links were checked. Brand PNG dimensions, byte limits, preservation hashes, and metadata were inspected. All candidate files, the Git index, and reachable local Git objects were scanned for known private environment strings and common credential/private-key patterns; findings are documented in SECURITY-REVIEW.md. No private deployment history is imported.
+This final public source has **no new live IMAP/provider, graphical assistant, actual
+HTTPS/browser or production upgrade/migration/rollback acceptance**. Synthetic
+browser HTTP/IPC is not graphical acceptance. Other providers/clients, permission
+mappings and supported versions must be assessed on the destination installation.
+Optional client-session consent trusts the connected client; it is not independently
+verified human identity. Automatic owner policy is distinct standing authority.
+Sending remains absent; no SMTP transport is shipped.
 
-Initial hosted push/PR tests and dependency audits passed; see docs/PRIVATE-GITHUB-VALIDATION.md. The v1.0 candidate adds Reader-only regression tests and hygiene scans and must pass on its exact head before release. A clean local requirements installation and all 51 tests passed; workflow/Dependabot YAML, event triggers, SHA pins, permissions, and fail-closed audit steps were checked locally. The two official Actions release pins were resolved against the upstream release API and Git tags, not guessed. The systemd example is an uninstalled skeleton requiring a tested operator launcher. No public endpoint, Docker image, package-registry release, or public plugin submission has been created or verified. A code/packaging review is not an independent penetration test or guarantee that no sensitive data could exist.
+Public clean initialization stays separate from private journals. Do not import a
+private ledger/witness/receipt set, erase a claim or restore an older journal. No
+automatic downgrade, inverse-move rollback, uncertain retry, history compaction or
+background scheduling is supplied. Historical Keeps remain closed and may include
+conservative false positives. See AUTOMATIC_FILING.md, WORKFLOWS.md and UPGRADE.md.
 
-## InboxTether rename validation
+## Reproduce
 
-All 51 tests and runtime/auditor dependency audits were rerun after the rename and passed. A syntax-tree comparison against the preceding verified community candidate passed after normalizing only branding/configuration identifiers. INBOXTETHER_* replaces the prior community configuration namespace; production was not changed or migrated. PROJECT.json records source-repository metadata and does not claim an installable PyPI distribution. Naming results and limitations are in docs/NAMING-REVIEW.md. The earlier Linux runtime audit is historical read-only evidence; fresh package audits are rerun evidence.
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -c constraints-validated.txt -r requirements-test.txt -r requirements-audit.txt
+.venv/bin/python -m pip check
+.venv/bin/python run_tests.py
+.venv/bin/python scripts/verify_release.py
+.venv/bin/python -m pip_audit -r constraints-validated.txt --no-deps --disable-pip --strict --progress-spinner off
+```
 
-## v1.0.0 Reader candidate
-
-55 tests passed locally after adding four release-boundary/hygiene checks. All known nonallowlisted IMAP commands and UID mutation operations are denied; SMTP transport imports are absent. Existing socket-pair tests verify EXAMINE/BODY.PEEK framing and no mailbox mutation. server.py is byte-identical to the reviewed private main baseline; only tests, CI, metadata and documentation changed. No live mail, production deployment, restart, or new tunnel was tested or changed.
-
-Fresh strict pip-audit runs found zero known vulnerabilities and zero skipped packages across 29 runtime and 27 auditor dependencies. Dependency consistency passed. Generic file/history patterns and a separate known-private-identifier/index/object scan passed. PNG image provenance contains public certificate-authority contact metadata and compressed bytes that can resemble email addresses; these are reviewed metadata, not mailbox contents or private contributor contact details. The generic email-pattern check skips PNG binary content; it is not a metadata/DLP certification. Original bytes remain preserved.
-
-Hosted release-candidate results and immutable SHA are recorded in the final release-readiness report/PR, outside this document to avoid a self-referential commit. Before tagging, verify all three checks on the exact final release commit: unittest, pip-audit and repository-hygiene. No local/remote version tag or GitHub release was created during preparation.
-
-## v1.1 Draft Assistant development (synthetic only)
-
-84 tests passed locally on Python 3.12/MCP 1.30.0, including all 55 existing Reader tests. AST comparison confirms every pre-existing Reader function/class is unchanged; create_server adds conditional registration only. Default discovery remains five Reader tools; deliberate opt-in exposes seven. Tests exercise actual MCP stdio discovery/refusal paths and real imaplib APPEND framing on a local socket pair, without an external host.
-
-New cases cover exact MIME/threading/Bcc preview, unapproved saves, wrong fingerprints, edited drafts, expiry and review races, altered expiry/bytes/configuration/source/target identity, strict recipients/header/body validation, Drafts special-use/UIDPLUS requirements, protected SQLite state, quotas, operator-terminal confirmation, concurrent single-use claims, saved replay, crash-after-claim, timeout, server rewrites and missing/mismatched APPENDUID. Reader and Draft adapters deny unrelated mutation commands; application modules contain no SMTP transport imports. No mail was sent, appended to a live server, or deleted; no credentials, production services or mailbox ACLs were accessed/changed.
-
-Fresh strict advisory audits passed with zero known vulnerabilities and zero skipped packages across 29 runtime dependencies and 27 audit-tool dependencies; no dependency was added. Dependency consistency passed. Advisory results are time-dependent, not a guarantee. See security/DRAFT-ASSISTANT-REVIEW.md for the threat model and remaining deployment gates. Existing release documents describe historical v1.0 evidence and do not certify Draft Assistant. This historical synthetic-only stage preceded the controlled Mailcow terminal workflow acceptance recorded below. General production enablement and live browser/provider acceptance remain separate gates.
-
-## Browser approval development
-
-109 synthetic tests pass locally, retaining all 84 earlier tests and all 55 Reader regressions. New evidence covers independent OIDC signature/issuer/audience/subject/expiry validation; secure CSRF/session binding, explicit decisions, rejection/replay/concurrency; HTML escaping and complete proposed previews; Unix peer authentication and 660 socket/600 key permissions; actual Uvicorn private-socket HTTP operation; and the browser-to-broker-to-approved-save path. No identity-provider login or real mail/production connection is performed. The optional Python dependency audit covers 29 packages with zero known vulnerabilities or skips. Current implementation and deployment limits are in docs/BROWSER-APPROVAL.md and security/DRAFT-ASSISTANT-REVIEW.md.
-
-## Basic/Secure draft policy validation
-
-122 synthetic automated tests pass after introducing Basic Mode: the prior 111
-regressions plus 11 Basic Mode tests. Added coverage includes explicit enablement
-and acknowledgment, exclusive tool registration, actual stdio MCP schema/error
-handling, complete confirmation binding, unchanged MIME/threading, mode isolation,
-source/destination checks, expiry/tamper/rejection, concurrent single APPEND and
-uncertain-save replay. The recorded Basic decision explicitly says human_verified
-is false. No tests access live mail or enable a deployed service.
-
-Subsequent actual ChatGPT synthetic UI testing did not satisfy the complete-review
-and per-save-prompt gate; Basic is not recommended for independently verified
-human approval. Claude remains unverified. See [observed client limits](docs/DRAFT-MODES.md).
-Protocol tests alone do not prove UI behavior.
-
-## Authenticated IMAP capability refresh regression
-
-The IMAP client previously retained its pre-authentication capability cache after
-LOGIN. Servers can advertise UIDPLUS only in the authenticated state, causing
-Draft Assistant to refuse a capable server during preparation or before APPEND.
-Reader and guarded draft-writer connections now explicitly query CAPABILITY after
-successful LOGIN and replace the cached set before exposing the connection to
-operations. Failed discovery stops the connection; stale capabilities are never
-merged or treated as authority. No approval, protocol allowlist, default mode,
-expiry, immutable-message, single-attempt or uncertain-save policy is changed.
-
-The synthetic suite contains 128 tests. Regression coverage includes both draft
-policies during preparation, Reader and writer login order, removal of stale
-UIDPLUS, invalid/failed responses, connection cleanup, and an actual IMAP wire
-save where UIDPLUS is absent before LOGIN and present afterward. These checks do
-not connect to a real mailbox. The authenticated-capability workaround used in
-isolated acceptance testing is unnecessary with this fix; production is unchanged.
-
-## v1.1 final candidate review (supersedes earlier outstanding-test notes)
-
-The 128-test candidate retains default-off Draft Assistant and Reader compatibility.
-Actual ChatGPT mock-backend UI tests have now been performed: native prompts and
-remembered settings do not guarantee complete email review or approval for each
-save. Negative altered-content/expiry/replay checks were observed separately.
-A controlled live Mailcow Secure terminal-approved synthetic save verified exact
-MIME, threading, Drafts destination, checksum and unchanged original bytes/flags.
-No SMTP or production deployment was used. See docs/DRAFT-MODES.md and
-security/V1.1-RELEASE-REVIEW.md for evidence scope and remaining deployment gates.
-Prepared release notes: RELEASE-NOTES-v1.1.0.md. Reader upgrade/optional opt-in and
-rollback: docs/UPGRADING-v1.1.md. These files do not authorize publication.
-
-Final review rerun: 128 tests passed; runtime, browser and audit-tool strict advisory audits found no known vulnerabilities; dependency consistency passed. Exact v1.0.0 comparison confirms five identical Reader schemas, 11 unchanged Reader functions and the unchanged protocol guard except the authenticated login refresh.
-
-## v1.2 final review — supersedes earlier Send/Sent test limitations
-
-Runtime candidate `b92ab52` adds Secure-only Send and optional Sent filing, both
-disabled by default. 217 local tests run:215 pass, two privileged Linux cases skip
-on macOS and pass in hosted isolation CI. All five Reader tool schemas exactly
-match v1.1;24 existing Reader definitions are identical, with only optional tool
-registration changed. Draft/browser implementation and dependency requirements
-are unchanged from v1.1. Tests cover exact approval, expiry/replay/concurrency,
-TLS/refusals, IPC/startup isolation, failed/uncertain sends/appends and recovery.
-
-Separately authorized isolated Mailcow acceptance verified dedicated protocol-only
-credentials, TLS1.3/hostname validation, SMTP acceptance, authenticated UIDPLUS and
-special-use Sent, one independently approved send-and-file, one exact matching
-Sent copy using BODY.PEEK, preserved prior receipt and final disabled state. The
-operator confirmed recipient receipt and Sent visibility. An initial read-only
-discovery harness reporting error occurred after EXAMINE, with socket closure/no
-retry; subsequent verification logged out cleanly. Live failure injection, other
-providers and actual v1.2 ChatGPT/Claude UI remain unverified.
-
-Encrypted off-host backup/quarantine restore covered both receipt tables, private
-configuration/pin and synthetic secret canaries; historical uncertainty/claims
-remained non-retryable. A final actual test-state snapshot decrypted and verified
-off-host. This does not prove an arbitrary operator's backup or disk encryption.
-See security/V1.2-RELEASE-REVIEW.md and docs/UPGRADING-v1.2.md.
+Do not use production credentials in tests. Separate the dependency-install/audit
+network step from isolated synthetic test execution.

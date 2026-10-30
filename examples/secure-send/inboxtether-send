@@ -1,8 +1,0 @@
-#!/bin/sh
-# Administrator-installed entrypoint; fixed absolute paths, no caller-selected
-# interpreter, PYTHONPATH, user site, .pth hooks, CA overrides or secret env vars.
-# Install this file root-owned 0755 at /usr/local/libexec/inboxtether-send.
-# Its interpreter, bootstrap and application tree must be administrator-owned.
-exec /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C.UTF-8 TZ=UTC \
-    /opt/inboxtether-send/venv/bin/python -I -S -B \
-    /opt/inboxtether-send/send_bootstrap.py "$@"

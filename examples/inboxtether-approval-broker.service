@@ -1,0 +1,24 @@
+[Unit]
+Description=InboxTether organization approval broker
+After=network-online.target
+[Service]
+Type=simple
+User=inboxtether-organizer
+Group=inboxtether-organizer
+WorkingDirectory=/opt/inboxtether
+EnvironmentFile=/etc/inboxtether-approval/broker.env
+ExecStart=/opt/inboxtether/.venv/bin/python -m move_broker
+ExecStartPost=+/opt/inboxtether/.venv/bin/python /opt/inboxtether/socket_access.py broker
+RuntimeDirectory=inboxtether-approval-broker
+RuntimeDirectoryMode=0750
+UMask=0117
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/inboxtether-organization
+Restart=on-failure
+RestartSec=5
+[Install]
+WantedBy=multi-user.target

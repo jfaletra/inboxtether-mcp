@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "host": "mail.example.com",
+  "account": "owner@example.com",
+  "login_account": "organizer@example.com",
+  "password_file": "/etc/inboxtether-organization/imap-password",
+  "journal": "/var/lib/inboxtether-organization",
+  "socket": "/run/inboxtether-approval-broker/moves.sock",
+  "reader_uid": 1001,
+  "web_uid": 1002,
+  "owner": {
+    "kind": "local-owner",
+    "id": "REPLACE_WITH_ENROLLMENT_OWNER_ID"
+  },
+  "review_origin": "https://review.example.com",
+  "review_path_prefix": "/inboxtether",
+  "approval_method": "browser-password-session",
+  "mailboxes": {
+    "INBOX": {
+      "path": "INBOX",
+      "uidvalidity": 0
+    },
+    "Industry": {
+      "path": "Industry",
+      "uidvalidity": 0
+    },
+    "Marketing": {
+      "path": "Marketing",
+      "uidvalidity": 0
+    },
+    "Orders": {
+      "path": "Orders",
+      "uidvalidity": 0
+    },
+    "Review": {
+      "path": "Review",
+      "uidvalidity": 0
+    },
+    "Suppliers": {
+      "path": "Suppliers",
+      "uidvalidity": 0
+    }
+  },
+  "execution_enabled": false,
+  "client_session_consent": false,
+  "policy": {
+    "customer_addresses": [],
+    "customer_domains": [],
+    "protected_thread_ids": [],
+    "customer_terms": [],
+    "owner_keep_rules": []
+  },
+  "senders": [],
+  "automatic_filing_policy": {
+    "enabled": false,
+    "revision": "0000000000000000000000000000000000000000000000000000000000000000",
+    "folders": [
+      "Industry",
+      "Marketing",
+      "Orders",
+      "Suppliers"
+    ]
+  }
+}

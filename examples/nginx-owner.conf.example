@@ -1,0 +1,12 @@
+# Inside the existing HTTPS server for the exact configured review origin.
+# Replace domain/certificate configuration outside this location using normal TLS setup.
+location = /inboxtether { return 308 /inboxtether/; }
+location /inboxtether/ {
+    proxy_pass http://unix:/run/inboxtether-approval-web/web.sock:;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_connect_timeout 5s;
+    proxy_read_timeout 30s;
+    client_max_body_size 16k;
+    access_log off;
+}

@@ -1,5 +1,0 @@
-blank_issues_enabled: false
-contact_links:
-  - name: Security vulnerability — use private reporting
-    url: https://github.com/jfaletra/inboxtether-mcp/security/policy
-    about: Never put sensitive reports in public issues. Follow the policy; the report form is a publication gate.

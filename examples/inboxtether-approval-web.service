@@ -1,0 +1,26 @@
+[Unit]
+Description=InboxTether owner browser review
+After=network-online.target inboxtether-approval-broker.service
+Requires=inboxtether-approval-broker.service
+[Service]
+Type=simple
+User=inboxtether-web
+Group=inboxtether-web
+WorkingDirectory=/opt/inboxtether
+EnvironmentFile=/etc/inboxtether-approval/web.env
+ExecStart=/opt/inboxtether/.venv/bin/python -m approval_web
+ExecStartPost=+/opt/inboxtether/.venv/bin/python /opt/inboxtether/socket_access.py web
+RuntimeDirectory=inboxtether-approval-web
+RuntimeDirectoryMode=0750
+RuntimeDirectoryPreserve=yes
+UMask=0117
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+RestrictAddressFamilies=AF_UNIX
+InaccessiblePaths=/var/lib/inboxtether-organization
+Restart=on-failure
+RestartSec=5
+[Install]
+WantedBy=multi-user.target

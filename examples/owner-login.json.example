@@ -1,0 +1,9 @@
+{
+  "origin": "https://review.example.com",
+  "owner_id": "REPLACE_WITH_ENROLLMENT_OWNER_ID",
+  "owner_file": "/etc/inboxtether-approval/owner.json",
+  "broker_socket": "/run/inboxtether-approval-broker/moves.sock",
+  "web_socket": "/run/inboxtether-approval-web/web.sock",
+  "csrf_key_file": "/etc/inboxtether-approval/csrf.key",
+  "path_prefix": "/inboxtether"
+}
