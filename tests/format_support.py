@@ -37,4 +37,3 @@ class Harness(unittest.TestCase):
         for move in self.store.record('batches', batch['batch_id'])['manifest']['moves']:
             self.org.execute(batch['batch_id'], move['uid'])
         return self.org.batch_status(batch['batch_id'])
-
