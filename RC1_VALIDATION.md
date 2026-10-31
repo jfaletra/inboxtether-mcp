@@ -2,20 +2,26 @@
 
 Experimental prerelease candidate based on stable `v2.0.0`, commit
 `8f4b4d869f51ac74186e45ab9c3a568dc6c53518`. No stable 2.1 release or tag exists.
-This file records fresh local rc1 checks; GitHub Actions checks on the exact PR
-commit and the packaged verifier are attached to the PR's Checks/job logs.
+This file separates original rc1 checks from the final local UX correction.
+See [final wizard UX validation](FINAL_WIZARD_UX_VALIDATION.md) for the new 551-test
+run, three fresh installations and actual Chrome completion/download checks.
+Earlier GitHub Actions results apply to their exact PR commit, not this correction.
 
 ## Exact reviewed implementation
 
-All 90 reviewed Python/test/browser-code files are byte-for-byte identical to the
-accepted wizard snapshot. The rc1 delta is VERSION, release documentation, accepted
-screenshots, CI/packaging and dependency-license metadata. Runtime/test/audit pins,
-authentication, Reader/Draft behavior and the filing engine are unchanged.
+The original published PR candidate at `6bc1a3b9f6b5145f42c1b1da6345cea8c8b6d219`
+matched all 90 reviewed code files. The owner-authorized October 31 final UX
+correction now changes only wizard completion/download sequencing, its temporary
+connection snapshot, recovery wording, tests and related documentation. Runtime,
+test and audit dependency pins, authentication/CSRF checks, password erasure,
+Reader/Draft behavior and the 2.0 filing engine are unchanged. See the accompanying
+final-UX validation evidence for new local results; earlier CI below is historical
+until the corrected commit receives fresh CI.
 The reviewed package checksum was independently verified before preparation:
 
 `323706a15528e2cf15653600276c5908e2c8bbc5ea20e92394696cbdc9d9535b`
 
-## Fresh local Linux checks
+## Original rc1 local Linux checks (before final UX correction)
 
 Environment: disposable Ubuntu 24.04 ARM64 VM using hardware virtualization on an
 ARM64 host, Python 3.12.3, normal non-root login, fresh virtual environment and
@@ -80,10 +86,13 @@ Current required checks must pass on the exact PR head before publication approv
 - Native x86 hardware **clean-install acceptance** remains unverified. Retained
   x86 wizard installs used QEMU TCG software emulation on ARM64. A native-instruction
   CI regression run does not certify native-hardware installation acceptance.
-- Graphical ChatGPT/Claude **connection acceptance through this wizard** remains
-  unverified. Historical 2.0 client acceptance is not certification of rc1 setup.
-  No actual desktop client registration was performed. Windows helper execution
-  and PowerShell commands remain untested; only their displayed guidance was reviewed.
+- The owner completed full-feature rc1 installation and a graphical Claude Desktop
+  one-call folder-listing test on October 31 before this final wording correction.
+  The helper implementation is unchanged. The corrected UI is tested separately
+  without re-registering or modifying that existing client connection. Graphical
+  ChatGPT connection acceptance, Windows helper execution and PowerShell commands
+  remain unverified. The fixture HTTPS hostname is VM-local; no Mac DNS or CA trust
+  change was made.
 - Provider provisioning/ACL changes, OAuth enrollment, DNS/firewall/certificate
   issuance and renewal are owner prerequisites. Hosted clients need their own
   supported connection; exported stdio JSON alone does not connect them.

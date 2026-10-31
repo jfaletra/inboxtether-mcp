@@ -20,10 +20,12 @@ The new wizard adds secure mailbox metadata validation, folder mapping, private
 installation and explicit desktop-client connection guidance. It creates no
 permanent management dashboard or hosted AI connection. Sending remains excluded.
 
-The reviewed wizard's complete regression, clean-install and owner-operated Chrome
-download evidence is documented separately from historical 2.0 client acceptance.
-Native x86 hardware clean-install acceptance and graphical ChatGPT/Claude connection
-acceptance for this wizard remain unverified. This is not a stable 2.1 release.
+The reviewed wizard's regression, clean-install, download and completion-sequence
+checks are recorded in [final UX validation](FINAL_WIZARD_UX_VALIDATION.md).
+The owner separately verified the earlier rc1 installation through Claude Desktop's
+folder-listing tool. Native x86 hardware clean-install acceptance, graphical ChatGPT
+acceptance and Windows helper execution remain unverified. This is not a stable
+2.1 release.
 
 ## Tools
 

@@ -22,6 +22,7 @@ class Session:
         self.cookie, self.csrf = None, None
         self.lock = threading.RLock()
         self.settings = self.discovery = self.plan = self.result = None
+        self.client_connection = None
         self.reader_secret = self.organizer_secret = self.owner_secret = None
         self.stage, self.error, self.job = 'Connect your email', None, None
         self.provisioner = provisioner
@@ -35,7 +36,7 @@ class Session:
     def authenticate(self, ticket):
         with self.lock:
             check(self.bootstrap is not None and type(ticket) is str and hmac.compare_digest(ticket, self.bootstrap),
-                  'setup_access', 'Open the private setup link printed in your Terminal. Do not share that link.')
+                  'setup_access', 'This one-time setup link was not accepted. Obtain the complete current private link from your setup Terminal or the person who started setup. Open it once in one browser; do not share it.')
             self.bootstrap = None
             self.cookie, self.csrf = secrets.token_hex(32), secrets.token_hex(32)
             self.last_used = self.clock()
@@ -47,7 +48,7 @@ class Session:
                 self.clear()
                 self.cookie = self.csrf = None
             check(self.cookie is not None and type(cookie) is str
-                  and hmac.compare_digest(cookie, self.cookie), 'session', 'Setup access expired. Relaunch the installer; no email was changed.')
+                  and hmac.compare_digest(cookie, self.cookie), 'session', 'Setup access is missing or expired. Return to your setup Terminal or ask the person who started setup for a fresh private link. Do not repeat an installation that may already be running.')
             if write:
                 check(type(csrf) is str and hmac.compare_digest(csrf, self.csrf), 'csrf', 'The setup request could not be verified. Reload the private setup page.')
             self.last_used = self.clock()
@@ -63,6 +64,7 @@ class Session:
         check(not self.busy() and self.result is None, 'state', 'Installation has already begun.')
         check(type(value) is dict and set(value) == {'connection', 'password'}, 'fields', 'Supply connection details and a hidden password.')
         self.clear(); self.settings = self.discovery = self.plan = None
+        self.client_connection = None
         settings = MailSettings.parse(value['connection'])
         candidate = Secret(value['password'])
         # Never reuse a cached credential for a newly entered server or username.
@@ -91,6 +93,7 @@ class Session:
         check(type(value) is dict and set(value) == {'features', 'organizer_password', 'owner_password', 'owner_confirmation'},
               'fields', 'Use the setup form to validate the selected features.')
         self.plan = None
+        self.client_connection = None
         for name in ('organizer_secret', 'owner_secret'):
             old = getattr(self, name)
             if old is not None:
@@ -123,11 +126,15 @@ class Session:
         from .install import Provisioner
         engine = (self.provisioner or Provisioner)(self.source, copy.deepcopy(self.plan), self.reader_secret,
                                                    self.organizer_secret, self.owner_secret, progress=self.progress)
+        completed_connection = copy.deepcopy(self.client_connection)
         self.error = None
 
         def run():
             try:
-                self.result = engine.install()
+                result = engine.install()
+                if completed_connection is not None and result.get('installed') is True:
+                    result['client_connection'] = completed_connection
+                self.result = result
                 self.stage = 'Installation verified'
             except SetupError as error:
                 self.error = {'code': error.code, 'message': error.message}
@@ -156,5 +163,7 @@ class Session:
             if path == '/api/install': return self.install(value)
             if path == '/api/client':
                 check(type(value) is dict and set(value) == {'client', 'location', 'target'}, 'fields', 'Choose a connection option.')
-                return connection_config(**value)
+                check(self.job is None, 'client_locked', 'The connection settings are fixed once installation starts. Use the connector supplied after verified completion.')
+                self.client_connection = connection_config(**value)
+                return copy.deepcopy(self.client_connection)
             raise SetupError('route', 'That setup action is not available.')

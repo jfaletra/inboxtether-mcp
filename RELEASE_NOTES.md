@@ -1,11 +1,18 @@
 # InboxTether v2.1.0rc1 — experimental prerelease candidate
 
+Final wizard UX review correction: configure first, install and verify, then
+reveal **Next Step: Download Your AI Connector**. Downloads use the validated
+connection snapshot from the completed installation. Desktop connection success
+is explicitly separate. Setup-link recovery and password re-entry instructions
+are clarified without weakening security. This local correction awaits owner
+review and fresh PR validation before publication.
+
 Prepared for PR review against stable `v2.0.0`. No 2.1 tag or GitHub release has
 been created. This is an initial-installation experiment, not a production upgrade.
 
 ## Included in rc1
 
-- Three screens: Connect Email, Choose Features, Connect AI and Install. Success
+- Three screens: Connect Email, Choose Features, Install & connect AI. Success
   remains on screen three, with remaining client connection steps shown separately.
 - Implicit-TLS IMAP validation, existing-folder discovery and exact mapping, an
   optional distinct IMAP login and bounded port, private role credentials and the
@@ -30,7 +37,8 @@ No AI provider/key, MCP transport, database or permanent dashboard is added.
 
 ## Evidence and limits
 
-See [fresh rc1 validation](RC1_VALIDATION.md), [reviewed wizard evidence](WIZARD_VALIDATION.md)
+See [final UX validation](FINAL_WIZARD_UX_VALIDATION.md),
+[rc1 validation](RC1_VALIDATION.md), [reviewed wizard evidence](WIZARD_VALIDATION.md)
 and [manual downloads](MANUAL_DOWNLOAD_ACCEPTANCE.md). Actual screenshots are in
 [the setup guide](SETUP_WIZARD.md#acceptance-evidence-and-screenshots).
 
@@ -41,10 +49,12 @@ and [manual downloads](MANUAL_DOWNLOAD_ACCEPTANCE.md). Actual screenshots are in
 - **Native x86 hardware clean-install acceptance remains unverified.** Prior full
   x86_64 wizard checks used QEMU TCG emulation on ARM64; CI's environment is reported
   separately and is not a native-hardware installation acceptance claim.
-- **Graphical ChatGPT/Claude connection acceptance for this wizard remains
-  unverified.** No real desktop configuration was changed during wizard/download
-  acceptance. Historical 2.0 graphical evidence does not certify rc1 registration.
-  Windows PowerShell/helper execution also remains unverified.
+- The owner completed full-feature rc1 installation and a graphical Claude Desktop
+  folder-listing check before this final completion-screen correction. Its helper
+  implementation is unchanged. The corrected UI and its downloaded connection were
+  tested separately, without changing that existing desktop connection.
+  **Graphical ChatGPT acceptance and Windows PowerShell/helper execution remain
+  unverified.**
 - Existing restricted mailbox access, folder permissions, a non-root Linux login,
   SSH trust/access and, for Organizer, trusted HTTPS certificate/key and DNS are
   prerequisites. The wizard does not provision provider accounts, ACLs, folders,

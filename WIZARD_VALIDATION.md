@@ -1,8 +1,11 @@
 # InboxTether 2.1 wizard — corrected candidate validation
 
 Reviewed implementation: `2.1.0.dev1`, packaged as experimental `2.1.0rc1`.
-This is the historical implementation-acceptance record; fresh rc1 checks are in
-[RC1_VALIDATION.md](RC1_VALIDATION.md).
+This is the historical implementation-acceptance record. Later owner hands-on
+Claude acceptance and the final completion/download correction are distinguished in
+[RC1_VALIDATION.md](RC1_VALIDATION.md) and
+[final UX validation](FINAL_WIZARD_UX_VALIDATION.md). Earlier unverified statements
+below describe the scope of this historical run.
 Base: public v2.0.0 commit `8f4b4d869f51ac74186e45ab9c3a568dc6c53518`.
 Date: 2026-10-30. No production change or GitHub publication was performed.
 The original `VALIDATION.md` and `VALIDATION.json` remain the 2.0 record.

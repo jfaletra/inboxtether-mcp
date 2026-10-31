@@ -1,5 +1,10 @@
 # InboxTether 2.1 — final manual download acceptance
 
+Historical acceptance before the owner's later hands-on Claude connection and
+final completion-sequence correction. See
+[final UX validation](FINAL_WIZARD_UX_VALIDATION.md) for the corrected candidate;
+the original filenames, checksums and scope below remain unchanged.
+
 **PASS. GO for an experimental 2.1 release candidate, with the existing documented
 limitations. Publication remains separately authorized.**
 

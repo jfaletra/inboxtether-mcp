@@ -322,3 +322,81 @@ class FinalWizardUXContractTests(unittest.TestCase):
             self.assertIn('py -3 "$HOME\\Downloads\\connect_inboxtether_claude.py"',steps)
             self.assertIn('actual full quoted path',steps);self.assertIn('containing folder first',steps)
             self.assertNotIn(PASSWORD,json.dumps(value));self.assertNotIn(OWNER_PASSWORD,json.dumps(value))
+
+
+class CompletedConnectorTests(unittest.TestCase):
+    def prepared(self):
+        s=Session(Path(__file__).parent)
+        with patch.object(probe,'test_reader',return_value=discovery()):
+            s.connect({'connection':MAIL,'password':PASSWORD})
+        with patch.object(probe,'validate_features',return_value={'reader_uidvalidity':12345,'mailboxes':{}}):
+            plan=s.configure({'features':input_features(),'organizer_password':'','owner_password':'','owner_confirmation':''})
+        return s,plan
+
+    def test_success_binds_exact_validated_connection_and_does_not_expose_secrets(self):
+        s,plan=self.prepared()
+        chosen={'client':'claude','location':'ssh','target':'owner@synthetic-server'}
+        exported=s.dispatch('/api/client',chosen)
+        expected=connection_config(**chosen)
+        exported['configuration']['mcpServers']['inboxtether']['args'][3]='changed@other-server'
+        class Fake:
+            def __init__(self,*a,**kw):pass
+            def install(self):return {'installed':True,'checks':[],'features':plan['plan']['features']}
+        s.provisioner=Fake
+        self.assertIsNone(s.status()['result'])
+        s.install({'fingerprint':plan['fingerprint'],'confirmation':'INSTALL_SELECTED_FEATURES'});s.job.join(2)
+        self.assertEqual(s.result['client_connection'],expected)
+        self.assertNotIn(PASSWORD,json.dumps(s.status()))
+        self.assertNotIn(OWNER_PASSWORD,json.dumps(s.status()))
+        with self.assertRaises(SetupError):s.dispatch('/api/client',{**chosen,'target':'changed@other-server'})
+        self.assertEqual(s.result['client_connection'],expected)
+
+    def test_running_install_has_no_completed_connector_and_cannot_change_choice(self):
+        import threading
+        s,plan=self.prepared();started=threading.Event();finish=threading.Event()
+        s.dispatch('/api/client',{'client':'claude','location':'local','target':''})
+        class Fake:
+            def __init__(self,*a,**kw):pass
+            def install(self):
+                started.set();finish.wait(3)
+                return {'installed':True,'checks':[]}
+        s.provisioner=Fake
+        s.install({'fingerprint':plan['fingerprint'],'confirmation':'INSTALL_SELECTED_FEATURES'})
+        try:
+            self.assertTrue(started.wait(1));self.assertTrue(s.status()['running'])
+            self.assertIsNone(s.status()['result'])
+            with self.assertRaises(SetupError):s.dispatch('/api/client',{'client':'other','location':'ssh','target':'different-server'})
+        finally:finish.set();s.job.join(2)
+        self.assertEqual(s.result['client_connection']['command'],'/usr/local/bin/inboxtether')
+
+    def test_failed_install_never_publishes_completed_connector_and_does_not_retry(self):
+        s,plan=self.prepared();calls=[]
+        s.dispatch('/api/client',{'client':'claude','location':'local','target':''})
+        class Fake:
+            def __init__(self,*a,**kw):pass
+            def install(self):calls.append(1);raise SetupError('synthetic_failure','Synthetic setup failed.')
+        s.provisioner=Fake
+        s.install({'fingerprint':plan['fingerprint'],'confirmation':'INSTALL_SELECTED_FEATURES'});s.job.join(2)
+        self.assertIsNone(s.status()['result']);self.assertEqual(s.error['code'],'synthetic_failure')
+        self.assertIsNone(s.reader_secret)
+        with self.assertRaises(SetupError):s.install({'fingerprint':plan['fingerprint'],'confirmation':'INSTALL_SELECTED_FEATURES'})
+        self.assertEqual(calls,[1])
+
+    def test_reconfiguration_discards_prior_connection_snapshot(self):
+        s,plan=self.prepared();s.dispatch('/api/client',{'client':'claude','location':'ssh','target':'prior-server'})
+        with patch.object(probe,'validate_features',return_value={'reader_uidvalidity':12345,'mailboxes':{}}):
+            s.configure({'features':input_features(),'organizer_password':'','owner_password':'','owner_confirmation':''})
+        self.assertIsNone(s.client_connection)
+
+    def test_connector_is_initially_hidden_and_all_export_buttons_are_disabled(self):
+        from html.parser import HTMLParser
+        class Regions(HTMLParser):
+            def __init__(self):super().__init__();self.ids={}
+            def handle_starttag(self,tag,attrs):
+                value=dict(attrs)
+                if 'id' in value:self.ids[value['id']]=value
+        parser=Regions();parser.feed((Path(__file__).resolve().parents[1]/'setup_wizard/web/index.html').read_text())
+        self.assertIn('hidden',parser.ids['connectorStep'])
+        for name in ('downloadClaude','downloadConfig','copyConfig'):
+            self.assertIn('disabled',parser.ids[name])
+        self.assertEqual({name for name in parser.ids if name.startswith('screen')},{'screen1','screen2','screen3'})

@@ -77,10 +77,16 @@ Python memory erasure is best effort, not a guarantee that no copies ever exist.
    password and a **different**, dedicated browser-owner password of at least
    sixteen characters. Advanced settings hold the Linux login and existing TLS
    paths. Validate to obtain the exact nonsecret installation plan/fingerprint.
-3. **Connect your AI.** Choose a client and local/SSH location, review the plan,
+3. **Install, then connect your AI.** Choose a client and local/SSH location, review the plan,
    explicitly confirm it, and install. Source verification, constrained dependency
    installation, role permissions, real MCP initialization/tool declarations and
-   applicable HTTPS/service checks run before success is reported.
+   applicable HTTPS/service checks run before success is reported. The sequence is
+   **Configure → Install → Verify → Download Connector → Connect AI**. The review
+   panel explicitly says that InboxTether is not installed yet. Downloads and copy
+   controls remain hidden/disabled through installation and failures. Only after
+   verified success does **Next Step: Download Your AI Connector** appear. The
+   exported settings are the server-validated snapshot attached to that completed
+   installation, not later edits in the form. Keep the page open until saved.
 
 No JSON editing is needed for this supported flow. Credentials are written to
 separate service-owned 0600 files inside private directories. The owner password
@@ -98,12 +104,17 @@ A successful setup check is not proof of a live, owner-approved move.
 
 ## Client connection and genuinely manual steps
 
-- **Claude Desktop:** download the one-time connector on screen. With desktop
-  Python 3 available, first locate the saved file. If it is in Downloads, these
+- **Claude Desktop:** first complete installation and wait for its Verified badge.
+  Then download the one-time connector in the Next Step section. This is separate
+  from connecting Claude; the wizard never reports that an external AI client is
+  connected. Confirm a working desktop Python 3 with `python3 --version`
+  (macOS/Linux) or `py -3 --version` (Windows). If your command points to a missing
+  interpreter, use the full path to a working Python 3 executable or install Python
+  3 before running the helper. First locate the actual saved file. If it is in Downloads, these
   commands work from **any current directory**:
   macOS/Linux Terminal: `python3 "$HOME/Downloads/connect_inboxtether_claude.py"`;
   Windows PowerShell: `py -3 "$HOME\Downloads\connect_inboxtether_claude.py"`.
-  If saved elsewhere, replace the quoted path with its actual full path. You may
+  If the browser adds a number to the filename or it is saved elsewhere, replace the quoted path with its actual full path. You may
   instead change Terminal to the containing folder first and run
   `python3 ./connect_inboxtether_claude.py` (Windows: `py -3 .\connect_inboxtether_claude.py`).
   Review the command and type
@@ -133,6 +144,23 @@ References: [Claude local MCP configuration](https://modelcontextprotocol.io/doc
 [Secure MCP Tunnel](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels).
 
 ## Completion, failure and recovery
+
+**Installed successfully is not AI client connected successfully.** The success
+screen verifies the server, then explains the separate desktop connection. After
+running the helper, fully quit/reopen Claude and verify its InboxTether tools.
+No desktop-success claim is inferred from downloading a file.
+
+If the private setup link is refused, Test connection is disabled. Obtain the full
+current link (including its # code) from the launch Terminal or the person who
+prepared the server; open it once in one browser. If that browser already signed
+in, the base address without the # code can resume its existing session. If access
+is missing/expired, request a fresh link. Inspect any in-progress installation
+receipt before restarting; never repeat Install blindly.
+
+After a connection/feature validation attempt, password fields are cleared to
+reduce their time in browser memory. Following a failed feature check, re-enter
+the Organizer password and both owner passphrase fields. Nonsecret fields remain.
+This does not relax secret erasure or reuse a failed credential.
 
 Successful installation reports checks performed, tool names and remaining manual
 requirements, erases session secrets, invalidates its session and closes the
@@ -176,12 +204,13 @@ isolated testing and remaining unverified client/platform combinations.
 
 ## Acceptance evidence and screenshots
 
-See [rc1 validation](RC1_VALIDATION.md), [the reviewed implementation checks](WIZARD_VALIDATION.md)
-and [manual Chrome download acceptance](MANUAL_DOWNLOAD_ACCEPTANCE.md). Source and
-helper/configuration downloads were verified using synthetic settings. Download
-acceptance does not register or validate a graphical AI client.
+See [final wizard UX validation](FINAL_WIZARD_UX_VALIDATION.md),
+[rc1 validation](RC1_VALIDATION.md), [the earlier implementation checks](WIZARD_VALIDATION.md)
+and [earlier manual Chrome download acceptance](MANUAL_DOWNLOAD_ACCEPTANCE.md).
+Source and helper/configuration downloads were verified using synthetic settings.
+Downloading does not register or validate a graphical AI client.
 
-![Connect Email](docs/screenshots/setup-connect-email.jpg)
-![Choose Features](docs/screenshots/setup-choose-features.jpg)
-![Connect AI and Install](docs/screenshots/setup-connect-ai.jpg)
-![Installation complete; client connection remains](docs/screenshots/setup-success.jpg)
+![Review the installation before any connector download](docs/screenshots/setup-final-review.jpg)
+![InboxTether installed successfully; AI connection is separate](docs/screenshots/setup-final-installed.jpg)
+![Download the connector only after installation verification](docs/screenshots/setup-final-connector.jpg)
+![Failed validation clears passwords and explains re-entry](docs/screenshots/setup-final-password-retry.jpg)
