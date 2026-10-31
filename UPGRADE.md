@@ -1,7 +1,11 @@
 # Installation, upgrade and rollback
 
-This refreshed 2.0.0 candidate extends the rc3 public application with bulk filing
-and the neutral `organize_email` interface.
+This experimental 2.1.0rc1 candidate preserves the stable 2.0 application and adds
+the optional initial-installation wizard. It is not an automatic upgrade or private-state
+migration. Existing 2.0 installations should stay on stable 2.0 while this candidate is
+reviewed. Use an isolated new host to evaluate the wizard.
+
+The 2.0 baseline includes bulk filing and the neutral `organize_email` interface.
 It excludes previously optional email sending. Existing clients must discover the new
 contract in a separate test configuration. No existing private deployment or plugin
 should be changed to try it. The public journal remains distinct from installation-specific

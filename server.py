@@ -18,6 +18,8 @@ from pathlib import Path
 
 HOST = os.environ.get('INBOXTETHER_IMAP_HOST', 'mail.example.com')
 ACCOUNT = os.environ.get('INBOXTETHER_ACCOUNT', 'user@example.com')
+LOGIN_ACCOUNT = os.environ.get('INBOXTETHER_LOGIN_ACCOUNT', '')
+PORT = int(os.environ.get('INBOXTETHER_IMAP_PORT', '993'))
 PASSWORD_FILE = Path(os.environ.get('INBOXTETHER_PASSWORD_FILE', '/etc/inboxtether-mcp/imap-password'))
 MAX_MESSAGE = 1_048_576
 MAX_ATTACHMENT = 262_144
@@ -143,8 +145,10 @@ def connection():
         raise MailError('Mailbox is busy; retry shortly.')
     try:
         secret = password()
-        client = ReadOnlyIMAP(HOST, 993, ssl_context=ssl.create_default_context(), timeout=20)
-        check(client.login(ACCOUNT, secret))
+        if not 1 <= PORT <= 65535:
+            raise MailError('Secure IMAP port must be between 1 and 65535.')
+        client = ReadOnlyIMAP(HOST, PORT, ssl_context=ssl.create_default_context(), timeout=20)
+        check(client.login(LOGIN_ACCOUNT or ACCOUNT, secret))
         secret = None
         yield client
     except MailError:

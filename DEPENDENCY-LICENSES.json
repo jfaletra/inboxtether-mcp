@@ -1,5 +1,5 @@
 {
-  "scope": "Metadata from isolated validation environment; dependencies are not bundled. Metadata is not independent license clearance.",
+  "scope": "Metadata from the clean rc1 Linux validation environment, including bootstrap, runtime, test and audit tools. Dependencies are not bundled; metadata is not independent license clearance.",
   "packages": [
     {
       "name": "annotated-types",
@@ -397,7 +397,7 @@
     },
     {
       "name": "pip",
-      "version": "23.2.1",
+      "version": "24.0",
       "license_metadata": {
         "License": [
           "MIT"
@@ -660,18 +660,6 @@
         ]
       },
       "license_classifiers": []
-    },
-    {
-      "name": "setuptools",
-      "version": "65.5.0",
-      "license_metadata": {
-        "License-File": [
-          "LICENSE"
-        ]
-      },
-      "license_classifiers": [
-        "License :: OSI Approved :: MIT License"
-      ]
     },
     {
       "name": "sortedcontainers",
