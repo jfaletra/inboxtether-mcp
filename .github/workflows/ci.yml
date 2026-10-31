@@ -27,14 +27,19 @@ jobs:
         run: python -B scripts/package_rc.py --output "$RUNNER_TEMP/inboxtether-rc1"
       - name: Self-contained Linux verification package
         run: python "$RUNNER_TEMP/inboxtether-rc1/inboxtether-2.1.0rc1-linux-verification/verify_linux_rc.py" --results "$RUNNER_TEMP/inboxtether-rc1-verification-results"
-      - name: Retain rc1 packages and verification evidence
+      - name: Retain verification evidence in job logs
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: inboxtether-2.1.0rc1-${{ github.event_name }}-${{ github.sha }}
-          path: |
-            ${{ runner.temp }}/inboxtether-rc1
-            ${{ runner.temp }}/inboxtether-rc1-verification-results
-          if-no-files-found: warn
-          retention-days: 14
-          compression-level: 0
+        run: |
+          python - <<'PYLOG'
+          import os
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP'])
+          results = root/'inboxtether-rc1-verification-results'
+          paths = [root/'inboxtether-rc1/SHA256SUMS', root/'inboxtether-rc1/BUILD_INFO.json']
+          if results.exists():
+              paths += sorted(results.glob('*.log')) + [results/'RESULTS.json']
+          for path in paths:
+              if path.is_file():
+                  print('=== ' + path.name + ' ===', flush=True)
+                  print(path.read_text(errors='replace'), flush=True)
+          PYLOG

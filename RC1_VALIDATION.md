@@ -3,7 +3,7 @@
 Experimental prerelease candidate based on stable `v2.0.0`, commit
 `8f4b4d869f51ac74186e45ab9c3a568dc6c53518`. No stable 2.1 release or tag exists.
 This file records fresh local rc1 checks; GitHub Actions checks on the exact PR
-commit and the packaged verifier are attached to the PR's Checks/artifacts.
+commit and the packaged verifier are attached to the PR's Checks/job logs.
 
 ## Exact reviewed implementation
 
@@ -69,7 +69,10 @@ The CI job retains its required `synthetic` name, runs the entire regression and
 suites, source checks, dependency audit, package builder and self-contained Linux
 verification package. The verifier creates a fresh temporary source/venv, preserves
 complete step logs, uses synthetic/loopback tests, needs no sudo and does not install
-InboxTether or connect to email. GitHub artifacts retain the packages and results.
+InboxTether or connect to email. Full verifier output, exit codes and package checksums remain in CI job logs.
+The repository allowlist permits only the existing checkout and Python setup actions;
+no artifact-upload action or permission expansion is required. Checksummed review
+packages are also retained separately for owner review.
 Current required checks must pass on the exact PR head before publication approval.
 
 ## Explicitly unverified and unsupported scope
