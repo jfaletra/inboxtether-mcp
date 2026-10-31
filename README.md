@@ -1,4 +1,6 @@
-# InboxTether MCP — 2.0.0
+# InboxTether MCP — 2.1.0rc1 (experimental)
+
+> **Experimental prerelease candidate:** The optional three-screen initial installer has passed the documented acceptance checks for Ubuntu 24.04. See [Setup Wizard](SETUP_WIZARD.md), [rc1 validation](RC1_VALIDATION.md) and [release notes](RELEASE_NOTES.md). Stable v2.0.0 remains the stable baseline. The wizard does not upgrade existing installations.
 
 Your email. Your AI. Your control.
 
@@ -10,14 +12,18 @@ receipt-linked corrections are included.
 Send/Sent settings or send launchers are included. MIME's SMTP formatting policy is
 used solely to serialize drafts and is not a transport.
 
-This is the refreshed, **unreleased 2.0.0 candidate**. It adds up to 200-message
-bulk filing, compact server-side selection references, paginated candidate discovery,
-a 24-hour owner review/start window and a separate fixed 30-hour execution deadline,
-plus explicit automatic-policy authority and the verified saved-risk/HTML corrections.
-It is based on the public rc3/stable-preparation tree, with tested organization
-improvements adapted to the public clean-install configuration. It has not been
-published or deployed as this public candidate. See [current validation](VALIDATION.md)
-for exact tested and unverified scope; older acceptance is not certification of this revision.
+This experimental 2.1 candidate adds the initial installation wizard to the stable
+2.0 application. It preserves up to 200-message bulk filing, compact selections,
+candidate discovery, 24-hour review/start and 30-hour execution windows, manual
+chat/browser approval, opt-in automatic filing and historical correction safeguards.
+The new wizard adds secure mailbox metadata validation, folder mapping, private
+installation and explicit desktop-client connection guidance. It creates no
+permanent management dashboard or hosted AI connection. Sending remains excluded.
+
+The reviewed wizard's complete regression, clean-install and owner-operated Chrome
+download evidence is documented separately from historical 2.0 client acceptance.
+Native x86 hardware clean-install acceptance and graphical ChatGPT/Claude connection
+acceptance for this wizard remain unverified. This is not a stable 2.1 release.
 
 ## Tools
 
@@ -69,7 +75,11 @@ before enabling write capabilities. All write switches are off by default.
 
 ## Compatibility and limitations
 
-The MCP SDK/backend checks and actual signed-in Codex CLI and graphical Claude
+The 2.1 wizard has installed-server MCP SDK checks, not graphical ChatGPT/Claude
+connection acceptance. The following paragraph describes historical **2.0** client
+acceptance only; it does not certify the new wizard or a new client version.
+
+The historical MCP SDK/backend checks and signed-in Codex CLI/graphical Claude
 Desktop acceptance are distinct evidence. Claude completed 19 successful MCP calls;
 Codex completed the same bounded workflows after two safely blocked initial calls
 and corrected client permissions/guidance. Both used disposable Dovecot mailboxes.
@@ -106,8 +116,8 @@ one-message corrections preserve prior history and cannot bypass these safeguard
 
 ## Verification and release status
 
-See [validation](VALIDATION.md), [upgrade/rollback](UPGRADE.md), [security](SECURITY.md)
-and [third-party licensing](THIRD-PARTY.md). Run `python run_tests.py` after installing
+See [rc1 validation](RC1_VALIDATION.md), [historical 2.0 validation](VALIDATION.md), [upgrade/rollback](UPGRADE.md), [security](SECURITY.md)
+and [third-party licensing](THIRD-PARTY.md). Run `(umask 022; python3 -B run_tests.py)` after installing
 `requirements-test.txt`; it uses temporary synthetic resources and rejects IP socket
 operations in the test process. Never supply production credentials to tests.
 

@@ -20,7 +20,8 @@ FIELDS={'schema','host','account','login_account','password_file','journal','soc
 GATES={'execution_enabled','client_session_consent'}
 
 def validate(v):
-    require(type(v) is dict and set(v)-{'automatic_filing_policy'}==FIELDS and v['schema']==1,'Exact organization configuration required')
+    require(type(v) is dict and set(v)-{'automatic_filing_policy','port'}==FIELDS and v['schema']==1,'Exact organization configuration required')
+    require(type(v.get('port',993)) is int and 1 <= v.get('port',993) <= 65535,'Invalid secure IMAP port')
     require(all(type(v[n]) is bool for n in GATES),'Explicit boolean gates required')
     require(v['approval_method']=='browser-password-session' and v['review_path_prefix']=='/inboxtether','Local browser approval required')
     require(type(v['owner']) is dict and set(v['owner'])=={'kind','id'} and v['owner']['kind']=='local-owner'
@@ -80,7 +81,7 @@ def load():
         with registry:
             state=registry.read()
             adapter=IMAPMailbox(spec['host'],spec['account'],spec['password_file'],live_enabled=True,
-                                login_account=spec['login_account'],namespace=ns,corrective_enabled=True)
+                                login_account=spec['login_account'],namespace=ns,corrective_enabled=True,port=spec.get('port',993))
             class Scoped:
                 def __init__(self):
                     self.allowed=set(state.get('workflow',{}).get('inventory',[]));self.mapped=set()
