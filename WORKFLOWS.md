@@ -1,5 +1,38 @@
 # Approval, preferences and corrections
 
+## Owner-requested discovery and completion
+
+InboxTether processes email on request; it does not continuously monitor the
+mailbox. `next` with `payload:{}` discovers newer messages when the saved pending
+queue is empty. After processing the final pending message, **call `next` again**.
+Only report successful discovery completion when that response contains all three:
+
+- **No UID** (the `uid` field is absent).
+- **`remaining=0`**.
+- The **"No new messages" notice**: `No new messages; organization runs only on request.`
+
+A zero remaining count alongside a message or automatic Keep describes the saved
+queue; it does not establish fresh discovery. If the check returns another message,
+process it normally with fresh source-bound classification and the applicable filing
+authorization, then repeat the final discovery check after the queue drains again.
+An empty candidate list or completed filing batch is not a discovery-completion check.
+
+Respect the owner's read scope and run limits. If a limit, error, uncertain operation
+or lost response prevents the final check, stop and report discovery as incomplete;
+never retry an uncertain operation or claim success. After a successful check, report
+**"caught up as of the final discovery check"**, with classification and verified
+filing results separately. Later arrivals require another owner-requested run.
+
+Example user prompt:
+
+> Handle my email. Discover pending and newly available Inbox messages, classify
+> them with customer and uncertainty protections, and file eligible messages only
+> under the configured owner policy or exact-manifest approval. After the final
+> pending message, call next again; process any newly discovered messages and repeat
+> until it returns no UID, remaining=0 and the "No new messages" notice. Report
+> verified filing results and whether I am caught up as of the final discovery check.
+> Stop on errors or uncertain outcomes and report any incomplete work.
+
 ## Trust choices
 
 Browser approval independently authenticates the enrolled local owner using a separate

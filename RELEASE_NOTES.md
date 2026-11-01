@@ -1,14 +1,37 @@
 # InboxTether v2.1.0rc1 — experimental prerelease candidate
 
+## Post-rc1 discovery-completion documentation correction
+
+The 2.1 development branch now tells assistants to call `next` again after the
+final pending message. Completion requires the same response to have no UID,
+`remaining=0` and the "No new messages" notice. A zero count alongside a message
+or automatic Keep is not fresh discovery. Newly discovered messages are processed
+normally, within the owner's scope, before repeating the check. Errors or uncertain
+outcomes mean incomplete status, never an automatic retry. Report "caught up as of
+the final discovery check"; InboxTether processes mail on request, not continuously.
+
+The procedure and generic "Handle my email" prompt are in
+[WORKFLOWS.md](WORKFLOWS.md#owner-requested-discovery-and-completion), with matching
+automatic-filing guidance and MCP tool-description wording. Executable discovery
+logic, schemas, authorization, customer protections, filing policies and Reader/Draft
+behavior are unchanged. Local packaged Linux validation passed 554 regression and
+six HTTP security tests, source/package checks and the 56-record dependency audit.
+Fresh CI on the follow-up PR commit remains required; see [validation](RC1_VALIDATION.md).
+
+The published `v2.1.0rc1` tag, commit and release assets remain immutable. This
+branch follow-up is not a replacement rc1 release or a stable 2.1 publication.
+
+## Retained rc1 implementation and evidence
+
 Final wizard UX review correction: configure first, install and verify, then
 reveal **Next Step: Download Your AI Connector**. Downloads use the validated
 connection snapshot from the completed installation. Desktop connection success
 is explicitly separate. Setup-link recovery and password re-entry instructions
-are clarified without weakening security. This local correction awaits owner
-review and fresh PR validation before publication.
+are clarified without weakening security. Those UX corrections were included in
+the published experimental rc1 at `c409a05ca30b26602b6babb5e99b3817682cd01f`.
 
-Prepared for PR review against stable `v2.0.0`. No 2.1 tag or GitHub release has
-been created. This is an initial-installation experiment, not a production upgrade.
+PR review continues against stable `v2.0.0`. This is an initial-installation
+experiment, not a production upgrade. Stable 2.0 remains unchanged.
 
 ## Included in rc1
 
@@ -78,9 +101,10 @@ and dependency notices. Dependencies are separately downloaded, not vendored.
 The verifier needs a normal Linux login, Python 3.12/venv and Internet access; it
 runs synthetic/loopback checks and preserves full logs without installing a service.
 
-After checks and owner review, merging, creating `v2.1.0rc1` and publishing a GitHub
-**prerelease** require separate authorization. Preserve stable `v2.0.0`; do not
-mark rc1 as a stable release or enable production authority as part of publication.
+After fresh checks and owner review, merging or publishing a later candidate
+requires separate authorization. Do not move the published `v2.1.0rc1` tag or
+replace its assets. Preserve stable `v2.0.0`; do not mark rc1 as a stable release
+or enable production authority as part of publication.
 
 ---
 

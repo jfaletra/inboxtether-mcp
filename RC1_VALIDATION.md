@@ -1,11 +1,46 @@
 # InboxTether v2.1.0rc1 — validation and release boundary
 
-Experimental prerelease candidate based on stable `v2.0.0`, commit
-`8f4b4d869f51ac74186e45ab9c3a568dc6c53518`. No stable 2.1 release or tag exists.
-This file separates original rc1 checks from the final local UX correction.
+Experimental 2.1 development based on stable `v2.0.0`, commit
+`8f4b4d869f51ac74186e45ab9c3a568dc6c53518`. The experimental `v2.1.0rc1`
+prerelease was published from `c409a05ca30b26602b6babb5e99b3817682cd01f`;
+its tag and assets remain unchanged. No stable 2.1 release exists.
+This file separates original rc1 checks, the final UX correction and the later
+discovery-completion documentation correction.
 See [final wizard UX validation](FINAL_WIZARD_UX_VALIDATION.md) for the new 551-test
 run, three fresh installations and actual Chrome completion/download checks.
 Earlier GitHub Actions results apply to their exact PR commit, not this correction.
+
+## November 1 discovery-completion follow-up
+
+The follow-up to the published rc1 changes `WORKFLOWS.md`, `AUTOMATIC_FILING.md`
+and the existing `organize_email` description. After the final pending message,
+the assistant calls `next` again. Successful discovery completion requires one
+response with no `uid` field, `remaining=0` and the explicit "No new messages"
+notice. Additional messages are processed within the owner's scope, followed by
+another discovery check. Errors, uncertain operations or scope limits leave the
+completion status incomplete. Results say "caught up as of the final discovery
+check"; there is no continuous monitoring. See [the procedure](WORKFLOWS.md#owner-requested-discovery-and-completion).
+
+Three contract tests inspect both guides, the generic user prompt and the actual
+exported MCP description. An AST comparison excluding docstrings and comparison
+of the exported MCP metadata confirmed that executable code, schemas, annotations
+and authorization metadata are unchanged. The discovery engine, customer guards,
+manual/automatic authorization and all seven Reader/Draft declarations are preserved.
+
+Local validation used a disposable Ubuntu 24.04 ARM64 snapshot, Python 3.12.3 and
+the self-contained packaged verifier: **554/554 regression tests**, **6/6 loopback
+HTTP security tests**, dependency consistency, source/archive integrity and an
+audit of **56 dependency records with zero reported vulnerabilities** passed.
+There were no test failures, errors or skips. The first snapshot stopped before
+tests because the documented `python3.12-venv` prerequisite was absent. After
+installing that prerequisite in a fresh snapshot, all steps passed; both attempts'
+full stdout, stderr and exit codes were retained. Application code was not changed
+to accommodate the environment.
+
+This is synthetic regression and metadata validation, not a new clean-install,
+graphical-client or live-mail acceptance test. Fresh GitHub Actions must pass on
+the updated PR commit; earlier rc1 results do not validate that commit. No production,
+client connection, plugin registration, published tag or release asset is changed.
 
 ## Exact reviewed implementation
 
@@ -102,8 +137,8 @@ Current required checks must pass on the exact PR head before publication approv
   conservative customer, identity, MIME or uncertainty controls is claimed.
   Historical Keeps are not automatically reconsidered.
 
-**Recommendation: eligible for experimental rc1 review, conditional on fresh PR CI
-success.** Preserve stable v2.0.0. Merge, tag and prerelease publication require
-separate owner approval. Sending remains excluded; automatic filing and execution
+**Recommendation: include this follow-up in the existing 2.1 PR, conditional on
+fresh PR CI success.** Preserve stable v2.0.0 and the published v2.1.0rc1 tag/assets.
+Merge and any later tag or release require separate owner approval. Sending remains excluded; automatic filing and execution
 are disabled by default for new installations. No production installation, mailbox,
 Radar/plugin, credential, account, ACL or historical record was changed.

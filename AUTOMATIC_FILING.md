@@ -55,7 +55,11 @@ execution remains governed by its separate gate and exact consent.
 
 1. Read/classify newly pending Inbox messages with fresh source-bound context and
    the documented six-field proposal contract. Record automatic Keeps directly;
-   do not resubmit them. Historical Keeps remain closed.
+   do not resubmit them. Historical Keeps remain closed. After processing the final
+   pending message, call `next` again with `payload:{}` to check for newer mail.
+   A zero remaining count alongside a message or automatic Keep is not completion.
+   If more messages are discovered, classify them normally and repeat the final
+   discovery check after the saved queue drains again.
 2. Call `candidates` with `{"select_count":200,"filing_mode":"automatic"}`.
    This returns a compact snapshot-bound selection and destination totals. Inspect
    paginated details or explicitly exclude selected UIDs before preparation.
@@ -68,6 +72,19 @@ execution remains governed by its separate gate and exact consent.
    source/destination pins, full hashes, persistent flags and customer protections.
 5. Report processed, moved, kept, Review/attention and any errors separately. Stop
    on uncertain outcomes or lost acknowledgements and inspect saved state.
+
+Successful discovery completion requires one `next` response containing **No UID**
+(the `uid` field is absent), **`remaining=0`** and the **"No new messages" notice**:
+`No new messages; organization runs only on request.` An empty selection or a
+completed batch does not establish that no newer mail exists. Respect the owner's
+read scope and run limits; if a limit, error or uncertain operation prevents the
+final check, report discovery as incomplete rather than claiming success. Do not
+retry uncertain operations. Report success as **"caught up as of the final discovery
+check"**. InboxTether processes email on request and does not continuously monitor
+the mailbox; later arrivals require another request.
+
+For a generic "Handle my email" prompt covering discovery, classification,
+authorized filing and final verification, see [the completion procedure](WORKFLOWS.md#owner-requested-discovery-and-completion).
 
 Selections last two hours; completed manifests retain the 24-hour start and fixed
 30-hour execution deadline. No renewal or automatic retry is performed. Review is
