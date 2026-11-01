@@ -24,9 +24,9 @@ jobs:
       - run: python scripts/verify_release.py
       - run: python -m pip_audit -r constraints-validated.txt --no-deps --disable-pip --strict --progress-spinner off
       - name: Package the checked candidate
-        run: python -B scripts/package_rc.py --output "$RUNNER_TEMP/inboxtether-rc1"
+        run: python -B scripts/package_rc.py --output "$RUNNER_TEMP/inboxtether-rc2"
       - name: Self-contained Linux verification package
-        run: python "$RUNNER_TEMP/inboxtether-rc1/inboxtether-2.1.0rc1-linux-verification/verify_linux_rc.py" --results "$RUNNER_TEMP/inboxtether-rc1-verification-results"
+        run: python "$RUNNER_TEMP/inboxtether-rc2/inboxtether-2.1.0rc2-linux-verification/verify_linux_rc.py" --results "$RUNNER_TEMP/inboxtether-rc2-verification-results"
       - name: Retain verification evidence in job logs
         if: always()
         run: |
@@ -34,8 +34,8 @@ jobs:
           import os
           from pathlib import Path
           root = Path(os.environ['RUNNER_TEMP'])
-          results = root/'inboxtether-rc1-verification-results'
-          paths = [root/'inboxtether-rc1/SHA256SUMS', root/'inboxtether-rc1/BUILD_INFO.json']
+          results = root/'inboxtether-rc2-verification-results'
+          paths = [root/'inboxtether-rc2/SHA256SUMS', root/'inboxtether-rc2/BUILD_INFO.json']
           if results.exists():
               paths += sorted(results.glob('*.log')) + [results/'RESULTS.json']
           for path in paths:

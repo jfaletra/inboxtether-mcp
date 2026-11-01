@@ -1,4 +1,4 @@
-> For a new Ubuntu 24.04 installation with this experimental 2.1.0rc1 candidate, see the optional [three-screen Setup Wizard](SETUP_WIZARD.md). The manual procedures below remain available.
+> For a new Ubuntu 24.04 installation with this experimental 2.1.0rc2 candidate, see the optional [three-screen Setup Wizard](SETUP_WIZARD.md). The manual procedures below remain available.
 
 # Installation and configuration
 

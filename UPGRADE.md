@@ -1,6 +1,6 @@
 # Installation, upgrade and rollback
 
-This experimental 2.1.0rc1 candidate preserves the stable 2.0 application and adds
+This experimental 2.1.0rc2 candidate preserves the stable 2.0 application and adds
 the optional initial-installation wizard. It is not an automatic upgrade or private-state
 migration. Existing 2.0 installations should stay on stable 2.0 while this candidate is
 reviewed. Use an isolated new host to evaluate the wizard.

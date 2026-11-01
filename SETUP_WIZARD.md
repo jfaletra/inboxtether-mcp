@@ -1,4 +1,4 @@
-# Initial installation wizard — 2.1.0rc1 experimental candidate
+# Initial installation wizard — 2.1.0rc2 experimental candidate
 
 This temporary, three-screen installer provisions a **new Ubuntu 24.04 server**.
 It is not an upgrade, migration, hosted control panel, account provider, or new MCP
@@ -205,7 +205,7 @@ isolated testing and remaining unverified client/platform combinations.
 ## Acceptance evidence and screenshots
 
 See [final wizard UX validation](FINAL_WIZARD_UX_VALIDATION.md),
-[rc1 validation](RC1_VALIDATION.md), [the earlier implementation checks](WIZARD_VALIDATION.md)
+[rc2 validation](RC2_VALIDATION.md), [the earlier implementation checks](WIZARD_VALIDATION.md)
 and [earlier manual Chrome download acceptance](MANUAL_DOWNLOAD_ACCEPTANCE.md).
 Source and helper/configuration downloads were verified using synthetic settings.
 Downloading does not register or validate a graphical AI client.

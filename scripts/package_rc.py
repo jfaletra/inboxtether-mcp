@@ -45,7 +45,7 @@ def main():
     (verification/'SHA256SUMS').write_text(manifest([p for p in verification.iterdir() if p.is_file()], verification))
     verification_tar = out/(prefix+'-linux-verification.tar.gz')
     archive_tar(verification_tar, [(p, verification.name+'/'+p.name) for p in sorted(verification.iterdir())])
-    for name in ('RELEASE_NOTES.md','SETUP_WIZARD.md','SECURITY.md','THIRD-PARTY.md','LICENSE','RC1_VALIDATION.md'): shutil.copyfile(ROOT/name, out/name)
+    for name in ('RELEASE_NOTES.md','SETUP_WIZARD.md','SECURITY.md','THIRD-PARTY.md','LICENSE','RC1_VALIDATION.md','RC2_VALIDATION.md'): shutil.copyfile(ROOT/name, out/name)
     commit = subprocess.run(['git','rev-parse','HEAD'], cwd=ROOT, capture_output=True, text=True)
     (out/'BUILD_INFO.json').write_text(json.dumps({'version':version,'source_files':len(files),'source_manifest_sha256':hashlib.sha256((ROOT/'MANIFEST.sha256').read_bytes()).hexdigest(),'checkout_head':commit.stdout.strip() if commit.returncode == 0 else None,'tag_or_release_created':False}, indent=2)+'\n')
     outputs = [p for p in out.iterdir() if p.is_file() and p.name != 'SHA256SUMS']

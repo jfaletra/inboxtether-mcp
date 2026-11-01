@@ -1,8 +1,13 @@
-# InboxTether v2.1.0rc1 — experimental prerelease candidate
+# InboxTether v2.1.0rc2 — experimental prerelease candidate
 
-## Post-rc1 discovery-completion documentation correction
+## Changes in rc2
 
-The 2.1 development branch now tells assistants to call `next` again after the
+This rc2 candidate preserves the reviewed implementation at
+`4bda893bd10569ec3acb002c4e93967e3d74f535` and updates release identifiers,
+archive names, CI paths and validation documentation consistently to `2.1.0rc2`.
+No executable application behavior, tool schema or security control changes.
+
+The discovery-completion correction tells assistants to call `next` again after the
 final pending message. Completion requires the same response to have no UID,
 `remaining=0` and the "No new messages" notice. A zero count alongside a message
 or automatic Keep is not fresh discovery. Newly discovered messages are processed
@@ -14,12 +19,14 @@ The procedure and generic "Handle my email" prompt are in
 [WORKFLOWS.md](WORKFLOWS.md#owner-requested-discovery-and-completion), with matching
 automatic-filing guidance and MCP tool-description wording. Executable discovery
 logic, schemas, authorization, customer protections, filing policies and Reader/Draft
-behavior are unchanged. Local packaged Linux validation passed 554 regression and
-six HTTP security tests, source/package checks and the 56-record dependency audit.
-Fresh CI on the follow-up PR commit remains required; see [validation](RC1_VALIDATION.md).
+behavior are unchanged. The preceding discovery-completion candidate passed 554
+regression and six HTTP security tests, source/package checks and the 56-record
+dependency audit through its local packaged Linux verifier.
+Fresh CI on the rc2 metadata commit remains required; see [rc2 validation](RC2_VALIDATION.md).
 
 The published `v2.1.0rc1` tag, commit and release assets remain immutable. This
-branch follow-up is not a replacement rc1 release or a stable 2.1 publication.
+rc2 candidate is not a replacement rc1 release or a stable 2.1 publication.
+No rc2 tag or release is created during candidate preparation.
 
 ## Retained rc1 implementation and evidence
 
@@ -33,7 +40,7 @@ the published experimental rc1 at `c409a05ca30b26602b6babb5e99b3817682cd01f`.
 PR review continues against stable `v2.0.0`. This is an initial-installation
 experiment, not a production upgrade. Stable 2.0 remains unchanged.
 
-## Included in rc1
+## Wizard functionality retained from rc1
 
 - Three screens: Connect Email, Choose Features, Install & connect AI. Success
   remains on screen three, with remaining client connection steps shown separately.
@@ -61,7 +68,7 @@ No AI provider/key, MCP transport, database or permanent dashboard is added.
 ## Evidence and limits
 
 See [final UX validation](FINAL_WIZARD_UX_VALIDATION.md),
-[rc1 validation](RC1_VALIDATION.md), [reviewed wizard evidence](WIZARD_VALIDATION.md)
+[rc2 validation](RC2_VALIDATION.md), [historical rc1 validation](RC1_VALIDATION.md), [reviewed wizard evidence](WIZARD_VALIDATION.md)
 and [manual downloads](MANUAL_DOWNLOAD_ACCEPTANCE.md). Actual screenshots are in
 [the setup guide](SETUP_WIZARD.md#acceptance-evidence-and-screenshots).
 
@@ -102,9 +109,10 @@ The verifier needs a normal Linux login, Python 3.12/venv and Internet access; i
 runs synthetic/loopback checks and preserves full logs without installing a service.
 
 After fresh checks and owner review, merging or publishing a later candidate
-requires separate authorization. Do not move the published `v2.1.0rc1` tag or
-replace its assets. Preserve stable `v2.0.0`; do not mark rc1 as a stable release
-or enable production authority as part of publication.
+requires separate authorization. Publishing this rc2 candidate also requires separate
+owner approval. Preserve the published `v2.1.0rc1` tag and assets and stable
+`v2.0.0`. Neither rc1 nor rc2 is a stable release. Publication must not enable
+production authority.
 
 ---
 

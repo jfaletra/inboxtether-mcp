@@ -1,6 +1,6 @@
-# InboxTether MCP — 2.1.0rc1 (experimental)
+# InboxTether MCP — 2.1.0rc2 (experimental)
 
-> **Experimental prerelease candidate:** The optional three-screen initial installer has passed the documented acceptance checks for Ubuntu 24.04. See [Setup Wizard](SETUP_WIZARD.md), [rc1 validation](RC1_VALIDATION.md) and [release notes](RELEASE_NOTES.md). Stable v2.0.0 remains the stable baseline. The wizard does not upgrade existing installations.
+> **Experimental prerelease candidate:** The optional three-screen initial installer has passed the documented acceptance checks for Ubuntu 24.04. See [Setup Wizard](SETUP_WIZARD.md), [rc2 validation](RC2_VALIDATION.md) and [release notes](RELEASE_NOTES.md). Stable v2.0.0 remains the stable baseline. The wizard does not upgrade existing installations.
 
 Your email. Your AI. Your control.
 
@@ -118,7 +118,7 @@ one-message corrections preserve prior history and cannot bypass these safeguard
 
 ## Verification and release status
 
-See [rc1 validation](RC1_VALIDATION.md), [historical 2.0 validation](VALIDATION.md), [upgrade/rollback](UPGRADE.md), [security](SECURITY.md)
+See [rc2 validation](RC2_VALIDATION.md), [historical 2.0 validation](VALIDATION.md), [upgrade/rollback](UPGRADE.md), [security](SECURITY.md)
 and [third-party licensing](THIRD-PARTY.md). Run `(umask 022; python3 -B run_tests.py)` after installing
 `requirements-test.txt`; it uses temporary synthetic resources and rejects IP socket
 operations in the test process. Never supply production credentials to tests.
