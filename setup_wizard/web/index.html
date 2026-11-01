@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>InboxTether · Initial setup</title><link rel="stylesheet" href="/style.css"><script defer src="/app.js"></script></head>
+<body>
+<header><div class="brand"><img src="/icon.png" alt="" width="40" height="40"><div><strong>InboxTether</strong><span>Your email. Your AI. Your control.</span></div></div><span class="badge">INITIAL SETUP · UBUNTU</span></header>
+<main>
+<nav aria-label="Installation progress"><ol><li id="step1" aria-current="step"><span>1</span> Connect email</li><li id="step2"><span>2</span> Choose features</li><li id="step3"><span>3</span> Install &amp; connect AI</li></ol></nav>
+<div id="error" class="notice error" role="alert" tabindex="-1" aria-atomic="true" hidden></div>
+<div id="setupAccessHelp" class="notice neutral" hidden><strong>Why is Test connection disabled?</strong><p>The private setup link must be accepted before mailbox testing is available. Use the full link, including its # code, from the Terminal that started setup or ask the person preparing your server for it. Open it once in one browser.</p><p>If this browser previously signed in, reopen the setup address without the # code to resume its existing session. If access still fails, request a fresh link. Do not repeat an installation that may already be running.</p></div>
+<section id="screen1" aria-labelledby="title1">
+ <p class="eyebrow">STEP 1 OF 3</p><h1 id="title1">Connect your email.</h1><p class="intro">A direct, secure connection to your mailbox.<br>No email password goes to an AI model.</p>
+ <div class="two-columns"><form id="connectForm" class="card">
+  <div class="card-title"><h2>Your mailbox</h2><span class="pill">TLS required</span></div>
+  <div class="server-row"><label>IMAP server<input id="host" name="host" required placeholder="mail.example.com" autocomplete="off" spellcheck="false"></label><label>Port<input id="port" type="number" value="993" min="1" max="65535" required></label></div>
+  <label>Email address<input id="account" type="email" required placeholder="you@example.com" autocomplete="username" spellcheck="false"></label>
+  <details class="advanced"><summary>Use a different IMAP username</summary><label>IMAP username<input id="login" placeholder="Leave blank to use your email address" autocomplete="off" spellcheck="false"></label></details>
+  <label>Password or application password<input id="password" type="password" required autocomplete="off"></label>
+  <p class="hint">Use an application password if your provider requires one. It is stored privately only after you confirm installation.</p>
+  <button id="testConnection" class="secondary" type="submit">Test connection</button>
+  <div id="connectionStatus" class="notice success" role="status" hidden></div>
+  <p id="mailPasswordRetry" class="hint" role="status" hidden>For your security, the mailbox password was cleared from the form after this check. Re-enter it before testing again. Your server and email entries are preserved.</p>
+ </form><aside class="quiet-card"><span class="aside-mark">A calmer inbox starts here.</span><h2>Private by design.<br>Yours to control.</h2><ul class="checks"><li>Reads preserve read/unread status</li><li>No messages filed during setup</li><li>No sending capability</li><li>No extra mailbox created</li></ul><p>Choose just Reader, or add Drafts and Organizer on the next screen.</p></aside></div>
+ <footer><p>New installations only. Existing installations are never overwritten.</p><button id="toConfigure" disabled>Choose features <span aria-hidden="true">→</span></button></footer>
+</section>
+<section id="screen2" aria-labelledby="title2" hidden>
+ <p class="eyebrow">STEP 2 OF 3</p><h1 id="title2">Make it yours.</h1><p class="intro">Start with the essentials. Add only what you need.</p>
+ <form id="featuresForm">
+ <div class="feature-grid">
+  <label class="feature selected"><input type="checkbox" checked disabled><span class="feature-icon">↗</span><strong>Reader</strong><span>Find and read email without marking it read.</span><small>Always included</small></label>
+  <label class="feature"><input id="drafts" type="checkbox"><span class="feature-icon">✎</span><strong>Drafts</strong><span>Prepare replies for review. Never send.</span><small>Optional · saves require approval</small></label>
+  <label class="feature"><input id="organizer" type="checkbox"><span class="feature-icon">▤</span><strong>Organizer</strong><span>Review filing proposals with customer-first safeguards.</span><small>Optional · filing starts disabled</small></label>
+ </div>
+ <div id="draftsSettings" class="card feature-settings" hidden><h2>Drafts destination</h2><p>Only an existing folder marked as Drafts by your provider can be used.</p><label>Verified Drafts folder<select id="draftsPath"></select></label><label class="checkline"><input id="draftAck" type="checkbox"><span>I understand that my AI client must ask before each draft save. Client approval is not an independently authenticated owner decision.</span></label></div>
+ <div id="organizerSettings" class="card feature-settings" hidden>
+  <h2>Your filing folders</h2><p>Choose existing folders. Nothing is created or renamed at your mail provider.</p>
+  <div id="folderMappings" class="mapping-grid"></div>
+  <div class="notice neutral">Customers, possible customers, mixed correspondence, uncertain messages and action-required Review messages remain protected. Automatic filing is off.</div>
+  <h2>Restricted mailbox access</h2><p>Use an existing restricted login mapped to this same mailbox. A separate mailbox is not required. Your provider must already support the required scoped access.</p>
+  <div class="field-row"><label>Organizer IMAP username<input id="organizerLogin" autocomplete="off" placeholder="Existing restricted login" spellcheck="false"></label><label>Organizer application password<input id="organizerPassword" type="password" autocomplete="off"></label></div>
+  <h2>Independent browser approval</h2><p>A separate owner login protects exact move reviews. Signing in never approves a move.</p>
+  <label>HTTPS approval address<input id="reviewOrigin" type="url" placeholder="https://review.example.com" spellcheck="false"></label>
+  <div class="field-row"><label>Owner username<input id="ownerUsername" value="owner" autocomplete="off"></label><label>New owner passphrase<input id="ownerPassword" type="password" minlength="16" autocomplete="new-password" placeholder="At least 16 characters"></label></div>
+  <label>Confirm owner passphrase<input id="ownerConfirmation" type="password" autocomplete="new-password"></label><p class="hint">Use a unique passphrase, separate from mailbox and administrator passwords. Save it in your own password manager.</p>
+ </div>
+ <details class="advanced card"><summary>Advanced · Linux access and HTTPS certificates</summary>
+  <label>Existing Linux login allowed to launch InboxTether<input id="linuxUser" placeholder="Your SSH login, for example ubuntu" autocomplete="off" spellcheck="false"></label><p class="hint">A fixed launch permission is created for this login. It grants no administrator shell.</p>
+  <div id="tlsSettings" hidden><p>Organizer reuses the existing nginx approval routing. Supply a trusted certificate already installed on this server. The wizard does not issue certificates, change DNS or open firewall rules.</p><label>Certificate chain file<input id="certificateFile" placeholder="/etc/letsencrypt/live/review.example.com/fullchain.pem" spellcheck="false"></label><label>Private key file<input id="certificateKeyFile" placeholder="/etc/letsencrypt/live/review.example.com/privkey.pem" spellcheck="false"></label></div>
+ </details>
+ <div id="featureStatus" class="notice success" role="status" hidden></div>
+ <div id="featurePasswordRetry" class="notice neutral" role="status" hidden>For your security, password fields were cleared after validation. Before trying again, re-enter the Organizer application password, owner passphrase and its confirmation when Organizer is selected. Other form entries are preserved.</div>
+ <footer><button id="backToEmail" type="button" class="text-button">← Back</button><button id="validateFeatures" type="submit">Validate and continue →</button></footer>
+ </form>
+</section>
+<section id="screen3" aria-labelledby="title3" hidden>
+ <p class="eyebrow">STEP 3 OF 3</p><h1 id="title3">Install InboxTether.</h1><p id="finishIntro" class="intro">Choose your connection settings, then install and wait for verification. Download and run your connector only after installation succeeds.</p>
+ <p class="completion-sequence" aria-label="Completion sequence">Configure <span aria-hidden="true">→</span> Install <span aria-hidden="true">→</span> Verify <span aria-hidden="true">→</span> Download Connector <span aria-hidden="true">→</span> Connect AI</p>
+ <div class="two-columns finish-columns"><div class="card">
+  <h2 id="clientSettingsTitle">Connection settings for after installation</h2>
+  <label>AI client<select id="client"><option value="claude">Claude Desktop</option><option value="chatgpt-desktop">ChatGPT desktop / Codex host</option><option value="chatgpt-web">ChatGPT web</option><option value="other">Other MCP stdio client</option></select></label>
+  <label>Where does your AI client run?<select id="location"><option value="ssh">On my computer, connecting over SSH</option><option value="local">On this Ubuntu server</option></select></label>
+  <label id="sshTargetLabel">Verified SSH destination<input id="sshTarget" placeholder="ubuntu@your-server" spellcheck="false" autocomplete="off"></label>
+  <div id="clientGuidance" class="notice neutral"></div>
+  <p class="hint" id="connectionBeforeHelp">Choose these settings now. Connector downloads become available below after the installation checks pass. This wizard never edits your desktop or creates a plugin.</p>
+ </div><div>
+  <div class="card"><div class="card-title"><h2 id="summaryTitle">Ready to install — not installed yet</h2><span id="installBadge" class="pill">Review first</span></div><ul id="planSummary" class="checks"></ul><p class="hint" id="writeGates">Filing execution, automatic owner authority and delegated chat consent remain disabled.</p><details class="advanced"><summary>Exact installation plan</summary><pre id="planPreview"></pre><p class="hint">Confirmation fingerprint</p><code id="planFingerprint"></code></details>
+  <label class="checkline" id="confirmationLabel"><input id="confirmInstall" type="checkbox"><span>I authorize these exact initial-installation actions, private credential storage and the fixed launch permission for my selected Linux login.</span></label>
+  <button id="install" class="wide" disabled>Install InboxTether</button>
+  <div id="installProgress" class="notice neutral" role="status" hidden></div>
+  <div id="finalChecks" hidden><ul id="checkResults" class="checks"></ul><p id="closedMessage" class="notice success"></p></div>
+  </div><p class="footnote">This setup interface is temporary and closes after successful installation. InboxTether does not install a management dashboard.</p>
+ </div></div>
+ <section id="connectorStep" class="card connector-step" aria-labelledby="connectorTitle" hidden>
+  <p class="eyebrow">INSTALLATION VERIFIED · NEXT ON YOUR COMPUTER</p>
+  <h2 id="connectorTitle" tabindex="-1">Next Step: Download Your AI Connector</h2>
+  <p id="clientConnectionStatus" class="notice neutral"><strong>AI client connection: not verified.</strong> InboxTether is installed on your server. Downloading a connector does not connect your AI client. Complete the steps below, restart your client and check that its InboxTether tools are available.</p>
+  <div id="connectorActions">
+   <p id="downloadExplanation">This download uses the connection settings saved with this completed installation. It contains no mailbox password.</p>
+   <div class="button-row"><button id="downloadClaude" type="button" class="secondary" disabled>Download one-time Claude connector</button><button id="downloadConfig" type="button" class="secondary" disabled>Download JSON</button></div>
+   <div id="claudeCommand" class="hint"><ol><li>Save the helper on the computer running Claude Desktop, after installation is verified.</li><li>Open Terminal (macOS/Linux) or PowerShell (Windows). Check that Python 3 works: <code>python3 --version</code> or <code>py -3 --version</code>. If that command is missing or points to a missing interpreter, use the full path to a working Python 3 installation or install Python 3 before continuing.</li><li>Locate the actual downloaded file. If saved in Downloads, run from any directory:<p>macOS / Linux: <code>python3 "$HOME/Downloads/connect_inboxtether_claude.py"</code></p><p>Windows PowerShell: <code>py -3 "$HOME\Downloads\connect_inboxtether_claude.py"</code></p>If the browser added a number or you saved elsewhere, use the actual filename and full quoted path. Alternatively, change Terminal to the containing folder first, then run <code>python3 ./connect_inboxtether_claude.py</code> (Windows: <code>py -3 .\connect_inboxtether_claude.py</code>).</li><li>Review the displayed connection and type <code>ADD-INBOXTETHER</code>. The helper preserves other entries and refuses a different existing InboxTether entry.</li><li>Fully quit and reopen Claude Desktop, then verify that its InboxTether tools are available. This wizard cannot verify that external desktop connection for you.</li></ol></div>
+   <details class="advanced"><summary>Verified connection configuration</summary><pre id="clientConfig"></pre><button id="copyConfig" type="button" class="text-button small" disabled>Copy configuration</button></details>
+  </div>
+  <h3>Other remaining setup checks</h3><ul id="manualSteps"></ul>
+ </section>
+ <footer><button id="backToFeatures" type="button" class="text-button">← Back</button><span id="finalNote">No mailbox messages are changed during installation.</span></footer>
+</section>
+</main><div class="bottom-brand">INBOXTETHER <span>·</span> INITIAL INSTALLATION ONLY</div>
+</body></html>

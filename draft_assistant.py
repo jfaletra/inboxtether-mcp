@@ -399,8 +399,8 @@ class DraftService:
         require(r.LOCK.acquire(blocking=False), 'Mailbox busy; retry later.')
         client = None
         try:
-            client = r.DraftAppendIMAP(r.HOST, 993, ssl_context=ssl.create_default_context(), timeout=20)
-            r.check(client.login(r.ACCOUNT, r.password()))
+            client = r.DraftAppendIMAP(r.HOST, getattr(r, 'PORT', 993), ssl_context=ssl.create_default_context(), timeout=20)
+            r.check(client.login(getattr(r, 'LOGIN_ACCOUNT', '') or r.ACCOUNT, r.password()))
             yield client
         finally:
             if client is not None:

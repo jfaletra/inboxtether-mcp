@@ -118,12 +118,14 @@ class GuardedIMAP(imaplib.IMAP4_SSL):
 
 
 class IMAPMailbox:
-    def __init__(self, host, account, password_file, *, live_enabled=False, client_factory=GuardedIMAP, login_account=None, namespace=None, connect_ip=None, corrective_enabled=False):
+    def __init__(self, host, account, password_file, *, live_enabled=False, client_factory=GuardedIMAP, login_account=None, namespace=None, connect_ip=None, corrective_enabled=False, port=993):
         require(live_enabled is True, 'Live IMAP adapter is disabled.')
         require(isinstance(host, str) and re.fullmatch(r'[A-Za-z0-9.-]+', host), 'Invalid fixed IMAP host.')
         require(isinstance(account, str) and 0 < len(account) <= 320 and not any(ord(c) < 32 for c in account), 'Invalid account.')
         require(type(corrective_enabled) is bool, 'Explicit corrective adapter setting required.')
         self.corrective_enabled=corrective_enabled
+        require(type(port) is int and 1 <= port <= 65535, 'Invalid secure IMAP port.')
+        self.port = port
         self.host, self.account, self.password_file, self.client_factory = host, account, Path(password_file), client_factory
         self.namespace = namespace
         self.namespace_sha256 = namespace.fingerprint if namespace is not None else ''
@@ -149,7 +151,7 @@ class IMAPMailbox:
             require(bool(secret) and not any(c in secret for c in '\r\n\x00'), 'Invalid Organizer credential.')
             options = {'ssl_context':ssl.create_default_context(), 'timeout':15}
             if self.connect_ip is not None: options['connect_ip'] = self.connect_ip
-            client = self.client_factory(self.host, 993, **options)
+            client = self.client_factory(self.host, self.port, **options)
             if self.namespace is not None:
                 client._namespace_names = {n:'"'+self.namespace.path(n)+'"' for n in ('INBOX', *CATEGORIES)}
                 client._namespace_validities = {n:self.namespace.identity(n) for n in ('INBOX', *CATEGORIES)}
