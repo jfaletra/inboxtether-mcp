@@ -44,5 +44,6 @@ class HygienePatternTests(unittest.TestCase):
                 self.assertTrue(findings(sample))
 
     def test_allows_example_and_github_noreply_attribution(self):
-        self.assertEqual(findings(b'user@example.com noreply@github.com support@github.com '
+        self.assertEqual(findings(b'user@example.com user@example.net user@example.org user@work.example '
+                                  b'noreply@github.com support@github.com '
                                   b'123+maintainer@users.noreply.github.com'), [])

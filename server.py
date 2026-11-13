@@ -496,6 +496,8 @@ def create_server():
                     idempotentHint=True, openWorldHint=True))(save_draft if draft_config.mode == "basic" else save_approved_draft)
     from move_connection import register
     register(server)
+    from sogo_calendar import register as register_calendar
+    register_calendar(server)
     return server
 
 

@@ -30,8 +30,8 @@ def findings(data):
         return sorted(result)
     for address in re.findall(rb'[A-Za-z0-9_.+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}', data):
         domain = address.rsplit(b'@', 1)[1].lower()
-        if (domain not in (b'example.com', b'example.org', b'github.com', b'users.noreply.github.com')
-                and not domain.endswith((b'.example.com', b'.example.org'))):
+        if (domain not in (b'example.com', b'example.net', b'example.org', b'github.com', b'users.noreply.github.com')
+                and not domain.endswith((b'.example.com', b'.example.net', b'.example.org', b'.example'))):
             result.add('nonexample email address')
         # Dependabot signs commit messages with GitHub's public support address.
         elif domain == b'github.com' and address.lower() not in (b'noreply@github.com', b'support@github.com'):

@@ -1,0 +1,3 @@
+# Optional occurrence search and free/busy support.
+icalendar==7.3.0
+recurring-ical-events==3.8.2

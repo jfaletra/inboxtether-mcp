@@ -1,2 +1,3 @@
 -r requirements-organization.txt
+-r requirements-calendar.txt
 jsonschema==4.26.0
