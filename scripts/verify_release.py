@@ -11,7 +11,7 @@ def verify():
         if any(part in ('.git','.venv','__pycache__') for part in p.parts):continue
         if p.is_symlink():errors.append((str(p.relative_to(ROOT)),'symlink'));continue
         if not p.is_file():continue
-        name=str(p.relative_to(ROOT));count+=1
+        name=p.relative_to(ROOT).as_posix();count+=1
         if p.suffix in ('.pyc','.sqlite3','.zip','.gz') or p.name in ('operation.json','witness.json','owner.json'):
             errors.append((name,'operational/build artifact'))
         for hit in findings(p.read_bytes()):errors.append((name,hit))
@@ -32,7 +32,7 @@ def verify():
             sha,name=line.split('  ',1);expected[name]=sha
             p=ROOT/name
             if not p.is_file() or hashlib.sha256(p.read_bytes()).hexdigest()!=sha:errors.append((name,'checksum mismatch'))
-        actual={str(p.relative_to(ROOT)) for p in ROOT.rglob('*') if p.is_file() and '__pycache__' not in p.parts and '.git' not in p.parts and '.venv' not in p.parts and p!=manifest}
+        actual={p.relative_to(ROOT).as_posix() for p in ROOT.rglob('*') if p.is_file() and '__pycache__' not in p.parts and '.git' not in p.parts and '.venv' not in p.parts and p!=manifest}
         if actual!=set(expected):errors.append(('MANIFEST.sha256','file set mismatch'))
     if errors:
         for name,kind in errors:print(name+': '+kind)

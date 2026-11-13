@@ -22,3 +22,9 @@ Do not redistribute local virtual environments, credentials or private runtime b
 constraints-validated.txt records the tested dependency resolution. Recheck resolution,
 licenses and vulnerability advisories before publication; a current clean advisory
 check does not guarantee the absence of undisclosed vulnerabilities.
+
+The 2.1.0rc1 inventory covers 62 pinned packages, including the six calendar
+dependencies added to the previous resolution: icalendar, recurring-ical-events,
+python-dateutil, six, tzdata and x-wr-timezone. It records installed metadata from
+the isolated candidate environment with temporary audit tooling. No wheels or
+virtual environment are included. CardDAV adds no dependency.

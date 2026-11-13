@@ -1,39 +1,33 @@
-# InboxTether MCP 2.0.0 — final release candidate (unreleased)
+# InboxTether MCP 2.1.0rc1: local release candidate
 
-This updates the existing release PR with the reviewed production improvements,
-adapted to the public clean-install source. It adds no new infrastructure or AI
-provider. It is not yet merged, tagged, published or deployed as this public build.
+This unpublished candidate extends the public 2.0.0 email release with reusable
+Mailcow/SOGo calendar and contact modules. It does not deploy or import private
+production email adapters, settings, state or business-specific rules.
 
-- Prepare exact manifests for up to 200 accepted noncustomer messages.
-- Execute in acknowledged ten-message chunks with fresh validation, preserved
-  flags, durable destination receipts and permanent stop-on-ambiguity claims.
-- Review/approve/start within 24 hours; the execution deadline is fixed at 30 hours
-  after preparation. No implicit approval renewal or uncertain retry.
-- Discover compatible saved proposals with paginated counts and actionable errors;
-  use compact, two-hour, snapshot-bound selection references instead of relaying
-  hundreds of UIDs through the assistant. Explicit exclusions never replace mail.
-- Keep manual exact chat consent and independent browser approval as alternatives.
-- Optionally enable an inspectable and revocable owner automatic-filing policy for
-  Industry, Marketing, Orders and Suppliers. It is disabled by default and never
-  manufactures per-batch human consent. Review, customer/potential-customer, mixed
-  and uncertain messages remain in Inbox. No background scheduler is included.
-- Read accepted customer risk from the actual nested saved reply, strictly requiring
-  clear risk; malformed, missing, uncertain and flat legacy fields fail closed.
-- Tolerate only the demonstrated inert HTML forms (closing br, unmatched closing
-  body, compact doctypehtml), while rejecting active content, decoding failures
-  and unfinished markup. Customer keywords and identity rules are not relaxed.
-- Correct explicitly reviewed historical classifications using fresh source-bound
-  context and archive the original decision. Historical Keeps are not automatically
-  reopened, and conservative protections may continue to produce false Keeps.
+- Multi-account calendar discovery, aliases, event retrieval/search and free/busy,
+  with exact scope, version checks, recurrence reading and a 31-day window.
+- Opt-in standalone timed/all-day creation, Public/Busy defaults and explicit
+  privacy/availability overrides, random identities, durable idempotency, quotas,
+  metadata-only audits, read-back and no blind retry after uncertainty.
+- Controlled attendees on new events, organizer pinned to the account, separate
+  invitation policy and truthful event/dispatch/delivery receipts.
+- Read-only CardDAV discovery and local exact/partial name matching, multiple
+  email choices, shortened SOGo names and a bounded 2,000-resource scan with a
+  2,001-resource overflow sentinel. No incomplete scan is a complete lookup.
+- Existing-connection calendar hook, public-factory adapter, disabled-write
+  configuration examples and sanitized deployment/rollback guidance.
+- LF source normalization, operational-data exclusions, current dependency/license
+  inventory and refreshed source/checksum/validation metadata.
 
-Reader/Draft source and declarations, public socket recovery, approval authentication,
-customer safeguards, full-message hashes, UIDVALIDITY, destination verification and
-replay protections remain. **Sending email is excluded.** Draft preparation/save is
-a separate opt-in workflow, never invoked by organization.
+The accepted 670-discovery baseline is retained. The canonical runner removes 16
+repeated test IDs and executes 654 distinct cases. Neither count represents live
+provider certification. See VALIDATION.md for exact completed checks.
 
-The public distribution contains application source, synthetic tests, templates,
-dependency pins and documentation only. No private configuration, credentials,
-mailbox content, business rules, journals, receipts, witnesses or migration data.
-The public journal remains distinct from private deployment state. No private-state
-migration, downgrade, automatic inverse-move rollback or provider certification is
-claimed. See VALIDATION.md, INSTALLATION.md, AUTOMATIC_FILING.md and UPGRADE.md.
+Email Reader/Draft/organization source contracts, approvals and opt-in automatic
+filing remain unchanged. No SMTP email sender, synchronization, booking platform,
+contact writer or additional approval infrastructure is added. Calendar updates,
+rescheduling, cancellations and recurrence writes remain disabled: SOGo 5.12.5
+failed the required conditional protection tests. Creation retains an explicitly
+accepted residual overwrite race, not an atomic create-only guarantee.
+
+No public release, push, merge or live deployment is authorized by this preparation.

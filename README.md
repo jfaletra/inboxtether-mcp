@@ -1,31 +1,72 @@
-# InboxTether MCP — 2.0.0
+# InboxTether MCP 2.1.0rc1
 
-Your email. Your AI. Your control.
+A local, unreleased calendar-focused candidate based on the public 2.0.0 email
+release. It adds reusable Mailcow/SOGo CalDAV calendars, standalone creation,
+controlled invitations and read-only CardDAV contact lookup. It uses an existing
+owner-authenticated MCP connection; no additional server, tunnel or approval UI is
+required. No commit, tag or GitHub release has been published for this candidate.
 
-A self-hosted, fixed-account MCP stdio server for compatible AI clients. Reader Mode
-is the default. Optional reply drafts, bounded folder organization, exact batch
-approval, optional owner-enabled automatic filing, narrow owner preferences and
-receipt-linked corrections are included.
-**Email sending is absent:** no SMTP transport, sending tools, submission process,
-Send/Sent settings or send launchers are included. MIME's SMTP formatting policy is
-used solely to serialize drafts and is not a transport.
+Reader Mode remains the default. Email tools, draft approvals, filing protections
+and optional owner-authorized automatic filing retain the public 2.0.0 implementation.
+No production-only email adapters or business-specific filing policies are imported.
+The email module has no SMTP transport or email sending tools. Optional calendar
+invitations use SOGo scheduling and do not add an email sender.
 
-This is the refreshed, **unreleased 2.0.0 candidate**. It adds up to 200-message
-bulk filing, compact server-side selection references, paginated candidate discovery,
-a 24-hour owner review/start window and a separate fixed 30-hour execution deadline,
-plus explicit automatic-policy authority and the verified saved-risk/HTML corrections.
-It is based on the public rc3/stable-preparation tree, with tested organization
-improvements adapted to the public clean-install configuration. It has not been
-published or deployed as this public candidate. See [current validation](VALIDATION.md)
-for exact tested and unverified scope; older acceptance is not certification of this revision.
+## Tools and opt-ins
 
-## Tools
+| Area | Tools |
+| --- | --- |
+| Email reader | list_mailboxes, search_messages, read_message, list_attachments, retrieve_attachment |
+| Basic drafts | prepare_reply_draft, save_draft (Secure mode retains save_approved_draft instead) |
+| Organization | organize_email, with the existing action-specific approval/filing contract |
+| Calendar reads | calendar_list_calendars, calendar_list_events, calendar_get_event, calendar_search_events, calendar_free_busy |
+| Owner-connection creation | calendar_prepare_create, calendar_commit_create, calendar_reconcile_operation |
+| Read-only contacts | contacts_list_address_books, contacts_search |
 
-| Opt-in | Tools |
-|---|---|
-| Default Reader | `list_mailboxes`, `search_messages`, `read_message`, `list_attachments`, `retrieve_attachment` |
-| Draft Assistant | `prepare_reply_draft` and Basic `save_draft` or Secure `save_approved_draft` |
-| Organization | `organize_email`, with 15 action-specific payloads |
+With Basic drafts, organization, creation and contacts configured, this is an
+18-tool inventory. New installations do not enable those opt-ins automatically.
+Private deployments may retain their existing organization tool name; the public
+factory keeps its generic organize_email name. No email permission is expanded.
+
+## Mailcow/SOGo calendars and contacts
+
+Use [the existing-connection runbook](deploy/calendar/README.md) and sanitized
+[configuration examples](examples/calendar). Each account has its own protected
+DAV app-password file, exact calendar/book read allowlists and optional calendar
+aliases. An address-book alias is a conversational label, not a configuration field.
+Creation and invitations are disabled in the examples. Updates, rescheduling,
+cancellations, recurrence writes and contact writes remain disabled.
+
+Search and availability use selected calendars, resource/version checks and at most
+a 31-day offset-bearing window. Free/busy returns intervals without event details
+and requires explicit full-visibility assertions. Contact lookup locally matches
+exact/partial names after a bounded scan of up to 2,000 contacts per book, retaining
+all usable addresses and explicit ambiguity/truncation flags. It never guesses email.
+
+Standalone creation defaults to Public/Busy, supports explicit overrides and uses
+random UIDs/URLs, preflight, serialized writes, persistent quotas/idempotency and
+read-back. SOGo 5.12.5 failed atomic conditional-write safety tests. Creation has a
+residual overwrite race; updates and cancellation are not approved. Uncertain writes
+require original-operation reconciliation, never a fresh automatic attempt.
+Invitations pin the organizer to the account and restrict recipients separately.
+Verified event storage does not prove invitation dispatch or delivery.
+
+The assistant asks for conversational confirmation. The server authorizes the owner
+connection and records human_approval_verified=false; it cannot verify a human click.
+Google coordination, synchronization, booking workflows and contact writes are outside
+this MCP. See [calendar policy](CALENDAR_RADAR.md), [invitations](CALENDAR_INVITATIONS.md),
+[CardDAV](CARDDAV_CONTACTS.md) and [unsupported updates](CALENDAR_PHASE2.md).
+
+Install optional calendar dependencies with the existing constraints:
+
+```sh
+python -m pip install -c constraints-validated.txt -r requirements-calendar.txt
+```
+
+The accepted baseline is 670 offline synthetic tests, including 39 focused CardDAV
+cases. [Validation](VALIDATION.md) distinguishes those tests from owner-reported
+component live acceptance and the unverified public-candidate deployment. Historical
+approval prototypes are documented separately and are not normal calendar workflows.
 
 Organization actions: `next`, `propose`, `prepare`, `status`, `execute`, `consent`,
 `cancel`, `candidates`, `automatic_policy`, `correction_context`, `preferences`, `prepare_preference`,
