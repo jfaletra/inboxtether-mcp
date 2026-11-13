@@ -185,10 +185,13 @@
     },
     {
       "name": "dnspython",
-      "version": "2.9.0",
+      "version": "2.9.2",
       "license_metadata": {
         "License-Expression": [
           "ISC"
+        ],
+        "License-File": [
+          "LICENSE"
         ]
       },
       "license_classifiers": []

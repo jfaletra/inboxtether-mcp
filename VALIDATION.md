@@ -1,8 +1,9 @@
 # InboxTether 2.1.0rc1 candidate validation
 
-This is a local, unpublished calendar release candidate based on public main
-8f4b4d869f51ac74186e45ab9c3a568dc6c53518. No VPS, connector, production state,
-GitHub branch, tag or release was changed by this preparation.
+This is the unmerged calendar release candidate in PR #13, based on public main
+8f4b4d869f51ac74186e45ab9c3a568dc6c53518. The dependency-only correction upgrades
+dnspython from 2.9.0 to 2.9.2 for CVE-2026-128089. No application code, test case,
+production configuration or deployed package is changed by that correction.
 
 ## Completed checks
 
@@ -84,6 +85,13 @@ Invitation storage, scheduling dispatch and email delivery remain separate facts
 No automatic retry/resend, recurring-event write, contact write, Google integration,
 private email adapter, new tunnel, approval UI or state migration is included.
 
-Fresh GitHub CI and public-candidate live deployment/rollback acceptance have not run.
+The initial PR CI passed all 654 distinct tests and manifest/hygiene verification,
+but its fresh advisory audit flagged dnspython 2.9.0 for CVE-2026-128089. The earlier
+local audit result is historical and did not waive that finding. Both applicable
+pins now require 2.9.2, whose installed license metadata is recorded. The corrected
+62-package environment passes pip check and the unchanged strict audit with no known
+vulnerabilities; no finding is suppressed. Review fresh GitHub CI on the corrected
+head before merge. Public-candidate live deployment/rollback acceptance remains
+unverified.
 Dependency pins are version constraints, not a wheel-hash lock. Publication and any
 production rollout remain separate owner decisions.

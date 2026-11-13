@@ -2,7 +2,7 @@
   "project": "InboxTether MCP",
   "repository": "https://github.com/jfaletra/inboxtether-mcp",
   "candidate_version": "2.1.0rc1",
-  "release_state": "Local calendar-focused candidate only; no push, merge, tag, release or deployment",
+  "release_state": "Unmerged PR #13 calendar candidate; dependency-only correction; no merge, tag, release or deployment",
   "public_base_commit": "8f4b4d869f51ac74186e45ab9c3a568dc6c53518",
   "source_scope": "Public 2.0.0 email tree plus calendar/CardDAV implementation, synthetic regressions, six calendar dependency pins, protected calendar hook and sanitized public-factory adapter.",
   "production_component_comparison": "Eight core calendar/invitation/CardDAV modules matched the accepted local implementation during the preceding read-only review. The account-neutral calendar hook is preserved from the reviewed hook copy.",
@@ -21,5 +21,13 @@
   ],
   "validation": "See VALIDATION.json and VALIDATION.md; 670 discoveries correspond to 654 distinct test IDs.",
   "deployment": "Separate review and explicit authorization required. No automatic state migration.",
-  "sending": "Email sending excluded. Optional event invitations are SOGo scheduling."
+  "sending": "Email sending excluded. Optional event invitations are SOGo scheduling.",
+  "dependency_correction": {
+    "package": "dnspython",
+    "previous_version": "2.9.0",
+    "version": "2.9.2",
+    "advisory": "CVE-2026-128089",
+    "previous_candidate_commit": "77b1c841daa97cec9a323b4872fadf5684ac037f",
+    "application_code_changed": false
+  }
 }

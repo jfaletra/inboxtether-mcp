@@ -1,6 +1,6 @@
 {
   "version": "2.1.0rc1",
-  "status": "local unreleased calendar release candidate",
+  "status": "unmerged PR #13 release candidate with dependency-only security correction",
   "date": "2026-11-13",
   "base_commit": "8f4b4d869f51ac74186e45ab9c3a568dc6c53518",
   "accepted_baseline": {
@@ -20,8 +20,8 @@
     "network_disabled": true,
     "read_only_source": true,
     "unprivileged_service_identity": true,
-    "canonical_duration_seconds": 183.629,
-    "discovery_duration_seconds": 172.892
+    "canonical_duration_seconds": 184.573,
+    "discovery_duration_seconds": 175.634
   },
   "integration_inspection": {
     "public_email_tools_unchanged": 8,
@@ -38,7 +38,10 @@
     "pip_audit_version": "2.10.1",
     "strict_advisory_audit": "passed; no known vulnerabilities found",
     "advisory_audit_date": "2026-11-13",
-    "wheel_hash_lock": false
+    "wheel_hash_lock": false,
+    "dnspython": "2.9.2",
+    "resolved_advisory": "CVE-2026-128089; upgraded from 2.9.0; strict audit rerun without exclusions",
+    "previous_candidate_commit": "77b1c841daa97cec9a323b4872fadf5684ac037f"
   },
   "security": {
     "reserved_example_domains_only": true,
@@ -64,7 +67,6 @@
     "conditional_missing_target_update": "failed on tested SOGo 5.12.5 endpoint"
   },
   "production_changes": false,
-  "push_merge_tag_release": false,
   "email_sending": "excluded; calendar invitations are scheduled by SOGo",
   "limits": [
     "Delegated conversational authorization has no independent human-click receipt.",
@@ -72,5 +74,9 @@
     "Updates/rescheduling/cancellations and recurrence/contact writes remain disabled.",
     "Large real address-book byte/count compatibility and this public factory deployment are not live-certified.",
     "No private email-adapter import, journal migration, synchronization or alternate server."
-  ]
+  ],
+  "github_pr": "https://github.com/jfaletra/inboxtether-mcp/pull/13",
+  "merged": false,
+  "tagged": false,
+  "released": false
 }
