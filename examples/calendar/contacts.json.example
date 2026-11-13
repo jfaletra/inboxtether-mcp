@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "accounts": [
+    {
+      "account_id": "owner",
+      "home_url": "https://mail.example.com/SOGo/dav/owner@example.com/Contacts/",
+      "read_ids": [
+        "/SOGo/dav/owner@example.com/Contacts/personal/"
+      ]
+    }
+  ]
+}

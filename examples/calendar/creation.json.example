@@ -1,0 +1,11 @@
+{
+  "enabled": false,
+  "account_id": "owner",
+  "create_ids": [
+    "/SOGo/dav/owner@example.com/Calendar/personal/"
+  ],
+  "write_password_file": "/etc/inboxtether-secrets/owner-dav",
+  "state_directory": "/var/lib/inboxtether-calendar-owner",
+  "max_attempts_per_hour": 2,
+  "max_attempts_per_day": 2
+}
