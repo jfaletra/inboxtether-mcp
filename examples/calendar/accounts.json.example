@@ -1,0 +1,20 @@
+[
+  {
+    "id": "owner",
+    "home_url": "https://mail.example.com/SOGo/dav/owner@example.com/Calendar/",
+    "username": "owner@example.com",
+    "password_file": "/etc/inboxtether-secrets/owner-dav",
+    "read_ids": [
+      "/SOGo/dav/owner@example.com/Calendar/personal/"
+    ],
+    "full_visibility_ids": [
+      "/SOGo/dav/owner@example.com/Calendar/personal/"
+    ],
+    "create_ids": [],
+    "update_ids": [],
+    "cancel_ids": [],
+    "aliases": {
+      "Work": "/SOGo/dav/owner@example.com/Calendar/personal/"
+    }
+  }
+]

@@ -1,7 +1,8 @@
 # Installation, upgrade and rollback
 
-This refreshed 2.0.0 candidate extends the rc3 public application with bulk filing
-and the neutral `organize_email` interface.
+This 2.1.0rc1 calendar candidate preserves the public 2.0.0 email implementation
+and its neutral `organize_email` interface. Calendar hook/source installation and
+writer-only rollback are described in [deploy/calendar/README.md](deploy/calendar/README.md).
 It excludes previously optional email sending. Existing clients must discover the new
 contract in a separate test configuration. No existing private deployment or plugin
 should be changed to try it. The public journal remains distinct from installation-specific

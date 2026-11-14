@@ -1,89 +1,97 @@
-# InboxTether 2.0.0 final candidate validation
+# InboxTether 2.1.0rc1 candidate validation
 
-This unreleased synchronization candidate updates existing PR #11 from commit
-`27465c6ca68e784df96b51ea34e251f04ff214cb`. Its version is 2.0.0; merging,
-tagging and publication still require owner approval.
+This is the unmerged calendar release candidate in PR #13, based on public main
+8f4b4d869f51ac74186e45ab9c3a568dc6c53518. The dependency-only correction upgrades
+dnspython from 2.9.0 to 2.9.2 for CVE-2026-128089. No application code, test case,
+production configuration or deployed package is changed by that correction.
 
-## Tested for this source
+## Completed checks
 
-- **506 tests passed on macOS/Python 3.11 and Linux/Python 3.12.3**, with zero
-  failures, errors or skips. Exact artifact/bundle reruns are retained in release
-  preparation evidence; GitHub-hosted validation is linked in PR #11 after push.
-- Fresh Linux virtual environment and unchanged 56 constrained runtime/test/audit
-  dependencies: installation and pip consistency passed. Strict advisory audit
-  reported no known vulnerabilities on October 30, 2026. This does not establish
-  absence of unknown vulnerabilities or audit the operating system.
-- Synthetic empty public initialization: 200 classifications, compact reference,
-  twenty acknowledged preparation chunks and twenty verified execution chunks,
-  with restarts. Both manual exact-consent and owner-policy modes passed.
-- Manual chat consent, independent owner-password/CSRF browser workflow through
-  fixture HTTP/Unix IPC, exact-fingerprint validation, malformed/expired/replayed
-  requests, revocation and execution-gate changes at the MOVE boundary.
-- Automatic policy disabled by default, four-folder restriction, Review/customer/
-  potential-customer/uncertainty Keeps, strict nested saved-risk handling, history-
-  preserving corrections, current source/destination/hash/flag validation, deadlines,
-  immutable receipts, interrupted execution and permanent no-retry claims.
-- Inert HTML tolerances and active/unsafe/MIME/decoding/unfinished-markup rejection;
-  customer keywords and identity guards remain unchanged.
-- Original Reader/Draft source and canonical tool contracts, real SDK stdio calls,
-  browser listener recovery, fixture peer permissions, source/secret-pattern and
-  sending-import checks. No real message is required by any test.
+- The accepted raw unittest discovery baseline executes 670 tests and passes with
+  zero failures/errors/skips. The existing canonical `run_tests.py` de-duplicates
+  identical test IDs and passes 654 distinct tests. The difference is 16 repeated
+  discoveries, not removed cases. All 39 focused CardDAV regressions are retained.
+- Final full suites run as an unprivileged user with CPython 3.12.16 in the
+  existing isolated image, read-only source,
+  private synthetic temporary state, no production credentials and no IP network.
+  The canonical runner also clears operational environment settings and rejects IP
+  sockets. Unix-domain/ASGI fixture approval traffic is synthetic, not provider access.
+- Public-factory integration inspection preserves all eight email definitions,
+  validates the sanitized configuration examples, returns 18 tools when creation
+  is enabled and 16 with it disabled, and exposes no update/cancel tools. No tool
+  or external action is invoked during inspection.
+- All 62 constrained package versions are verified in the isolated environment
+  including temporary audit tooling. pip check passes. Pinned pip-audit 2.10.1
+  reports no known vulnerabilities on November 13, 2026, with strict checking and
+  no advisory exclusions. Only this disposable audit container used public network
+  access; it had no production credentials or mounts. A clean audit does not prove
+  absence of unknown vulnerabilities or assess the host OS.
+- Repository hygiene scans include source, examples and fixtures; the Git history
+  pattern check scanned 504 pre-existing objects without findings. Checks do not
+  print matched secret values. They are not exhaustive DLP or a substitute for review.
+  The final manifest and staged-file hygiene checks must pass on the final source.
 
-The Linux suite ran unprivileged against root-owned read-only source and private
-synthetic scratch in an isolated network namespace. Owner-enrollment tests use a
-fabricated administrator/TTY fixture; no production policy or credential is loaded.
-The initial local run found a missing synthetic format fixture and restricted-path
-Unix socket length failures; fixture packaging and test environment were corrected,
-without weakening application checks. An initial wheel-only dependency download
-failed because pinned dkimpy is source-only; the same pinned source was built into
-a wheel. Complete output and exit codes for failed and passing runs are retained
-outside the public source. No application change was made for wheel packaging.
+Tests cover calendar aliases and account separation, date/time-zone validation,
+all-day exclusive ends, recurrence reading, moved/cancelled occurrences, search,
+interval-only availability, invitation policy, immutable proposals, quotas, durable
+replay, uncertainty recovery, metadata-only audits and existing email protections.
+CardDAV tests cover exact/partial names, shortened N/missing FN, multiple addresses,
+late matches/ambiguity, complete large scans, overflow, malformed cards, server
+truncation, cross-account denial, read-only guards and response limits.
 
-## Self-contained verification
+## Reproduce offline application tests
 
-The source archive contains every first-party module, imported synthetic support
-module, JSON fixture, example/configuration template and asset needed by the suite.
-MANIFEST.sha256 detects missing or changed files before acceptance. The companion
-Linux CPython 3.12 x86_64 verification bundle also contains the complete public
-dependency wheel closure, a checksum preflight and an offline installer/verifier.
-System Python/venv, Linux/glibc and standard libraries are platform prerequisites,
-not bundled applications. Dependency versions are pinned in constraints-validated.txt.
-The companion bundle is a release-preparation artifact, not a new runtime service
-or a dependency on private files. Deliberately missing helpers, fixtures, wheels and
-changed source must fail preflight.
-
-## Historical evidence and unverified boundaries
-
-Earlier public rc3 acceptance exercised signed-in Codex CLI and graphical Claude
-Desktop against disposable Dovecot. That evidence belongs to older code. Separate
-private deployment experience motivated these reviewed component ports; no private
-accounts, business rules, mail, journals, receipts or operational evidence are shipped.
-This preparation does not independently repeat or certify those production moves.
-
-This final public source has **no new live IMAP/provider, graphical assistant, actual
-HTTPS/browser or production upgrade/migration/rollback acceptance**. Synthetic
-browser HTTP/IPC is not graphical acceptance. Other providers/clients, permission
-mappings and supported versions must be assessed on the destination installation.
-Optional client-session consent trusts the connected client; it is not independently
-verified human identity. Automatic owner policy is distinct standing authority.
-Sending remains absent; no SMTP transport is shipped.
-
-Public clean initialization stays separate from private journals. Do not import a
-private ledger/witness/receipt set, erase a claim or restore an older journal. No
-automatic downgrade, inverse-move rollback, uncertain retry, history compaction or
-background scheduling is supplied. Historical Keeps remain closed and may include
-conservative false positives. See AUTOMATIC_FILING.md, WORKFLOWS.md and UPGRADE.md.
-
-## Reproduce
+Use Linux/Python 3.12, a new environment, private HOME/scratch and reviewed pinned
+packages. Install test dependencies before disconnecting networking:
 
 ```sh
-python3 -m venv .venv
-.venv/bin/python -m pip install -c constraints-validated.txt -r requirements-test.txt -r requirements-audit.txt
-.venv/bin/python -m pip check
-.venv/bin/python run_tests.py
-.venv/bin/python scripts/verify_release.py
-.venv/bin/python -m pip_audit -r constraints-validated.txt --no-deps --disable-pip --strict --progress-spinner off
+python -m pip install -c constraints-validated.txt -r requirements-test.txt
+python -m pip check
+python -B run_tests.py
 ```
 
-Do not use production credentials in tests. Separate the dependency-install/audit
-network step from isolated synthetic test execution.
+To reproduce the historical count, `python -B -m unittest discover -s tests`
+executes 670 discoveries; supply a private TMPDIR for administrator-policy fixtures.
+Do not provide live credentials or operational settings. Install the pinned audit
+tool separately with requirements-audit.txt to repeat the advisory check. Packages,
+wheels, virtual environments and external test logs are not included in this source.
+
+MANIFEST.sha256 covers every shipped file except itself and uses LF text bytes.
+Run `python -B scripts/verify_release.py` and `python -B scripts/check_repository.py`.
+Use `--history` on the latter only with complete fetched Git history. The original
+Reader/Draft contracts and public email implementation remain unchanged, apart from
+an opt-in calendar read registration call in the server factory. The root-ownership
+CardDAV policy fixtures use synthetic metadata so unprivileged CI needs no sudo; production
+ownership/type/mode guards remain unchanged.
+
+## Provider findings and publication limits
+
+Owner-observed disposable Mailcow/SOGo component tests established timed/all-day
+creation, read-back, replay, lost-response reconciliation, invitation receipt and
+small address-book lookup. These are historical private-deployment observations,
+not fresh live acceptance of this sanitized public factory or its deployment.
+No real account, calendar content, contact list, credential or raw live artifact is
+shipped or accessed by the candidate tests. Large real address-book compatibility
+must still pass a separately authorized bounded read-only acceptance.
+
+The tested SOGo 5.12.5 endpoint accepted an If-None-Match wildcard collision and a
+missing-target PUT carrying a nonmatching If-Match. Those safety gates failed.
+Creation accepts a documented residual overwrite race; update, reschedule and
+cancellation remain disabled. Keep raw failed-test evidence private and unchanged.
+
+Conversational confirmation is client-mediated authority, not a server-verifiable
+human click. An authorized connection can commit without a fresh owner prompt.
+Invitation storage, scheduling dispatch and email delivery remain separate facts.
+No automatic retry/resend, recurring-event write, contact write, Google integration,
+private email adapter, new tunnel, approval UI or state migration is included.
+
+The initial PR CI passed all 654 distinct tests and manifest/hygiene verification,
+but its fresh advisory audit flagged dnspython 2.9.0 for CVE-2026-128089. The earlier
+local audit result is historical and did not waive that finding. Both applicable
+pins now require 2.9.2, whose installed license metadata is recorded. The corrected
+62-package environment passes pip check and the unchanged strict audit with no known
+vulnerabilities; no finding is suppressed. Review fresh GitHub CI on the corrected
+head before merge. Public-candidate live deployment/rollback acceptance remains
+unverified.
+Dependency pins are version constraints, not a wheel-hash lock. Publication and any
+production rollout remain separate owner decisions.

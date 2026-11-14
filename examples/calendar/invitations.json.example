@@ -1,0 +1,11 @@
+{
+  "enabled": false,
+  "account_id": "owner",
+  "calendar_ids": [
+    "/SOGo/dav/owner@example.com/Calendar/personal/"
+  ],
+  "allowed_recipients": [
+    "recipient@example.net"
+  ],
+  "max_attendees": 1
+}

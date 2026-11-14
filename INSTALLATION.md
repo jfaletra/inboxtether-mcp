@@ -227,3 +227,9 @@ Install the reviewed broker/web unit examples and environment files only after
 configuration verification. Attach the HTTPS route to an existing TLS proxy and
 start broker, web, then the client-owned stdio server. Keep both write/consent gates
 off until the applicable owner approvals and bounded acceptance plan are in place.
+
+## Optional calendar and contact integration
+
+The existing-connection calendar runbook is [deploy/calendar/README.md](deploy/calendar/README.md).
+Its examples keep creation and invitations off. No private production email adapter,
+credential, journal migration or additional tunnel is part of this candidate.

@@ -1,48 +1,82 @@
 {
-  "version": "2.0.0",
-  "status": "unreleased final PR candidate",
-  "date": "2026-10-30",
-  "base_pr": 11,
-  "base_commit": "27465c6ca68e784df96b51ea34e251f04ff214cb",
-  "macOS_python_3_11": {
-    "tests": 506,
+  "version": "2.1.0rc1",
+  "status": "unmerged PR #13 release candidate with dependency-only security correction",
+  "date": "2026-11-13",
+  "base_commit": "8f4b4d869f51ac74186e45ab9c3a568dc6c53518",
+  "accepted_baseline": {
+    "unittest_discovery_executions": 670,
+    "distinct_test_ids": 654,
+    "duplicate_discoveries": 16,
+    "focused_carddav_tests": 39,
+    "no_tests_removed": true
+  },
+  "Linux_python_3_12_16": {
+    "canonical_tests": 654,
+    "discovery_executions": 670,
     "failures": 0,
     "errors": 0,
     "skipped": 0,
-    "synthetic_only": true
-  },
-  "Linux_python_3_12_3": {
-    "tests": 506,
-    "failures": 0,
-    "errors": 0,
-    "skipped": 0,
-    "synthetic_only": true
-  },
-  "clean_linux_install": {
-    "fresh_venv": true,
-    "dependency_consistency": "passed",
+    "synthetic_only": true,
+    "network_disabled": true,
     "read_only_source": true,
     "unprivileged_service_identity": true,
-    "isolated_network_namespace": true,
-    "synthetic_only": true,
-    "manual_and_automatic_200_message_reference_prepare_and_20_chunks_with_restart": "passed"
+    "canonical_duration_seconds": 184.573,
+    "discovery_duration_seconds": 175.634
+  },
+  "integration_inspection": {
+    "public_email_tools_unchanged": 8,
+    "creation_enabled_inventory": 18,
+    "creation_disabled_inventory": 16,
+    "configuration_templates_valid": true,
+    "tools_invoked": 0,
+    "external_actions": 0
   },
   "dependencies": {
-    "unchanged_pinned_packages": 56,
-    "strict_advisory_known_findings": 0,
-    "linux_verification_wheels": 57,
-    "wheel_note": "56 constrained runtime/test/audit dependencies plus pip tooling; same source-only dkimpy version built as a wheel"
+    "constrained_packages": 62,
+    "installed_versions_verified": true,
+    "pip_check": "passed",
+    "pip_audit_version": "2.10.1",
+    "strict_advisory_audit": "passed; no known vulnerabilities found",
+    "advisory_audit_date": "2026-11-13",
+    "wheel_hash_lock": false,
+    "dnspython": "2.9.2",
+    "resolved_advisory": "CVE-2026-128089; upgraded from 2.9.0; strict audit rerun without exclusions",
+    "previous_candidate_commit": "77b1c841daa97cec9a323b4872fadf5684ac037f"
   },
-  "source_and_package_checks": "Exact checksum manifest and archive/bundle checks are rerun after metadata freeze. External evidence includes final artifact verification.",
-  "production_access": "Read-only application source/checksum reconciliation only; no email, configuration change or state mutation",
-  "new_live_IMAP_or_graphical_client_acceptance": false,
-  "github_ci": "Fresh PR-head validation required; exact completed run links are recorded in PR #11 after push",
-  "sending": "excluded",
+  "security": {
+    "reserved_example_domains_only": true,
+    "IP_network_forbidden_in_canonical_tests": true,
+    "sending_import_checks": "required",
+    "source_manifest": "MANIFEST.sha256; LF source; excludes its own entry",
+    "historical_git_objects_scanned": 504,
+    "history_pattern_findings": 0,
+    "manual_review_still_required": true,
+    "whole_candidate_files_checked": 147,
+    "manifest_entries": 146
+  },
+  "live_acceptance": {
+    "public_candidate_deployed": false,
+    "owner_reported_component_acceptance": [
+      "disposable timed/all-day creation and read-back",
+      "idempotent replay and lost-response reconciliation",
+      "controlled SOGo invitation received independently",
+      "disposable CardDAV lookup"
+    ],
+    "JTF_contact_book_scanned_by_candidate": false,
+    "conditional_create_atomicity": "failed on tested SOGo 5.12.5 endpoint",
+    "conditional_missing_target_update": "failed on tested SOGo 5.12.5 endpoint"
+  },
+  "production_changes": false,
+  "email_sending": "excluded; calendar invitations are scheduled by SOGo",
   "limits": [
-    "No private journal/ledger/witness/receipt import or automatic migration/downgrade",
-    "No new graphical-client, real HTTPS browser or live-provider acceptance for this public build",
-    "Historical Keeps remain closed and conservative customer/identity/context checks may cause false Keeps",
-    "Selection references last two hours; finite journal/audit capacities fail closed, without automatic compaction",
-    "Transport disconnects require saved-state inspection, never an uncertain retry"
-  ]
+    "Delegated conversational authorization has no independent human-click receipt.",
+    "Random identifiers, preflight and local locking do not eliminate the SOGo overwrite race.",
+    "Updates/rescheduling/cancellations and recurrence/contact writes remain disabled.",
+    "Large real address-book byte/count compatibility and this public factory deployment are not live-certified.",
+    "No private email-adapter import, journal migration, synchronization or alternate server."
+  ],
+  "github_pr": "https://github.com/jfaletra/inboxtether-mcp/pull/13",
+  "merged": false,
+  "tagged": false,
+  "released": false
 }
